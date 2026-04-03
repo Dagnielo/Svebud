@@ -8,121 +8,147 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export type Krav = {
+export type MatchatKrav = {
   krav: string
   typ: 'ska' | 'bör'
   kategori: string
   källa: string
-  konfidens: number
+  status: 'uppfyllt' | 'ej_uppfyllt' | 'kräver_bekräftelse'
+  matchning: string // Förklaring: "Matchar ert certifikat AL" eller "Ni har 5 montörer, kravet är 3"
 }
 
-export type ExtraktionsResultat = {
-  analys_komplett: boolean
+export type AnalysResultat = {
+  // Projektinfo
   beställare: string | null
   kontaktperson: string | null
   org_nr: string | null
   sista_anbudsdag: string | null
-  planerad_start: string | null
   avtalsvillkor: string | null
   prismodell: string | null
   uppdragsbeskrivning: string | null
   värde_kr: number | null
-  utvärderingskriterier: string | null
-  kund_typ: 'konsument' | 'naringsidkare' | 'brf' | null
-  ska_krav: Krav[]
-  bör_krav: Krav[]
-  saknade_kritiska_falt: string[]
+  // GO/NO-GO
+  go_no_go: 'GO' | 'NO_GO' | 'GO_MED_RESERVATION'
+  match_procent: number
+  sammanfattning: string
+  rekommendation: string
+  // Krav — uppdelade efter matchningsstatus
+  matchade_krav: MatchatKrav[]
+  kräver_bekräftelse: MatchatKrav[]
+  ej_uppfyllda: MatchatKrav[]
+  // Extra
+  risker: string[]
+  möjligheter: string[]
 }
 
-const SYSTEM_PROMPT = `Du är en AI-assistent som analyserar förfrågningsunderlag (FU) för elinstallationsuppdrag i Sverige.
+function byggSystemPrompt(profil: Record<string, unknown>): string {
+  return `Du är en AI-assistent som hjälper svenska elfirmor att snabbt bedöma förfrågningsunderlag (FU).
 
-HUVUDUPPGIFT: Scanna ALLA dokument och extrahera:
-1. Grundläggande projektinformation
-2. ALLA ska-krav (obligatoriska krav som måste uppfyllas)
-3. ALLA bör-krav (meriterande krav som ger fördelar)
+DIN UPPGIFT (gör allt i ETT steg):
+1. Extrahera projektinformation (beställare, deadline, avtalsvillkor, scope etc.)
+2. Identifiera ALLA ska-krav och bör-krav i dokumenten
+3. MATCHA varje krav mot elfirmans profil (se nedan)
+4. Ge GO/NO-GO-bedömning med matchningsprocent
 
-KATEGORIER FÖR KRAV:
-- "certifikat" – Auktorisationer, behörigheter, utbildningar (AL, A, B, SSG, ID06 etc.)
-- "erfarenhet" – Referensuppdrag, erfarenhet av liknande projekt
-- "kapacitet" – Antal montörer, maskiner, resurser
-- "ekonomi" – Omsättning, försäkringar, kreditvärdighet
-- "kvalitet" – ISO-certifieringar, kvalitetssystem, miljöledning
-- "säkerhet" – Arbetsmiljöplaner, riskanalyser, skyddsutrustning
-- "tidsplan" – Deadlines, milstolpar, tillgänglighet
-- "juridik" – Avtalsvillkor, garantier, ansvarsfrågor
-- "övrigt" – Övriga krav
+ELFIRMANS PROFIL:
+${JSON.stringify(profil, null, 2)}
 
-SKA-KRAV: Krav som uttryckligen anges som obligatoriska. Sökord: "ska", "skall", "måste", "krav", "obligatoriskt", "krävs", "erfordras", "fordras", "villkor för".
-Notera: "ska" och "skall" är SAMMA sak — "skall" är äldre svenska och förekommer ofta i juridiska dokument och förfrågningsunderlag.
-BÖR-KRAV: Krav som anges som meriterande. Sökord: "bör", "önskvärt", "meriterande", "fördel om", "positivt om", "gärna", "uppskattas".
+MATCHNINGSREGLER:
+- "uppfyllt" = Kravet matchar tydligt mot något i profilen (certifikat, erfarenhet, kapacitet)
+- "kräver_bekräftelse" = Kravet KAN uppfyllas men profilen är inte tydlig nog (t.ex. omsättning, riskklass, specifika referensuppdrag)
+- "ej_uppfyllt" = Kravet kan definitivt INTE uppfyllas (t.ex. kräver 50 montörer men firman har 5)
 
-KÄLLA: Ange EXAKT var i dokumentet kravet hittas (dokumentnamn + avsnitt/sida om möjligt).
+GO/NO-GO LOGIK:
+- GO: Inga "ej_uppfyllt" ska-krav, max 3 "kräver_bekräftelse"
+- GO_MED_RESERVATION: Inga "ej_uppfyllt" ska-krav men >3 "kräver_bekräftelse"
+- NO_GO: Minst 1 ska-krav som är "ej_uppfyllt"
+
+match_procent = (antal uppfyllda ska-krav / totalt antal ska-krav) * 100
+
+SKA-KRAV sökord: "ska", "skall", "måste", "krav", "obligatoriskt", "krävs", "erfordras", "fordras", "villkor för"
+BÖR-KRAV sökord: "bör", "önskvärt", "meriterande", "fördel om", "positivt om", "gärna"
+
+KÄLLA: Ange dokumentnamn + avsnitt (t.ex. "06.1 Administrativa föreskrifter, AFB.522")
+
+MATCHNING: Förklara VARFÖR kravet matchar eller inte:
+- Bra: "Matchar ert certifikat 'Auktorisation AL'"
+- Bra: "Ni har 10 montörer, kravet är minst 3 — uppfyllt"
+- Bra: "Omsättningskrav 8 MSEK — er profil saknar omsättningsdata, behöver bekräftas"
+
+PROJEKTINFO — extrahera NOGGRANT:
+Sök igenom ALLA dokument. Om ett fält finns, MISSA det inte.
 
 INFORMELLA DOKUMENT (mail, fritext):
-Förfrågningar kommer inte alltid som formella FU. Ibland är det ett mail eller fritext.
-Tolka implicit krav även från informell text:
-- "vi behöver" / "vi söker" / "vi vill ha" → ska-krav
-- "helst" / "gärna" / "det vore bra om" → bör-krav
-- "måste vara klart innan X" → deadline + tidsplan-krav
-- "ni ska ha F-skatt" → certifikat ska-krav
-- Nämnd typ av arbete → kapacitet/erfarenhet ska-krav
-- Kontaktuppgifter i mailet → beställare/kontaktperson
-Konfidens sätts lägre (60-80) för implicita krav jämfört med explicita (90-100).
-
-PROJEKTINFORMATION — KRITISKT:
-Du MÅSTE extrahera ALL tillgänglig projektinformation NOGGRANT. Sök igenom ALLA dokument efter:
-- Beställare/organisation: Ofta i sidhuvud, på första sidan, eller i administrativa föreskrifter
-- Kontaktperson: Namn + telefon/e-post till den som ansvarar för upphandlingen
-- Org.nr: Ofta nära beställarens namn
-- Sista anbudsdag: Datum + ofta klockslag. Sök efter "anbud ska vara inkommet senast", "sista dag", "anbudstid"
-- Avtalsvillkor: AB 04, ABT 06, ABT 94 etc. Ofta under "Administrativa föreskrifter" avsnitt AFB
-- Prismodell: Fast pris, löpande räkning, ramavtal etc.
-- Uppskattat värde: Kontraktsvärde, uppskattad omsättning etc.
-- Uppdragsbeskrivning: Detaljerad beskrivning av vad som ska utföras
-
-Om ett fält finns i dokumentet men du missar det är det ett ALLVARLIGT FEL.
-Returnera null BARA om informationen verkligen saknas i alla dokument.
-
-VIKTIGT:
-- Var NOGGRANN — missa inte krav eller projektinfo som finns i bilagor eller underkapitel
-- Om osäker om ska/bör, markera som "ska" med lägre konfidens
-- Sök efter krav i ALL text, inte bara uppenbara avsnitt
-- Ange alltid EXAKT dokumentnamn i källa-fältet (t.ex. "06.1 Administrativa föreskrifter, AFB.22")
+Tolka implicit krav: "vi behöver" = ska-krav, "helst" = bör-krav
 
 Returnera ENDAST giltig JSON:
 {
-  "analys_komplett": boolean,
   "beställare": string|null,
   "kontaktperson": string|null,
   "org_nr": string|null,
   "sista_anbudsdag": string|null,
-  "planerad_start": string|null,
   "avtalsvillkor": string|null,
   "prismodell": string|null,
   "uppdragsbeskrivning": string|null,
   "värde_kr": number|null,
-  "utvärderingskriterier": string|null,
-  "kund_typ": "konsument"|"naringsidkare"|"brf"|null,
-  "ska_krav": [
-    { "krav": "Beskrivning av kravet", "typ": "ska", "kategori": "certifikat|erfarenhet|kapacitet|ekonomi|kvalitet|säkerhet|tidsplan|juridik|övrigt", "källa": "Dokument X, avsnitt Y", "konfidens": 0-100 }
+  "go_no_go": "GO"|"NO_GO"|"GO_MED_RESERVATION",
+  "match_procent": number,
+  "sammanfattning": "Kort bedömning i 2-3 meningar",
+  "rekommendation": "Detaljerad rekommendation",
+  "matchade_krav": [
+    { "krav": "...", "typ": "ska"|"bör", "kategori": "...", "källa": "...", "status": "uppfyllt", "matchning": "Matchar ert certifikat X" }
   ],
-  "bör_krav": [
-    { "krav": "Beskrivning av kravet", "typ": "bör", "kategori": "...", "källa": "...", "konfidens": 0-100 }
+  "kräver_bekräftelse": [
+    { "krav": "...", "typ": "ska", "kategori": "...", "källa": "...", "status": "kräver_bekräftelse", "matchning": "Er profil saknar denna uppgift" }
   ],
-  "saknade_kritiska_falt": ["fält som saknas i FU:et"]
+  "ej_uppfyllda": [
+    { "krav": "...", "typ": "ska", "kategori": "...", "källa": "...", "status": "ej_uppfyllt", "matchning": "Ni har 5 montörer, kravet är 50" }
+  ],
+  "risker": ["..."],
+  "möjligheter": ["..."]
 }`
+}
 
 /**
- * Extraherar krav från ALLA dokument i ett projekt (samlat FU).
+ * Analyserar FU OCH matchar krav mot profil i ETT steg.
  */
-export async function extraheraFrånProjekt(projektId: string): Promise<ExtraktionsResultat> {
+export async function analyseraOchMatcha(projektId: string): Promise<AnalysResultat> {
   const { samlaFUDokument, byggClaudeContent, samlaFUText } = await import('@/lib/fu-agent')
 
   // Samla alla dokument
   const delar = await samlaFUDokument(projektId)
 
-  // Spara FU-text (för bakåtkompatibilitet)
+  // Spara FU-text
   await samlaFUText(projektId)
+
+  // Hämta projekt
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: projekt } = await supabase
+    .from('projekt')
+    .select('*')
+    .eq('id', projektId)
+    .single() as { data: any }
+
+  if (!projekt) throw new Error('Projekt hittades inte')
+
+  // Hämta elfirmans profil
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: profil } = await supabase
+    .from('profiler')
+    .select('*')
+    .eq('id', projekt['användar_id'])
+    .single() as { data: any }
+
+  const företagsProfil = profil ? {
+    företag: profil.företag,
+    org_nr: profil.org_nr,
+    region: profil.region,
+    antal_montorer: profil.antal_montorer,
+    omsattning_msek: profil.omsattning_msek,
+    certifikat: profil.certifikat ?? [],
+    erfarenhet: profil.erfarenhet ?? [],
+    timpris_standard: profil.timpris_standard,
+  } : {}
 
   const startTid = Date.now()
 
@@ -138,51 +164,46 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
   if (firstAnbud) {
     await supabase.from('extraktion_log').insert({
       anbud_id: firstAnbud.id,
-      steg: 'fu_scanning',
+      steg: 'analys_matchning',
       status: 'startad',
-      meddelande: `Scannar ${delar.length} dokument (${delar.filter((d: {typ: string}) => d.typ === 'pdf').length} PDF, ${delar.filter((d: {typ: string}) => d.typ === 'text').length} text)`,
+      meddelande: `Analyserar ${delar.length} dokument och matchar mot företagsprofil`,
     })
   }
 
   try {
-    // Bygg content med PDF:er som direkta bilagor
     const messageContent = byggClaudeContent(
       delar,
-      `Scanna ALLA ovanstående dokument noggrant. De utgör tillsammans ett förfrågningsunderlag.
-Extrahera ALL projektinfo samt ALLA ska-krav (inklusive "skall"-krav) och bör-krav.
-Ange exakt vilket dokument och avsnitt varje krav kommer från.`
+      `Analysera ALLA dokument ovan. Extrahera projektinfo, identifiera ALLA ska/bör-krav, och matcha varje krav mot elfirmans profil. Ge GO/NO-GO-bedömning.`
     )
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 8192,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: messageContent,
-        },
-      ],
+      system: byggSystemPrompt(företagsProfil),
+      messages: [{ role: 'user', content: messageContent }],
     })
 
     const content = response.content[0]
-    if (content.type !== 'text') throw new Error('Oväntat svar från Claude')
+    if (content.type !== 'text') throw new Error('Oväntat svar')
 
-    const resultat = parseClaudeJSON<ExtraktionsResultat>(content.text)
+    const resultat = parseClaudeJSON<AnalysResultat>(content.text)
     const varaktighet = Date.now() - startTid
     const tokens = (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0)
 
-    // Spara resultat på projektet
+    const totalKrav = resultat.matchade_krav.length + resultat.kräver_bekräftelse.length + resultat.ej_uppfyllda.length
+
+    // Spara allt på projektet
     await supabase
       .from('projekt')
       .update({
-        analys_komplett: resultat.analys_komplett,
-        saknade_falt: resultat.saknade_kritiska_falt,
+        analys_komplett: true,
         jämförelse_resultat: resultat as unknown as Record<string, unknown>,
+        jämförelse_status: 'klar',
+        kravmatchning: resultat as unknown as Record<string, unknown>,
       })
       .eq('id', projektId)
 
-    // Markera alla anbud som extraherade
+    // Markera anbud som extraherade
     await supabase
       .from('anbud')
       .update({ extraktion_status: 'extraherad' })
@@ -192,9 +213,9 @@ Ange exakt vilket dokument och avsnitt varje krav kommer från.`
     if (firstAnbud) {
       await supabase.from('extraktion_log').insert({
         anbud_id: firstAnbud.id,
-        steg: 'fu_scanning',
+        steg: 'analys_matchning',
         status: 'klar',
-        meddelande: `Scanning klar: ${resultat.ska_krav.length} ska-krav, ${resultat.bör_krav.length} bör-krav hittade`,
+        meddelande: `${resultat.go_no_go} (${resultat.match_procent}%) — ${totalKrav} krav: ${resultat.matchade_krav.length} matchade, ${resultat.kräver_bekräftelse.length} att bekräfta, ${resultat.ej_uppfyllda.length} ej uppfyllda`,
         tokens_använda: tokens,
         varaktighet_ms: varaktighet,
       })
@@ -210,7 +231,7 @@ Ange exakt vilket dokument och avsnitt varje krav kommer från.`
     if (firstAnbud) {
       await supabase.from('extraktion_log').insert({
         anbud_id: firstAnbud.id,
-        steg: 'fu_scanning',
+        steg: 'analys_matchning',
         status: 'fel',
         meddelande: err instanceof Error ? err.message : 'Okänt fel',
         varaktighet_ms: Date.now() - startTid,

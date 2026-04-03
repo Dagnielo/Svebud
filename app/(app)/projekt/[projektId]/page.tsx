@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AnbudsUppladdning from '@/components/AnbudsUppladdning'
 import GranskningSida from '@/components/GranskningSida'
-import JämförelseVy from '@/components/JämförelseVy'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 
@@ -24,32 +23,16 @@ type ProjektData = {
   anbudsutkast_redigerat: string | null
 }
 
-type AnbudRad = {
-  id: string
-  filnamn: string
-  extraktion_status: string
-  skapad: string
-}
+type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string }
+type LoggRad = { id: string; steg: string; status: string; meddelande: string | null; skapad: string }
 
-type LoggRad = {
-  id: string
-  steg: string
-  status: string
-  meddelande: string | null
-  skapad: string
-}
-
-const stegLabels = ['Dokument', 'Kravmatchning', 'Anbud', 'Skicka']
+const stegLabels = ['Dokument', 'Analys & GO/NO-GO', 'Anbud & Skicka']
 
 function getAktivtSteg(p: ProjektData): number {
-  if (p.pipeline_status === 'inskickat' || p.pipeline_status === 'tilldelning') return 4
+  if (p.pipeline_status === 'inskickat' || p.pipeline_status === 'tilldelning') return 3
   if (p.rekommendation_status === 'klar') return 3
   if (p.jämförelse_status === 'klar') return 2
   return 1
-}
-
-function formatDatum(d: string) {
-  return new Date(d).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 export default function ProjektSida({ params }: { params: Promise<{ projektId: string }> }) {
@@ -58,7 +41,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [anbud, setAnbud] = useState<AnbudRad[]>([])
   const [logg, setLogg] = useState<LoggRad[]>([])
   const [loading, setLoading] = useState(true)
-  const [matchLaddar, setMatchLaddar] = useState(false)
+  const [analysLaddar, setAnalysLaddar] = useState(false)
   const [anbudLaddar, setAnbudLaddar] = useState(false)
   const [utkast, setUtkast] = useState('')
   const [sparar, setSparar] = useState(false)
@@ -67,37 +50,19 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const supabase = createClient()
 
   async function hämta() {
-    const { data: p } = await supabase
-      .from('projekt')
-      .select('*')
-      .eq('id', projektId)
-      .single()
-
+    const { data: p } = await supabase.from('projekt').select('*').eq('id', projektId).single()
     if (p) {
       const pd = p as unknown as ProjektData
       setProjekt(pd)
       setUtkast(pd.anbudsutkast_redigerat ?? pd.anbudsutkast ?? '')
     }
-
-    const { data: a } = await supabase
-      .from('anbud')
-      .select('*')
-      .eq('projekt_id', projektId)
-      .order('skapad', { ascending: false })
-
+    const { data: a } = await supabase.from('anbud').select('*').eq('projekt_id', projektId).order('skapad', { ascending: false })
     if (a) setAnbud(a as unknown as AnbudRad[])
-
     const anbudIds = (a ?? []).map((x: Record<string, unknown>) => x.id as string)
     if (anbudIds.length > 0) {
-      const { data: l } = await supabase
-        .from('extraktion_log')
-        .select('*')
-        .in('anbud_id', anbudIds)
-        .order('skapad', { ascending: false })
-        .limit(10)
+      const { data: l } = await supabase.from('extraktion_log').select('*').in('anbud_id', anbudIds).order('skapad', { ascending: false }).limit(10)
       if (l) setLogg(l as unknown as LoggRad[])
     }
-
     setLoading(false)
   }
 
@@ -107,11 +72,16 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     return () => clearInterval(interval)
   }, [projektId])
 
-  async function körKravmatchning() {
-    setMatchLaddar(true)
-    await fetch(`/api/projekt/${projektId}/jämför`, { method: 'POST' })
+  async function körAnalys() {
+    setAktivTab('analys')
+    setAnalysLaddar(true)
+    await fetch('/api/anbud/extrahera', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projektId }),
+    })
     await hämta()
-    setMatchLaddar(false)
+    setAnalysLaddar(false)
   }
 
   async function körAnbudsGenerering() {
@@ -123,30 +93,17 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
 
   async function sparaUtkast() {
     setSparar(true)
-    await supabase
-      .from('projekt')
-      .update({ anbudsutkast_redigerat: utkast })
-      .eq('id', projektId)
+    await supabase.from('projekt').update({ anbudsutkast_redigerat: utkast }).eq('id', projektId)
     setSparar(false)
   }
 
   async function markeraSomSkickat() {
-    await supabase
-      .from('projekt')
-      .update({ pipeline_status: 'inskickat', skickat_datum: new Date().toISOString() })
-      .eq('id', projektId)
+    await supabase.from('projekt').update({ pipeline_status: 'inskickat', skickat_datum: new Date().toISOString() }).eq('id', projektId)
     await hämta()
   }
 
   async function uppdateraTilldelning(status: string) {
-    await supabase
-      .from('projekt')
-      .update({
-        pipeline_status: 'tilldelning',
-        tilldelning_status: status,
-        tilldelning_datum: new Date().toISOString(),
-      })
-      .eq('id', projektId)
+    await supabase.from('projekt').update({ pipeline_status: 'tilldelning', tilldelning_status: status, tilldelning_datum: new Date().toISOString() }).eq('id', projektId)
     await hämta()
   }
 
@@ -173,7 +130,6 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   }
 
   const aktivtSteg = getAktivtSteg(projekt)
-  const anbudExtraherade = anbud.filter(a => a.extraktion_status === 'extraherad').length
   const kravmatch = projekt.kravmatchning as Record<string, unknown> | null
   const goNoGo = kravmatch?.go_no_go as string | undefined
   const rekData = projekt.rekommendation as Record<string, unknown> | null
@@ -181,39 +137,24 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
       {/* Header */}
-      <div
-        className="flex items-center gap-4"
-        style={{ background: 'var(--navy-mid)', borderBottom: '1px solid var(--navy-border)', padding: '20px 32px' }}
-      >
-        <button
-          onClick={() => router.push('/dashboard')}
-          style={{ fontSize: 13, color: 'var(--muted-custom)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          ← Tillbaka
-        </button>
+      <div className="flex items-center gap-4" style={{ background: 'var(--navy-mid)', borderBottom: '1px solid var(--navy-border)', padding: '20px 32px' }}>
+        <button onClick={() => router.push('/dashboard')} style={{ fontSize: 13, color: 'var(--muted-custom)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>← Tillbaka</button>
         <div className="flex-1">
           <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{projekt.namn}</h1>
           <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 1 }}>{projekt.beskrivning ?? ''}</p>
         </div>
         {goNoGo && (
-          <span
-            style={{
-              fontSize: 11, fontWeight: 800, textTransform: 'uppercase', padding: '4px 10px', borderRadius: 6,
-              background: goNoGo === 'GO' ? 'var(--green-bg)' : goNoGo === 'NO-GO' ? 'var(--red-bg)' : 'var(--orange-bg)',
-              color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO-GO' ? 'var(--red)' : 'var(--orange)',
-            }}
-          >
-            {goNoGo === 'GO_MED_RESERVATION' ? 'GO m. reservation' : goNoGo}
+          <span style={{
+            fontSize: 12, fontWeight: 800, textTransform: 'uppercase', padding: '5px 12px', borderRadius: 6,
+            background: goNoGo === 'GO' ? 'var(--green-bg)' : goNoGo === 'NO_GO' ? 'var(--red-bg)' : 'var(--orange-bg)',
+            color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO_GO' ? 'var(--red)' : 'var(--orange)',
+          }}>
+            {goNoGo === 'GO' ? 'GO' : goNoGo === 'NO_GO' ? 'NO-GO' : 'GO m. reservation'}
           </span>
-        )}
-        {projekt.pipeline_status === 'under_arbete' && (
-          <Button onClick={markeraSomSkickat} style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 12 }}>
-            Markera som skickat
-          </Button>
         )}
       </div>
 
-      {/* Stepper — klickbar, EN indikator */}
+      {/* 3-stegs stepper */}
       <div style={{ padding: '24px 32px 0', marginBottom: 16 }}>
         <div className="flex items-stretch">
           {stegLabels.map((label, i) => {
@@ -221,38 +162,23 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
             const done = aktivtSteg > nr
             const active = aktivtSteg === nr
             const isLast = i === stegLabels.length - 1
-            const tabMap = ['dokument', 'krav', 'anbud', 'skicka']
+            const tabMap = ['dokument', 'analys', 'anbud']
             return (
               <div key={label} className="flex-1 relative">
-                <button
-                  onClick={() => setAktivTab(tabMap[i])}
-                  className="flex flex-col items-center w-full"
-                  style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  <div
-                    className="flex items-center justify-center relative z-[2]"
-                    style={{
-                      width: 40, height: 40, borderRadius: '50%',
-                      border: `2px solid ${done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--steel)'}`,
-                      background: done ? 'var(--green)' : active ? 'var(--yellow-glow)' : 'var(--navy-mid)',
-                      color: done ? 'var(--navy)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
-                      fontSize: 14, fontWeight: 800,
-                      boxShadow: active ? '0 0 0 4px var(--yellow-glow)' : 'none',
-                      transition: 'all 0.2s',
-                    }}
-                  >
+                <button onClick={() => setAktivTab(tabMap[i])} className="flex flex-col items-center w-full" style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <div className="flex items-center justify-center relative z-[2]" style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    border: `2px solid ${done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--steel)'}`,
+                    background: done ? 'var(--green)' : active ? 'var(--yellow-glow)' : 'var(--navy-mid)',
+                    color: done ? 'var(--navy)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
+                    fontSize: 14, fontWeight: 800, boxShadow: active ? '0 0 0 4px var(--yellow-glow)' : 'none', transition: 'all 0.2s',
+                  }}>
                     {done ? '✓' : nr}
                   </div>
-                  <span style={{
-                    fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center',
-                    color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
-                  }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)' }}>
                     {label}
                   </span>
-                  <span style={{
-                    fontSize: 10, marginTop: 2, textAlign: 'center',
-                    color: done ? 'var(--green)' : active ? 'var(--soft)' : 'var(--slate)',
-                  }}>
+                  <span style={{ fontSize: 10, marginTop: 2, color: done ? 'var(--green)' : active ? 'var(--soft)' : 'var(--slate)' }}>
                     {done ? 'Klart ✓' : active ? '← Du är här' : ''}
                   </span>
                 </button>
@@ -264,49 +190,27 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
           })}
         </div>
 
-        {/* Nästa steg — tydlig instruktion */}
-        <div style={{
-          marginTop: 16, padding: '12px 16px', borderRadius: 10,
-          background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)',
-          display: 'flex', alignItems: 'center', gap: 12,
-        }}>
-          <span style={{ fontSize: 18 }}>
-            {aktivtSteg === 1 ? '📎' : aktivtSteg === 2 ? '🔍' : aktivtSteg === 3 ? '📋' : '📤'}
-          </span>
+        {/* Instruktionsruta */}
+        <div style={{ marginTop: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 18 }}>{aktivtSteg === 1 ? '📎' : aktivtSteg === 2 ? '📊' : '📋'}</span>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
               {aktivtSteg === 1 && 'Steg 1: Ladda upp alla dokument i förfrågningsunderlaget'}
-              {aktivtSteg === 2 && 'Steg 2: Besvara ska-kraven och kör kravmatchning'}
-              {aktivtSteg === 3 && 'Steg 3: Granska och justera anbudsutkastet'}
-              {aktivtSteg >= 4 && 'Steg 4: Markera anbudet som skickat'}
+              {aktivtSteg === 2 && 'Steg 2: Granska analys och bekräfta osäkra krav'}
+              {aktivtSteg >= 3 && 'Steg 3: Granska anbudsutkast, justera och skicka'}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 2 }}>
               {aktivtSteg === 1 && anbud.length === 0 && 'Ladda upp PDF, Word, Excel eller klistra in mailtext.'}
               {aktivtSteg === 1 && anbud.length > 0 && (
                 <span className="flex items-center gap-3" style={{ marginTop: 4 }}>
-                  <span>{anbud.length} dokument uppladdade. Starta scanning för att hitta krav:</span>
-                  <Button
-                    onClick={async () => {
-                      setAktivTab('krav')
-                      setMatchLaddar(true)
-                      await fetch('/api/anbud/extrahera', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ projektId }),
-                      })
-                      await hämta()
-                      setMatchLaddar(false)
-                    }}
-                    disabled={matchLaddar}
-                    style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px' }}
-                  >
-                    {matchLaddar ? '⏳ Scannar...' : '🔍 Scanna efter krav →'}
+                  <span>{anbud.length} dokument uppladdade.</span>
+                  <Button onClick={körAnalys} disabled={analysLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px' }}>
+                    {analysLaddar ? '⏳ Analyserar...' : '🔍 Analysera förfrågan →'}
                   </Button>
                 </span>
               )}
-              {aktivtSteg === 2 && 'Gå igenom varje krav och markera Ja/Nej/Osäker. Klicka sedan "Kör kravmatchning".'}
-              {aktivtSteg === 3 && 'AI har genererat ett utkast. Redigera texten, justera kalkylen och exportera.'}
-              {aktivtSteg >= 4 && 'Allt klart! Uppdatera om ni vann eller förlorade uppdraget.'}
+              {aktivtSteg === 2 && 'Bekräfta osäkra krav om det behövs, och generera sedan anbud.'}
+              {aktivtSteg >= 3 && 'Redigera utkastet, exportera och markera som skickat.'}
             </div>
           </div>
         </div>
@@ -318,9 +222,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
           <Tabs value={aktivTab} onValueChange={setAktivTab}>
             <TabsList className="hidden">
               <TabsTrigger value="dokument">Dokument</TabsTrigger>
-              <TabsTrigger value="krav">Krav</TabsTrigger>
+              <TabsTrigger value="analys">Analys</TabsTrigger>
               <TabsTrigger value="anbud">Anbud</TabsTrigger>
-              <TabsTrigger value="skicka">Skicka</TabsTrigger>
             </TabsList>
 
             {/* TAB 1: Dokument */}
@@ -337,61 +240,37 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
                     </div>
                     <div style={{ padding: '12px 18px' }}>
                       {anbud.map(a => (
-                        <div key={a.id} className="flex items-center justify-between" style={{ padding: '8px 0', borderBottom: '1px solid rgba(36,54,80,0.3)' }}>
-                          <span style={{ fontSize: 13, fontWeight: 600 }}>{a.filnamn}</span>
-                          <span style={{
-                            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, textTransform: 'uppercase',
-                            background: a.extraktion_status === 'extraherad' ? 'var(--green-bg)' : a.extraktion_status === 'fel' ? 'var(--red-bg)' : 'var(--yellow-glow)',
-                            color: a.extraktion_status === 'extraherad' ? 'var(--green)' : a.extraktion_status === 'fel' ? 'var(--red)' : 'var(--yellow)',
-                          }}>
-                            {a.extraktion_status === 'extraherad' ? 'Läst' : a.extraktion_status}
-                          </span>
+                        <div key={a.id} className="flex items-center justify-between" style={{ padding: '6px 0', borderBottom: '1px solid rgba(36,54,80,0.3)' }}>
+                          <span style={{ fontSize: 13 }}>{a.filnamn}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-                {/* Granskning visas i Krav-fliken */}
               </div>
             </TabsContent>
 
-            {/* TAB 2: Krav & matchning */}
-            <TabsContent value="krav">
-              <div className="space-y-4">
-                {/* Kravscanning + ja/nej-svar */}
-                <GranskningSida
-                  projektId={projektId}
-                  externtScanning={matchLaddar}
-                  onKravBesvarade={async () => {
-                    await körKravmatchning()
-                  }}
-                />
-
-                {/* GO/NO-GO resultat */}
-                {kravmatch && (
-                  <JämförelseVy
-                    projektId={projektId}
-                    data={kravmatch as Parameters<typeof JämförelseVy>[0]['data']}
-                    onKörMatchning={körKravmatchning}
-                    laddar={matchLaddar}
-                  />
-                )}
-              </div>
+            {/* TAB 2: Analys & GO/NO-GO */}
+            <TabsContent value="analys">
+              <GranskningSida projektId={projektId} externtScanning={analysLaddar} />
+              {projekt.jämförelse_status === 'klar' && !utkast && (
+                <div style={{ marginTop: 16, textAlign: 'center' }}>
+                  <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, padding: '12px 32px' }}>
+                    {anbudLaddar ? '⏳ Genererar anbud...' : '📋 Generera anbudsutkast →'}
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
-            {/* TAB 3: Anbud */}
+            {/* TAB 3: Anbud & Skicka */}
             <TabsContent value="anbud">
               {!utkast ? (
                 <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px 18px', textAlign: 'center' }}>
                   <p style={{ fontSize: 14, color: 'var(--muted-custom)', marginBottom: 16 }}>
-                    Kör kravmatchning först, sedan kan AI:n generera ett anbudsutkast.
+                    Analysera förfrågan först, sedan kan AI:n generera ett anbudsutkast.
                   </p>
-                  <Button
-                    onClick={körAnbudsGenerering}
-                    disabled={anbudLaddar || projekt.jämförelse_status !== 'klar'}
-                    style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
-                  >
-                    {anbudLaddar ? 'Genererar anbud...' : '⚡ Generera anbudsutkast'}
+                  <Button onClick={körAnbudsGenerering} disabled={anbudLaddar || projekt.jämförelse_status !== 'klar'} style={{ background: 'var(--yellow)', color: 'var(--navy)' }}>
+                    {anbudLaddar ? 'Genererar...' : '📋 Generera anbudsutkast'}
                   </Button>
                 </div>
               ) : (
@@ -407,75 +286,50 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
                         <Button onClick={sparaUtkast} disabled={sparar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
                           {sparar ? 'Sparar...' : 'Spara'}
                         </Button>
-                        <Button onClick={exportera} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
-                          Exportera
-                        </Button>
-                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>
-                          Generera om
-                        </Button>
+                        <Button onClick={exportera} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>Exportera</Button>
+                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>Generera om</Button>
                       </div>
                     </div>
                     <textarea
                       value={utkast}
                       onChange={e => setUtkast(e.target.value)}
-                      style={{
-                        width: '100%', minHeight: 500, padding: 18,
-                        background: 'var(--navy)', color: 'var(--soft)',
-                        border: 'none', fontSize: 13, lineHeight: 1.7,
-                        fontFamily: 'var(--font-mono), monospace', resize: 'vertical',
-                      }}
+                      style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--navy)', color: 'var(--soft)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
                     />
                   </div>
-                </div>
-              )}
-            </TabsContent>
 
-            {/* TAB 4: Skicka */}
-            <TabsContent value="skicka">
-              <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '24px' }}>
-                {projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning' ? (
-                  <div className="space-y-4">
-                    <div style={{ fontSize: 15, fontWeight: 700 }}>Anbud inskickat</div>
-                    <p style={{ fontSize: 13, color: 'var(--muted-custom)' }}>
-                      Anbudet markerades som skickat. Uppdatera tilldelningsstatus nedan.
-                    </p>
-                    <div className="flex gap-3">
-                      <Button onClick={() => uppdateraTilldelning('vunnet')} style={{ background: 'var(--green)', color: 'var(--navy)' }}>
-                        ✅ Vunnet
-                      </Button>
-                      <Button onClick={() => uppdateraTilldelning('forlorat')} style={{ background: 'var(--red)', color: 'white' }}>
-                        ❌ Förlorat
-                      </Button>
-                      <Button onClick={() => uppdateraTilldelning('vantar')} variant="outline" style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}>
-                        ⏳ Väntar
-                      </Button>
-                    </div>
-                    {projekt.tilldelning_status && (
-                      <div style={{ marginTop: 12, fontSize: 14, fontWeight: 700, color: projekt.tilldelning_status === 'vunnet' ? 'var(--green)' : projekt.tilldelning_status === 'forlorat' ? 'var(--red)' : 'var(--orange)' }}>
-                        Status: {projekt.tilldelning_status === 'vunnet' ? 'Vunnet ✅' : projekt.tilldelning_status === 'forlorat' ? 'Förlorat ❌' : 'Väntar på besked ⏳'}
+                  {/* Skicka & tilldelning */}
+                  <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '20px 24px' }}>
+                    {projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning' ? (
+                      <div className="space-y-4">
+                        <div style={{ fontSize: 15, fontWeight: 700 }}>✅ Anbud inskickat</div>
+                        <p style={{ fontSize: 13, color: 'var(--muted-custom)' }}>Uppdatera tilldelningsstatus:</p>
+                        <div className="flex gap-3">
+                          <Button onClick={() => uppdateraTilldelning('vunnet')} style={{ background: 'var(--green)', color: 'var(--navy)' }}>✅ Vunnet</Button>
+                          <Button onClick={() => uppdateraTilldelning('forlorat')} style={{ background: 'var(--red)', color: 'white' }}>❌ Förlorat</Button>
+                          <Button onClick={() => uppdateraTilldelning('vantar')} variant="outline" style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}>⏳ Väntar</Button>
+                        </div>
+                        {projekt.tilldelning_status && (
+                          <div style={{ fontSize: 14, fontWeight: 700, color: projekt.tilldelning_status === 'vunnet' ? 'var(--green)' : projekt.tilldelning_status === 'forlorat' ? 'var(--red)' : 'var(--orange)' }}>
+                            Status: {projekt.tilldelning_status === 'vunnet' ? 'Vunnet ✅' : projekt.tilldelning_status === 'forlorat' ? 'Förlorat ❌' : 'Väntar ⏳'}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <Button onClick={markeraSomSkickat} style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 14, padding: '12px 24px' }}>
+                          📤 Markera som skickat
+                        </Button>
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="text-center space-y-4">
-                    <p style={{ fontSize: 14, color: 'var(--muted-custom)' }}>
-                      {utkast ? 'Granska anbudsutkastet i Anbud-fliken, justera vid behov, och markera som skickat.' : 'Generera ett anbudsutkast först.'}
-                    </p>
-                    {utkast && (
-                      <Button onClick={markeraSomSkickat} style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 14, padding: '12px 24px' }}>
-                        📤 Markera som skickat
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
 
         {/* Sidebar */}
         <div style={{ padding: 24 }}>
-          {/* Dokument */}
           <SidePanel title={`Dokument (${anbud.length})`}>
             {anbud.length === 0 ? (
               <div style={{ fontSize: 12, color: 'var(--slate)' }}>Inga filer uppladdade</div>
@@ -483,32 +337,26 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
               <div key={a.id} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 8 }}>
                 <span style={{ color: 'var(--blue-accent)' }}>📄</span>
                 <span className="truncate" style={{ color: 'var(--soft)' }}>{a.filnamn}</span>
-                <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: a.extraktion_status === 'extraherad' ? 'var(--green)' : a.extraktion_status === 'fel' ? 'var(--red)' : 'var(--yellow)' }} />
+                <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: a.extraktion_status === 'extraherad' ? 'var(--green)' : 'var(--yellow)' }} />
               </div>
             ))}
           </SidePanel>
 
-          {/* Kravmatchning summary */}
           {kravmatch && (
-            <SidePanel title="Kravmatchning">
-              <div style={{ fontSize: 12, color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO-GO' ? 'var(--red)' : 'var(--orange)', fontWeight: 700, marginBottom: 8 }}>
-                {goNoGo === 'GO' ? 'GO – Lämna anbud' : goNoGo === 'NO-GO' ? 'NO-GO' : 'GO med reservation'}
+            <SidePanel title="Analys">
+              <div style={{ fontSize: 12, color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO_GO' ? 'var(--red)' : 'var(--orange)', fontWeight: 700, marginBottom: 8 }}>
+                {goNoGo === 'GO' ? 'GO — Lämna anbud' : goNoGo === 'NO_GO' ? 'NO-GO' : 'GO med reservation'}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--soft)' }}>
-                {(kravmatch as Record<string, unknown>).sammanfattning as string}
-              </div>
+              <div style={{ fontSize: 12, color: 'var(--soft)' }}>{(kravmatch as Record<string, unknown>).sammanfattning as string}</div>
             </SidePanel>
           )}
 
-          {/* Aktivitet */}
           <SidePanel title="Aktivitet">
             {logg.length === 0 ? (
               <div style={{ fontSize: 12, color: 'var(--slate)' }}>Ingen aktivitet ännu</div>
             ) : logg.slice(0, 5).map(l => (
               <div key={l.id} className="flex gap-2.5" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 10 }}>
-                <span className="font-mono flex-shrink-0" style={{ fontSize: 10, marginTop: 1 }}>
-                  {new Date(l.skapad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                <span className="font-mono flex-shrink-0" style={{ fontSize: 10, marginTop: 1 }}>{new Date(l.skapad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}</span>
                 <span style={{ color: 'var(--soft)' }}>{l.meddelande ?? `${l.steg}: ${l.status}`}</span>
               </div>
             ))}
