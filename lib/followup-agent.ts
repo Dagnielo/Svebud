@@ -170,11 +170,11 @@ async function skickaPåminnelse(åtgärd: UppföljningsÅtgärd): Promise<void>
       : `Deadline passerad: Anbud för "${åtgärd.projektNamn}"`
 
   const brödtext = åtgärd.åtgärd === 'deadline_passerad'
-    ? `Hej ${åtgärd.mottagareNamn},\n\nAnbudsdeadline för "${åtgärd.projektNamn}" har passerat utan svar. Uppdatera statusen i AnbudAI – markera som vunnet, förlorat eller avbrutet.\n\nMed vänlig hälsning,\nAnbudAI`
-    : `Hej ${åtgärd.mottagareNamn},\n\nDitt anbud för "${åtgärd.projektNamn}" har inte fått svar ännu. Kontrollera om beställaren behöver kompletterande information.\n\nLogga in i AnbudAI för att se detaljer och eventuellt skicka ett kompletteringsbrev.\n\nMed vänlig hälsning,\nAnbudAI`
+    ? `Hej ${åtgärd.mottagareNamn},\n\nAnbudsdeadline för "${åtgärd.projektNamn}" har passerat utan svar. Uppdatera statusen i SveBud – markera som vunnet, förlorat eller avbrutet.\n\nMed vänlig hälsning,\nSveBud`
+    : `Hej ${åtgärd.mottagareNamn},\n\nDitt anbud för "${åtgärd.projektNamn}" har inte fått svar ännu. Kontrollera om beställaren behöver kompletterande information.\n\nLogga in i SveBud för att se detaljer och eventuellt skicka ett kompletteringsbrev.\n\nMed vänlig hälsning,\nSveBud`
 
   await resend.emails.send({
-    from: process.env.AVSANDARE_EPOST ?? 'noreply@anbudai.se',
+    from: process.env.AVSANDARE_EPOST ?? 'noreply@svebud.se',
     to: åtgärd.mottagareEpost,
     subject: ämne,
     text: brödtext,

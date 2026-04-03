@@ -9,23 +9,14 @@ type Projekt = {
   jämförelse_status: string
   rekommendation_status: string
   analys_komplett: boolean | null
+  pipeline_status?: string
+  tilldelning_status?: string
   tier: string
   skapad: string
 }
 
 type Props = {
   projekt: Projekt
-  deadline?: string | null
-  antalAnbud?: number
-}
-
-function getSteg(p: Projekt) {
-  return [
-    { done: true },
-    { done: p.jämförelse_status !== 'ej_startad' || p.analys_komplett !== null },
-    { done: p.jämförelse_status === 'klar' },
-    { done: p.rekommendation_status === 'klar' },
-  ]
 }
 
 function dagarSedanSkapad(skapad: string) {
@@ -36,32 +27,30 @@ function dagarSedanSkapad(skapad: string) {
   return `${dagar}d sedan`
 }
 
-function DeadlineChip({ deadline }: { deadline: string }) {
-  const d = new Date(deadline)
-  const dagar = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-
-  let bg: string, color: string, text: string
-  if (dagar < 0) {
-    bg = 'var(--red-bg)'; color = 'var(--red)'; text = `${Math.abs(dagar)}d försenad`
-  } else if (dagar <= 3) {
-    bg = 'var(--red-bg)'; color = 'var(--red)'; text = `${dagar}d kvar`
-  } else if (dagar <= 7) {
-    bg = 'var(--orange-bg)'; color = 'var(--orange)'; text = `${dagar}d kvar`
-  } else {
-    bg = 'var(--green-bg)'; color = 'var(--green)'; text = `${dagar}d kvar`
+function getPipelineLabel(p: Projekt): string {
+  const ps = p.pipeline_status ?? 'inkorg'
+  if (ps === 'tilldelning') {
+    if (p.tilldelning_status === 'vunnet') return 'Vunnet'
+    if (p.tilldelning_status === 'forlorat') return 'Förlorat'
+    return 'Väntar på besked'
   }
-
-  return (
-    <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6, background: bg, color }}>
-      🕐 {text}
-    </span>
-  )
+  if (ps === 'inskickat') return 'Anbud inskickat'
+  if (ps === 'under_arbete') return 'Under arbete'
+  if (p.analys_komplett !== null) return 'AI-analys klar'
+  return 'Väntar på analys'
 }
 
-export default function ProjektKort({ projekt, deadline, antalAnbud }: Props) {
-  const steg = getSteg(projekt)
-  const aktivtSteg = steg.findIndex(s => !s.done)
+function getStatusDotColor(p: Projekt): string {
+  const ps = p.pipeline_status ?? 'inkorg'
+  if (ps === 'tilldelning' && p.tilldelning_status === 'vunnet') return 'var(--green)'
+  if (ps === 'tilldelning' && p.tilldelning_status === 'forlorat') return 'var(--red)'
+  if (ps === 'inskickat') return 'var(--blue-accent)'
+  if (ps === 'under_arbete') return 'var(--yellow)'
+  if (p.analys_komplett === false) return 'var(--orange)'
+  return 'var(--muted-custom)'
+}
 
+export default function ProjektKort({ projekt }: Props) {
   return (
     <Link href={`/projekt/${projekt.id}`} className="block" style={{ textDecoration: 'none' }}>
       <div
@@ -74,8 +63,7 @@ export default function ProjektKort({ projekt, deadline, antalAnbud }: Props) {
           transition: 'all 0.15s',
         }}
       >
-        {/* Top */}
-        <div className="flex items-start justify-between" style={{ marginBottom: 10 }}>
+        <div className="flex items-start justify-between" style={{ marginBottom: 8 }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, color: 'var(--white)' }}>
               {projekt.namn}
@@ -88,41 +76,21 @@ export default function ProjektKort({ projekt, deadline, antalAnbud }: Props) {
           </div>
           <div
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              flexShrink: 0,
-              marginTop: 3,
-              background:
-                projekt.analys_komplett === false
-                  ? 'var(--orange)'
-                  : projekt.rekommendation_status === 'klar'
-                    ? 'var(--green)'
-                    : 'var(--blue-accent)',
+              width: 8, height: 8, borderRadius: '50%',
+              flexShrink: 0, marginTop: 3,
+              background: getStatusDotColor(projekt),
             }}
           />
         </div>
 
-        {/* Meta chips */}
-        <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 10 }}>
-          {deadline && <DeadlineChip deadline={deadline} />}
-          {antalAnbud !== undefined && antalAnbud > 0 && (
-            <span
-              style={{
-                fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
-                background: 'rgba(74,158,255,0.1)', color: 'var(--blue-accent)',
-              }}
-            >
-              📄 {antalAnbud} anbud
-            </span>
-          )}
+        <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 8 }}>
           <span
             style={{
               fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
               background: 'var(--navy)', color: 'var(--muted-custom)',
             }}
           >
-            Steg {aktivtSteg === -1 ? steg.length : aktivtSteg + 1}/{steg.length}
+            {getPipelineLabel(projekt)}
           </span>
           <span
             style={{
@@ -134,12 +102,11 @@ export default function ProjektKort({ projekt, deadline, antalAnbud }: Props) {
           </span>
         </div>
 
-        {/* Go/No-Go badge */}
         {projekt.analys_komplett === false && (
           <span
             style={{
               fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
-              letterSpacing: '0.06em', padding: '3px 8px', borderRadius: 5,
+              padding: '3px 8px', borderRadius: 5,
               background: 'var(--orange-bg)', color: 'var(--orange)',
             }}
           >
@@ -147,27 +114,19 @@ export default function ProjektKort({ projekt, deadline, antalAnbud }: Props) {
           </span>
         )}
 
-        {/* Footer */}
         <div
           className="flex items-center justify-between"
-          style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--navy-border)' }}
+          style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--navy-border)' }}
         >
-          <div className="flex gap-1">
-            {steg.map((s, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 20, height: 4, borderRadius: 2,
-                  background: s.done ? 'var(--green)' : i === aktivtSteg ? 'var(--yellow)' : 'var(--steel)',
-                }}
-              />
-            ))}
-          </div>
-          <span style={{ fontSize: 12, color: 'var(--muted-custom)', fontWeight: 600 }}>→</span>
+          <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>Öppna →</span>
         </div>
       </div>
     </Link>
   )
+}
+
+export function getPipelineKolumn(p: Projekt): string {
+  return p.pipeline_status ?? 'inkorg'
 }
 
 export type { Projekt }

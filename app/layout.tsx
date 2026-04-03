@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'AnbudAI – AI-driven anbudshantering för elfirmor',
+  title: 'SveBud – AI-driven anbudshantering för elfirmor',
   description: 'Analysera förfrågningsunderlag, jämför anbud och generera professionella anbudsdokument med AI.',
 }
 

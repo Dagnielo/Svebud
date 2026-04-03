@@ -6,7 +6,7 @@ export default function IntegritetspolicyPage() {
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
         <Link href="/" style={{ fontSize: 13, color: 'var(--muted-custom)', textDecoration: 'none' }}>← Tillbaka</Link>
 
-        <h1 style={{ fontSize: 28, fontWeight: 800, marginTop: 24, marginBottom: 32 }}>Integritetspolicy – AnbudAI</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 800, marginTop: 24, marginBottom: 32 }}>Integritetspolicy – SveBud</h1>
 
         <Section title="Vilka uppgifter samlar vi in?">
           <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -41,7 +41,7 @@ export default function IntegritetspolicyPage() {
             <Li label="Portabilitet" text="Få ut dina data i maskinläsbart format" />
           </ul>
           <p style={{ fontSize: 14, color: 'var(--soft)', marginTop: 16 }}>
-            <strong>Utöva rättigheter:</strong> support@anbudai.se
+            <strong>Utöva rättigheter:</strong> support@svebud.se
           </p>
         </Section>
       </div>

@@ -69,10 +69,10 @@ export default function LoginPage() {
         <CardHeader className="text-center pb-2">
           <div className="mb-6">
             <span className="text-2xl font-extrabold text-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-              Anbud
+              Sve
             </span>
             <span className="text-2xl font-extrabold" style={{ color: '#F5C400', fontFamily: 'DM Sans, sans-serif' }}>
-              AI
+              Bud
             </span>
           </div>
           <p className="text-sm text-slate-400">Logga in på ditt konto</p>

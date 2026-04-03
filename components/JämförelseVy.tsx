@@ -1,149 +1,227 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-type AnbudJämförelse = {
-  anbud_id: string
-  leverantör: string
-  totalbelopp: number | null
-  styrkor: string[]
-  svagheter: string[]
-  avvikelser: string[]
-  poäng: number
+type Krav = {
+  krav: string
+  typ: 'ska' | 'bör'
+  uppfyllt: boolean | null
+  konfidens: number
+  kommentar: string
+  källa: string
 }
 
-type JämförelseData = {
+type KravmatchData = {
   sammanfattning: string
-  anbud: AnbudJämförelse[]
-  rekommenderat_anbud_id: string | null
-  kräver_granskning: boolean
-  granskningsorsaker: string[]
+  go_no_go: 'GO' | 'NO-GO' | 'GO_MED_RESERVATION'
+  ska_krav: Krav[]
+  bör_krav: Krav[]
+  saknade_certifikat: string[]
+  matchade_certifikat: string[]
+  matchad_erfarenhet: string[]
+  risker: string[]
+  möjligheter: string[]
+  rekommendation: string
 }
 
 type Props = {
   projektId: string
-  data?: JämförelseData | null
-  onKörJämförelse?: () => void
+  data?: KravmatchData | null
+  onKörMatchning?: () => void
   laddar?: boolean
 }
 
-export default function JämförelseVy({ projektId, data, onKörJämförelse, laddar }: Props) {
+function GoNoGoBadge({ beslut }: { beslut: string }) {
+  const config = {
+    GO: { bg: 'var(--green-bg)', color: 'var(--green)', text: 'GO – Lämna anbud' },
+    'NO-GO': { bg: 'var(--red-bg)', color: 'var(--red)', text: 'NO-GO – Avvakta' },
+    GO_MED_RESERVATION: { bg: 'var(--orange-bg)', color: 'var(--orange)', text: 'GO MED RESERVATION' },
+  }[beslut] ?? { bg: 'var(--steel)', color: 'var(--muted-custom)', text: beslut }
+
+  return (
+    <span style={{ fontSize: 12, fontWeight: 800, padding: '5px 12px', borderRadius: 6, background: config.bg, color: config.color }}>
+      {config.text}
+    </span>
+  )
+}
+
+function KravRad({ krav }: { krav: Krav }) {
+  return (
+    <div
+      className="flex items-start gap-3"
+      style={{
+        padding: '10px 14px',
+        borderBottom: '1px solid var(--navy-border)',
+        fontSize: 13,
+      }}
+    >
+      <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>
+        {krav.uppfyllt === true ? '✅' : krav.uppfyllt === false ? '❌' : '❓'}
+      </span>
+      <div className="flex-1">
+        <div style={{ fontWeight: 600, color: 'var(--white)' }}>{krav.krav}</div>
+        <div style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>{krav.kommentar}</div>
+        {krav.källa && (
+          <div style={{ fontSize: 11, color: 'var(--slate)', marginTop: 2 }}>Källa: {krav.källa}</div>
+        )}
+      </div>
+      <Badge
+        style={{
+          fontSize: 10,
+          background: krav.typ === 'ska' ? 'var(--red-bg)' : 'var(--yellow-glow)',
+          color: krav.typ === 'ska' ? 'var(--red)' : 'var(--yellow)',
+          border: 'none',
+        }}
+      >
+        {krav.typ === 'ska' ? 'SKA-KRAV' : 'BÖR-KRAV'}
+      </Badge>
+    </div>
+  )
+}
+
+export default function JämförelseVy({ projektId, data, onKörMatchning, laddar }: Props) {
   if (!data) {
     return (
-      <Card>
-        <CardContent className="pt-6 text-center">
-          <p className="text-muted-foreground mb-4">
-            Ladda upp minst 2 anbud och kör extraktion innan jämförelse.
-          </p>
-          <Button onClick={onKörJämförelse} disabled={laddar}>
-            {laddar ? 'Jämför...' : 'Kör jämförelse'}
-          </Button>
-        </CardContent>
-      </Card>
+      <div
+        style={{
+          background: 'var(--navy-mid)',
+          border: '1px solid var(--navy-border)',
+          borderRadius: 12,
+          padding: '32px 18px',
+          textAlign: 'center',
+        }}
+      >
+        <p style={{ fontSize: 14, color: 'var(--muted-custom)', marginBottom: 16 }}>
+          Ladda upp förfrågningsunderlaget och kör AI-analys för att matcha kraven mot er företagsprofil.
+        </p>
+        <Button
+          onClick={onKörMatchning}
+          disabled={laddar}
+          style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
+        >
+          {laddar ? 'Analyserar krav...' : '⚡ Kör kravmatchning'}
+        </Button>
+      </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {data.kräver_granskning && (
-        <div className="p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
-          <p className="font-medium text-orange-700 dark:text-orange-300">
-            ⚠️ Jämförelsen kräver manuell granskning
-          </p>
-          <ul className="mt-2 text-sm text-orange-600 dark:text-orange-400 list-disc list-inside">
-            {data.granskningsorsaker.map((o, i) => <li key={i}>{o}</li>)}
-          </ul>
+      {/* Go/No-Go */}
+      <div
+        style={{
+          background: 'var(--navy-mid)',
+          border: `1px solid ${data.go_no_go === 'GO' ? 'rgba(0,198,122,0.3)' : data.go_no_go === 'NO-GO' ? 'rgba(255,77,77,0.3)' : 'rgba(255,140,66,0.3)'}`,
+          borderRadius: 12,
+          padding: '18px 20px',
+        }}
+      >
+        <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+          <span style={{ fontSize: 15, fontWeight: 800 }}>Bedömning</span>
+          <GoNoGoBadge beslut={data.go_no_go} />
         </div>
-      )}
+        <p style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.6 }}>{data.sammanfattning}</p>
+        <p style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.6, marginTop: 8 }}>{data.rekommendation}</p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sammanfattning</CardTitle>
+      {/* Ska-krav */}
+      <Card style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+        <CardHeader style={{ borderBottom: '1px solid var(--navy-border)', padding: '14px 18px' }}>
+          <CardTitle className="flex items-center justify-between" style={{ fontSize: 14 }}>
+            <span>Ska-krav ({data.ska_krav.filter(k => k.uppfyllt).length}/{data.ska_krav.length} uppfyllda)</span>
+            <Badge style={{ background: 'var(--red-bg)', color: 'var(--red)', border: 'none', fontSize: 10 }}>
+              Obligatoriska
+            </Badge>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm">{data.sammanfattning}</p>
+        <CardContent style={{ padding: 0 }}>
+          {data.ska_krav.map((k, i) => <KravRad key={i} krav={k} />)}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Anbudsjämförelse</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Leverantör</TableHead>
-                <TableHead>Belopp</TableHead>
-                <TableHead>Poäng</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.anbud.map(a => (
-                <TableRow key={a.anbud_id}>
-                  <TableCell className="font-medium">{a.leverantör}</TableCell>
-                  <TableCell>
-                    {a.totalbelopp
-                      ? `${a.totalbelopp.toLocaleString('sv-SE')} kr`
-                      : '—'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Progress value={a.poäng} className="w-16" />
-                      <span className="text-sm">{a.poäng}/100</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {a.anbud_id === data.rekommenderat_anbud_id && (
-                      <Badge className="bg-green-600">Rekommenderat</Badge>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {data.anbud.map(a => (
-        <Card key={a.anbud_id}>
-          <CardHeader>
-            <CardTitle className="text-base">{a.leverantör}</CardTitle>
+      {/* Bör-krav */}
+      {data.bör_krav.length > 0 && (
+        <Card style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+          <CardHeader style={{ borderBottom: '1px solid var(--navy-border)', padding: '14px 18px' }}>
+            <CardTitle className="flex items-center justify-between" style={{ fontSize: 14 }}>
+              <span>Bör-krav ({data.bör_krav.filter(k => k.uppfyllt).length}/{data.bör_krav.length} uppfyllda)</span>
+              <Badge style={{ background: 'var(--yellow-glow)', color: 'var(--yellow)', border: 'none', fontSize: 10 }}>
+                Meriterande
+              </Badge>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {a.styrkor.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-green-700 dark:text-green-400 mb-1">Styrkor</p>
-                <ul className="text-sm list-disc list-inside">
-                  {a.styrkor.map((s, i) => <li key={i}>{s}</li>)}
-                </ul>
-              </div>
-            )}
-            {a.svagheter.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-red-700 dark:text-red-400 mb-1">Svagheter</p>
-                <ul className="text-sm list-disc list-inside">
-                  {a.svagheter.map((s, i) => <li key={i}>{s}</li>)}
-                </ul>
-              </div>
-            )}
-            {a.avvikelser.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-orange-700 dark:text-orange-400 mb-1">Avvikelser från FU</p>
-                <ul className="text-sm list-disc list-inside">
-                  {a.avvikelser.map((s, i) => <li key={i}>{s}</li>)}
-                </ul>
-              </div>
-            )}
+          <CardContent style={{ padding: 0 }}>
+            {data.bör_krav.map((k, i) => <KravRad key={i} krav={k} />)}
           </CardContent>
         </Card>
-      ))}
+      )}
+
+      {/* Certifikat-matchning */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+          <CardHeader style={{ padding: '14px 18px' }}>
+            <CardTitle style={{ fontSize: 13 }}>Matchade certifikat</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.matchade_certifikat.length === 0
+              ? <p style={{ fontSize: 12, color: 'var(--slate)' }}>Inga matchade</p>
+              : data.matchade_certifikat.map((c, i) => (
+                  <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 6 }}>
+                    <span style={{ color: 'var(--green)' }}>✓</span>
+                    <span style={{ color: 'var(--soft)' }}>{c}</span>
+                  </div>
+                ))
+            }
+          </CardContent>
+        </Card>
+
+        <Card style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+          <CardHeader style={{ padding: '14px 18px' }}>
+            <CardTitle style={{ fontSize: 13 }}>Saknade certifikat</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.saknade_certifikat.length === 0
+              ? <p style={{ fontSize: 12, color: 'var(--green)' }}>Alla krav uppfyllda!</p>
+              : data.saknade_certifikat.map((c, i) => (
+                  <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 6 }}>
+                    <span style={{ color: 'var(--red)' }}>✗</span>
+                    <span style={{ color: 'var(--soft)' }}>{c}</span>
+                  </div>
+                ))
+            }
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Risker & möjligheter */}
+      <div className="grid grid-cols-2 gap-4">
+        {data.risker.length > 0 && (
+          <Card style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+            <CardHeader style={{ padding: '14px 18px' }}>
+              <CardTitle style={{ fontSize: 13, color: 'var(--orange)' }}>Risker</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.risker.map((r, i) => (
+                <div key={i} style={{ fontSize: 12, color: 'var(--soft)', marginBottom: 6 }}>• {r}</div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+        {data.möjligheter.length > 0 && (
+          <Card style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+            <CardHeader style={{ padding: '14px 18px' }}>
+              <CardTitle style={{ fontSize: 13, color: 'var(--green)' }}>Möjligheter</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.möjligheter.map((m, i) => (
+                <div key={i} style={{ fontSize: 12, color: 'var(--soft)', marginBottom: 6 }}>• {m}</div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   )
 }

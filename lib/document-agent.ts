@@ -58,9 +58,9 @@ export async function läsInDokument(
 
 async function läsPdf(buffer: Buffer): Promise<DokumentResultat> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mod = await import('pdf-parse') as any
-    const pdfParse = (mod.default ?? mod) as (buf: Buffer) => Promise<PdfParseResult>
+    // Importera lib direkt för att undvika pdf-parse:s inbyggda testfils-körning
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfParse = require('pdf-parse/lib/pdf-parse.js') as (buf: Buffer) => Promise<PdfParseResult>
     const data = await pdfParse(buffer)
     const text = data.text?.trim()
 
@@ -89,9 +89,8 @@ async function läsPdf(buffer: Buffer): Promise<DokumentResultat> {
 
 async function läsDocx(buffer: Buffer): Promise<DokumentResultat> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mammothMod = await import('mammoth') as any
-    const mammoth = (mammothMod.default ?? mammothMod) as { extractRawText: (opts: { buffer: Buffer }) => Promise<MammothResult> }
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mammoth = require('mammoth') as { extractRawText: (opts: { buffer: Buffer }) => Promise<MammothResult> }
     const result = await mammoth.extractRawText({ buffer })
     const text = result.value?.trim()
 
@@ -137,7 +136,8 @@ export async function laddaUppOchLäs(
   const filnamn = fil.name
   const filtyp = fil.type
   const buffer = Buffer.from(await fil.arrayBuffer())
-  const storagePath = `${användareId}/${projektId}/${Date.now()}_${filnamn}`
+  const safeFilnamn = filnamn.replace(/[^a-z0-9._-]/gi, '_')
+  const storagePath = `${användareId}/${projektId}/${Date.now()}_${safeFilnamn}`
 
   // Ladda upp till Supabase Storage
   const { error: uploadError } = await supabase.storage
@@ -182,13 +182,13 @@ export async function laddaUppOchLäs(
     })
     .eq('id', anbud.id)
 
-  // Trigga extraktion om dokumentet lästes korrekt
+  // Trigga samlad FU-extraktion för hela projektet
   if (!resultat.fel && resultat.text.length > 0) {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/anbud/extrahera`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anbudId: anbud.id }),
+        body: JSON.stringify({ projektId }),
       })
     } catch {
       // Extraktion triggas separat

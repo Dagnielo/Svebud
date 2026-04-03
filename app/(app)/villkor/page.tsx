@@ -10,7 +10,7 @@ export default function VillkorPage() {
 
         <Section title="Tjänstens syfte">
           <p style={{ fontSize: 14, color: 'var(--soft)', lineHeight: 1.7 }}>
-            AnbudAI är ett analysverktyg för anbud inom elbranschen.
+            SveBud är ett analysverktyg för anbud inom elbranschen.
             Vi ger <strong style={{ color: 'var(--white)' }}>inga juridiska råd</strong> – alla beslut fattar du själv.
           </p>
         </Section>
@@ -29,7 +29,7 @@ export default function VillkorPage() {
 
         <Section title="Ansvarsbegränsning">
           <p style={{ fontSize: 14, color: 'var(--soft)', lineHeight: 1.7, marginBottom: 12 }}>
-            AnbudAI ansvarar ej för:
+            SveBud ansvarar ej för:
           </p>
           <ul style={{ listStyle: 'disc', paddingLeft: 20 }}>
             <li style={{ fontSize: 14, color: 'var(--soft)', marginBottom: 6 }}>Beslut baserade på AI-analyser</li>
@@ -37,7 +37,7 @@ export default function VillkorPage() {
             <li style={{ fontSize: 14, color: 'var(--soft)', marginBottom: 6 }}>Tekniska störningar utanför vår kontroll</li>
           </ul>
           <p style={{ fontSize: 14, color: 'var(--soft)', marginTop: 16 }}>
-            <strong style={{ color: 'var(--white)' }}>Support:</strong> support@anbudai.se
+            <strong style={{ color: 'var(--white)' }}>Support:</strong> support@svebud.se
           </p>
         </Section>
       </div>

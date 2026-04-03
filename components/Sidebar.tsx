@@ -61,8 +61,8 @@ export default function Sidebar({ user }: Props) {
         </div>
         <div>
           <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em' }}>
-            <span className="text-white">Anbud</span>
-            <span style={{ color: 'var(--yellow)' }}>AI</span>
+            <span className="text-white">Sve</span>
+            <span style={{ color: 'var(--yellow)' }}>Bud</span>
           </div>
           <div
             className="font-mono"

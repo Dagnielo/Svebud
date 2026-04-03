@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
+import { parseClaudeJSON } from '@/lib/utils'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 const supabase = createClient(
@@ -138,7 +139,7 @@ export async function extraheraFrånText(
       throw new Error('Oväntat svar från Claude')
     }
 
-    const resultat: ExtraktionsResultat = JSON.parse(content.text)
+    const resultat = parseClaudeJSON<ExtraktionsResultat>(content.text)
     const varaktighet = Date.now() - startTid
     const tokens = (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0)
 
@@ -212,6 +213,94 @@ export async function extraheraFrånText(
       varaktighet_ms: Date.now() - startTid,
     })
 
+    throw err
+  }
+}
+
+/**
+ * Extraherar krav från ALLA dokument i ett projekt (samlat FU).
+ * Samlar text från alla uppladdade filer och kör extraktion på helheten.
+ */
+export async function extraheraFrånProjekt(projektId: string): Promise<ExtraktionsResultat> {
+  const { samlaFUText } = await import('@/lib/fu-agent')
+  const samladText = await samlaFUText(projektId)
+
+  if (!samladText) {
+    throw new Error('Inga dokument med text hittades i projektet')
+  }
+
+  const startTid = Date.now()
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: `Analysera detta förfrågningsunderlag (kan bestå av flera dokument) och extrahera all strukturerad information:\n\n${samladText.slice(0, 80000)}`,
+        },
+      ],
+    })
+
+    const content = response.content[0]
+    if (content.type !== 'text') throw new Error('Oväntat svar från Claude')
+
+    const resultat = parseClaudeJSON<ExtraktionsResultat>(content.text)
+    const varaktighet = Date.now() - startTid
+    const tokens = (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0)
+
+    const kritiskaFält = ['beställare', 'kontaktperson', 'sista_anbudsdag', 'avtalsvillkor', 'uppdragsbeskrivning'] as const
+    const lägstaKonfidens = Math.min(
+      ...kritiskaFält.map(f => resultat.fält[f]?.konfidens ?? 0)
+    )
+
+    // Uppdatera projektet med extraktionsresultat
+    await supabase
+      .from('projekt')
+      .update({
+        analys_komplett: resultat.analys_komplett,
+        saknade_falt: resultat.saknade_kritiska_falt,
+        lägsta_konfidens: lägstaKonfidens,
+        gron_teknik: resultat.gron_teknik_tillämpligt,
+        gron_teknik_typ: resultat.gron_teknik_typ ? [resultat.gron_teknik_typ] : [],
+        jämförelse_resultat: resultat as unknown as Record<string, unknown>,
+      })
+      .eq('id', projektId)
+
+    // Markera alla anbud som extraherade
+    await supabase
+      .from('anbud')
+      .update({ extraktion_status: 'extraherad' })
+      .eq('projekt_id', projektId)
+
+    // Logga
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: firstAnbud } = await supabase
+      .from('anbud')
+      .select('id')
+      .eq('projekt_id', projektId)
+      .limit(1)
+      .single() as { data: any }
+
+    if (firstAnbud) {
+      await supabase.from('extraktion_log').insert({
+        anbud_id: firstAnbud.id,
+        steg: 'fu_extraktion',
+        status: 'klar',
+        meddelande: `Samlad FU-extraktion klar. ${resultat.analys_komplett ? 'Komplett' : 'Ofullständig'}. Konfidens: ${lägstaKonfidens}`,
+        tokens_använda: tokens,
+        varaktighet_ms: varaktighet,
+      })
+    }
+
+    return resultat
+  } catch (err) {
+    await supabase
+      .from('projekt')
+      .update({ analys_komplett: false })
+      .eq('id', projektId)
     throw err
   }
 }

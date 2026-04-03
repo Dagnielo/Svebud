@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/Sidebar'
-import ProjektKort, { type Projekt } from '@/components/ProjektKort'
+import ProjektKort, { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
@@ -26,15 +26,6 @@ type Anbud = {
   extraherad_data: Record<string, { värde: unknown }> | null
 }
 
-// Pipeline column logic
-function getPipelineKolumn(p: Projekt): 'inkorg' | 'pågående' | 'skickade' {
-  const js = p.jämförelse_status
-  const rs = p.rekommendation_status
-
-  if (rs === 'klar') return 'skickade'
-  if (js === 'klar' || js === 'pågår' || rs === 'pågår') return 'pågående'
-  return 'inkorg'
-}
 
 export default function DashboardPage() {
   const [projekt, setProjekt] = useState<Projekt[]>([])
@@ -137,8 +128,9 @@ export default function DashboardPage() {
 
   // Pipeline columns
   const inkorg = projekt.filter(p => getPipelineKolumn(p) === 'inkorg')
-  const pågående = projekt.filter(p => getPipelineKolumn(p) === 'pågående')
-  const skickade = projekt.filter(p => getPipelineKolumn(p) === 'skickade')
+  const underArbete = projekt.filter(p => getPipelineKolumn(p) === 'under_arbete')
+  const inskickat = projekt.filter(p => getPipelineKolumn(p) === 'inskickat')
+  const tilldelning = projekt.filter(p => getPipelineKolumn(p) === 'tilldelning')
 
   // KPI calculations
   const avslutade = uppföljningar.filter(u => u.utfall === 'vunnet' || u.utfall === 'förlorat')
@@ -168,7 +160,7 @@ export default function DashboardPage() {
     {
       label: 'Aktiva projekt',
       value: projekt.length.toString(),
-      sub: `${inkorg.length} inkorg · ${pågående.length} pågående`,
+      sub: `${inkorg.length} inkorg · ${underArbete.length} under arbete`,
       color: 'var(--yellow)',
     },
     {
@@ -359,11 +351,12 @@ export default function DashboardPage() {
               </div>
 
               {/* Pipeline grid */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 {[
                   { label: 'Inkorg', color: 'var(--yellow)', items: inkorg },
-                  { label: 'Pågående', color: 'var(--blue-accent)', items: pågående },
-                  { label: 'Skickade', color: 'var(--slate)', items: skickade },
+                  { label: 'Under arbete', color: 'var(--blue-accent)', items: underArbete },
+                  { label: 'Inskickat', color: 'var(--green)', items: inskickat },
+                  { label: 'Tilldelning', color: 'var(--orange)', items: tilldelning },
                 ].map(col => (
                   <div
                     key={col.label}

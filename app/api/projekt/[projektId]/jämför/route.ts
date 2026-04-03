@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { jämförAnbud } from '@/lib/comparison-agent'
+import { matchaKrav } from '@/lib/comparison-agent'
 
 export async function POST(
   request: NextRequest,
@@ -27,7 +27,7 @@ export async function POST(
   }
 
   try {
-    const resultat = await jämförAnbud(projektId)
+    const resultat = await matchaKrav(projektId)
     return NextResponse.json({ resultat })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Okänt fel'

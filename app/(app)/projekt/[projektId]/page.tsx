@@ -6,8 +6,6 @@ import { createClient } from '@/lib/supabase/client'
 import AnbudsUppladdning from '@/components/AnbudsUppladdning'
 import GranskningSida from '@/components/GranskningSida'
 import JämförelseVy from '@/components/JämförelseVy'
-import RekommendationsVy from '@/components/RekommendationsVy'
-import UppföljningsDashboard from '@/components/UppföljningsDashboard'
 import AgentStatusBar from '@/components/AgentStatusBar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -17,18 +15,20 @@ type ProjektData = {
   namn: string
   beskrivning: string | null
   jämförelse_status: string
-  jämförelse_resultat: unknown
   rekommendation_status: string
   rekommendation: unknown
+  kravmatchning: unknown
   analys_komplett: boolean | null
-  saknade_falt: string[]
+  pipeline_status: string
+  tilldelning_status: string | null
+  anbudsutkast: string | null
+  anbudsutkast_redigerat: string | null
 }
 
 type AnbudRad = {
   id: string
   filnamn: string
   extraktion_status: string
-  extraherad_data: Record<string, { värde: unknown; konfidens: number }> | null
   skapad: string
 }
 
@@ -40,12 +40,12 @@ type LoggRad = {
   skapad: string
 }
 
-const stegLabels = ['Underlag', 'Analys', 'Jämförelse', 'Rekommendation']
+const stegLabels = ['Dokument', 'Kravmatchning', 'Anbud', 'Skicka']
 
 function getAktivtSteg(p: ProjektData): number {
-  if (p.rekommendation_status === 'klar') return 4
-  if (p.jämförelse_status === 'klar') return 3
-  if (p.analys_komplett !== null) return 2
+  if (p.pipeline_status === 'inskickat' || p.pipeline_status === 'tilldelning') return 4
+  if (p.rekommendation_status === 'klar') return 3
+  if (p.jämförelse_status === 'klar') return 2
   return 1
 }
 
@@ -59,8 +59,10 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [anbud, setAnbud] = useState<AnbudRad[]>([])
   const [logg, setLogg] = useState<LoggRad[]>([])
   const [loading, setLoading] = useState(true)
-  const [jämförLaddar, setJämförLaddar] = useState(false)
-  const [rekLaddar, setRekLaddar] = useState(false)
+  const [matchLaddar, setMatchLaddar] = useState(false)
+  const [anbudLaddar, setAnbudLaddar] = useState(false)
+  const [utkast, setUtkast] = useState('')
+  const [sparar, setSparar] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -71,7 +73,11 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       .eq('id', projektId)
       .single()
 
-    if (p) setProjekt(p as unknown as ProjektData)
+    if (p) {
+      const pd = p as unknown as ProjektData
+      setProjekt(pd)
+      setUtkast(pd.anbudsutkast_redigerat ?? pd.anbudsutkast ?? '')
+    }
 
     const { data: a } = await supabase
       .from('anbud')
@@ -81,7 +87,6 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
 
     if (a) setAnbud(a as unknown as AnbudRad[])
 
-    // Hämta logg från alla anbud
     const anbudIds = (a ?? []).map((x: Record<string, unknown>) => x.id as string)
     if (anbudIds.length > 0) {
       const { data: l } = await supabase
@@ -90,7 +95,6 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
         .in('anbud_id', anbudIds)
         .order('skapad', { ascending: false })
         .limit(10)
-
       if (l) setLogg(l as unknown as LoggRad[])
     }
 
@@ -103,18 +107,47 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     return () => clearInterval(interval)
   }, [projektId])
 
-  async function körJämförelse() {
-    setJämförLaddar(true)
+  async function körKravmatchning() {
+    setMatchLaddar(true)
     await fetch(`/api/projekt/${projektId}/jämför`, { method: 'POST' })
     await hämta()
-    setJämförLaddar(false)
+    setMatchLaddar(false)
   }
 
-  async function körRekommendation() {
-    setRekLaddar(true)
+  async function körAnbudsGenerering() {
+    setAnbudLaddar(true)
     await fetch(`/api/projekt/${projektId}/rekommendation`, { method: 'POST' })
     await hämta()
-    setRekLaddar(false)
+    setAnbudLaddar(false)
+  }
+
+  async function sparaUtkast() {
+    setSparar(true)
+    await supabase
+      .from('projekt')
+      .update({ anbudsutkast_redigerat: utkast })
+      .eq('id', projektId)
+    setSparar(false)
+  }
+
+  async function markeraSomSkickat() {
+    await supabase
+      .from('projekt')
+      .update({ pipeline_status: 'inskickat', skickat_datum: new Date().toISOString() })
+      .eq('id', projektId)
+    await hämta()
+  }
+
+  async function uppdateraTilldelning(status: string) {
+    await supabase
+      .from('projekt')
+      .update({
+        pipeline_status: 'tilldelning',
+        tilldelning_status: status,
+        tilldelning_datum: new Date().toISOString(),
+      })
+      .eq('id', projektId)
+    await hämta()
   }
 
   async function exportera() {
@@ -140,141 +173,84 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   }
 
   const aktivtSteg = getAktivtSteg(projekt)
-
-  // Deadline from first anbud
-  const deadline = anbud
-    .map(a => a.extraherad_data?.['sista_anbudsdag']?.värde)
-    .find(v => typeof v === 'string') as string | undefined
-
-  const dagarKvar = deadline
-    ? Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null
-
   const anbudExtraherade = anbud.filter(a => a.extraktion_status === 'extraherad').length
-
-  // Go/No-Go badge
-  const rek = projekt.rekommendation as Record<string, unknown> | null
-  const goNoGo = rek?.beslut as string | undefined
+  const kravmatch = projekt.kravmatchning as Record<string, unknown> | null
+  const goNoGo = kravmatch?.go_no_go as string | undefined
+  const rekData = projekt.rekommendation as Record<string, unknown> | null
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
       {/* Header */}
       <div
         className="flex items-center gap-4"
-        style={{
-          background: 'var(--navy-mid)',
-          borderBottom: '1px solid var(--navy-border)',
-          padding: '20px 32px',
-        }}
+        style={{ background: 'var(--navy-mid)', borderBottom: '1px solid var(--navy-border)', padding: '20px 32px' }}
       >
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-1.5"
-          style={{
-            fontSize: 13,
-            color: 'var(--muted-custom)',
-            fontWeight: 600,
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-          }}
+          style={{ fontSize: 13, color: 'var(--muted-custom)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
         >
           ← Tillbaka
         </button>
         <div className="flex-1">
-          <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>
-            {projekt.namn}
-          </h1>
-          <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 1 }}>
-            {projekt.beskrivning ?? ''}
-            {deadline && ` · Deadline ${new Date(deadline).toLocaleDateString('sv-SE')}`}
-          </p>
+          <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{projekt.namn}</h1>
+          <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 1 }}>{projekt.beskrivning ?? ''}</p>
         </div>
-        <div className="flex gap-2.5">
-          {goNoGo && (
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                padding: '3px 8px',
-                borderRadius: 5,
-                background:
-                  goNoGo === 'GO' ? 'var(--green-bg)' :
-                  goNoGo === 'NO-GO' ? 'var(--red-bg)' : 'var(--orange-bg)',
-                color:
-                  goNoGo === 'GO' ? 'var(--green)' :
-                  goNoGo === 'NO-GO' ? 'var(--red)' : 'var(--orange)',
-              }}
-            >
-              {goNoGo}
-            </span>
-          )}
-        </div>
+        {goNoGo && (
+          <span
+            style={{
+              fontSize: 11, fontWeight: 800, textTransform: 'uppercase', padding: '4px 10px', borderRadius: 6,
+              background: goNoGo === 'GO' ? 'var(--green-bg)' : goNoGo === 'NO-GO' ? 'var(--red-bg)' : 'var(--orange-bg)',
+              color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO-GO' ? 'var(--red)' : 'var(--orange)',
+            }}
+          >
+            {goNoGo === 'GO_MED_RESERVATION' ? 'GO m. reservation' : goNoGo}
+          </span>
+        )}
+        {projekt.pipeline_status === 'under_arbete' && (
+          <Button onClick={markeraSomSkickat} style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 12 }}>
+            Markera som skickat
+          </Button>
+        )}
       </div>
 
       {/* Stepper */}
-      <div className="flex items-stretch" style={{ padding: '24px 32px 0', marginBottom: 32 }}>
+      <div className="flex items-stretch" style={{ padding: '24px 32px 0', marginBottom: 24 }}>
         {stegLabels.map((label, i) => {
-          const stegNr = i + 1
-          const done = aktivtSteg > stegNr
-          const active = aktivtSteg === stegNr
+          const nr = i + 1
+          const done = aktivtSteg > nr
+          const active = aktivtSteg === nr
           const isLast = i === stegLabels.length - 1
-
           return (
             <div key={label} className="flex-1 relative">
               <div className="flex flex-col items-center" style={{ padding: '0 8px' }}>
                 <div
                   className="flex items-center justify-center relative z-[2]"
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
+                    width: 36, height: 36, borderRadius: '50%',
                     border: `2px solid ${done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--steel)'}`,
                     background: done ? 'var(--green)' : active ? 'var(--yellow-glow)' : 'var(--navy-mid)',
                     color: done ? 'var(--navy)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
-                    fontSize: 13,
-                    fontWeight: 800,
+                    fontSize: 13, fontWeight: 800,
                     boxShadow: active ? '0 0 0 4px var(--yellow-glow)' : 'none',
                   }}
                 >
-                  {done ? '✓' : stegNr}
+                  {done ? '✓' : nr}
                 </div>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
-                    marginTop: 8,
-                    textAlign: 'center',
-                  }}
-                >
+                <span style={{ fontSize: 11, fontWeight: 600, color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)', marginTop: 8, textAlign: 'center' }}>
                   {label}
                 </span>
               </div>
               {!isLast && (
-                <div
-                  className="absolute z-[1]"
-                  style={{
-                    top: 18,
-                    left: 'calc(50% + 18px)',
-                    right: 'calc(-50% + 18px)',
-                    height: 2,
-                    background: done ? 'var(--green)' : 'var(--steel)',
-                  }}
-                />
+                <div className="absolute z-[1]" style={{ top: 18, left: 'calc(50% + 18px)', right: 'calc(-50% + 18px)', height: 2, background: done ? 'var(--green)' : 'var(--steel)' }} />
               )}
             </div>
           )
         })}
       </div>
 
-      {/* Main content + sidebar */}
+      {/* Content + sidebar */}
       <div className="grid" style={{ gridTemplateColumns: '1fr 320px', gap: 0 }}>
-        {/* Main */}
         <div style={{ padding: '0 32px 32px', borderRight: '1px solid var(--navy-border)' }}>
-          {/* Agent Status Bar */}
           <div style={{ marginBottom: 20 }}>
             <AgentStatusBar
               antalExtraherade={anbudExtraherade}
@@ -284,494 +260,237 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
             />
           </div>
 
-          <Tabs defaultValue="underlag">
-            <TabsList
-              style={{
-                background: 'var(--navy-mid)',
-                border: '1px solid var(--navy-border)',
-                borderRadius: 10,
-                marginBottom: 20,
-              }}
-            >
-              <TabsTrigger value="underlag">📎 Underlag & anbud</TabsTrigger>
-              <TabsTrigger value="analys">🤖 AI-analys</TabsTrigger>
-              <TabsTrigger value="kalkyl">🧮 Kalkyl</TabsTrigger>
-              <TabsTrigger value="rekommendation">📋 Rekommendation</TabsTrigger>
+          <Tabs defaultValue="dokument">
+            <TabsList style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 10, marginBottom: 20 }}>
+              <TabsTrigger value="dokument">📎 Dokument</TabsTrigger>
+              <TabsTrigger value="kravmatchning">⚡ Kravmatchning</TabsTrigger>
+              <TabsTrigger value="anbud">📋 Anbud</TabsTrigger>
+              <TabsTrigger value="skicka">📤 Skicka</TabsTrigger>
             </TabsList>
 
-            {/* TAB 1: Underlag & anbud */}
-            <TabsContent value="underlag">
+            {/* TAB 1: Dokument */}
+            <TabsContent value="dokument">
               <div className="space-y-4">
-                {/* Förfrågningsunderlag */}
-                <div
-                  style={{
-                    background: 'var(--navy-mid)',
-                    border: '1px solid var(--navy-border)',
-                    borderRadius: 12,
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    className="flex items-center gap-2.5"
-                    style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}
-                  >
-                    <span style={{ fontSize: 16 }}>📋</span>
-                    <span style={{ fontSize: 14, fontWeight: 700 }}>Förfrågningsunderlag</span>
-                  </div>
-                  <div style={{ padding: '16px 18px' }}>
-                    <AnbudsUppladdning projektId={projektId} onUppladdat={() => hämta()} />
-                  </div>
-                </div>
-
-                {/* Anbudslista */}
+                <AnbudsUppladdning projektId={projektId} onUppladdat={() => hämta()} />
                 {anbud.length > 0 && (
-                  <div
-                    style={{
-                      background: 'var(--navy-mid)',
-                      border: '1px solid var(--navy-border)',
-                      borderRadius: 12,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div
-                      className="flex items-center gap-2.5"
-                      style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}
-                    >
-                      <span style={{ fontSize: 16 }}>📄</span>
-                      <span style={{ fontSize: 14, fontWeight: 700 }}>Uppladdade anbud</span>
-                      <span
-                        className="ml-auto font-mono"
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 800,
-                          background: 'var(--yellow-glow)',
-                          color: 'var(--yellow)',
-                          padding: '3px 8px',
-                          borderRadius: 5,
-                          border: '1px solid rgba(245,196,0,0.3)',
-                        }}
-                      >
-                        {anbudExtraherade}/{anbud.length} extraherade
+                  <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div className="flex items-center gap-2.5" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>Uppladdade dokument ({anbud.length})</span>
+                      <span className="ml-auto font-mono" style={{ fontSize: 10, fontWeight: 800, background: 'var(--yellow-glow)', color: 'var(--yellow)', padding: '3px 8px', borderRadius: 5, border: '1px solid rgba(245,196,0,0.3)' }}>
+                        {anbudExtraherade}/{anbud.length} lästa
                       </span>
                     </div>
                     <div style={{ padding: '12px 18px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                          <tr>
-                            {['Fil', 'Status', 'Datum'].map(h => (
-                              <th
-                                key={h}
-                                style={{
-                                  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-                                  letterSpacing: '0.07em', color: 'var(--muted-custom)',
-                                  padding: '8px 10px', borderBottom: '1px solid var(--navy-border)',
-                                  textAlign: 'left',
-                                }}
-                              >
-                                {h}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {anbud.map(a => (
-                            <tr key={a.id}>
-                              <td style={{ padding: '10px', fontSize: 13, borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                                <span style={{ fontWeight: 600 }}>{a.filnamn}</span>
-                              </td>
-                              <td style={{ padding: '10px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                                <span
-                                  style={{
-                                    fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5,
-                                    textTransform: 'uppercase',
-                                    background:
-                                      a.extraktion_status === 'extraherad' ? 'var(--green-bg)' :
-                                      a.extraktion_status === 'fel' ? 'var(--red-bg)' : 'var(--yellow-glow)',
-                                    color:
-                                      a.extraktion_status === 'extraherad' ? 'var(--green)' :
-                                      a.extraktion_status === 'fel' ? 'var(--red)' : 'var(--yellow)',
-                                  }}
-                                >
-                                  {a.extraktion_status}
-                                </span>
-                              </td>
-                              <td style={{ padding: '10px', fontSize: 12, color: 'var(--muted-custom)', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                                {formatDatum(a.skapad)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      {anbud.map(a => (
+                        <div key={a.id} className="flex items-center justify-between" style={{ padding: '8px 0', borderBottom: '1px solid rgba(36,54,80,0.3)' }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>{a.filnamn}</span>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, textTransform: 'uppercase',
+                            background: a.extraktion_status === 'extraherad' ? 'var(--green-bg)' : a.extraktion_status === 'fel' ? 'var(--red-bg)' : 'var(--yellow-glow)',
+                            color: a.extraktion_status === 'extraherad' ? 'var(--green)' : a.extraktion_status === 'fel' ? 'var(--red)' : 'var(--yellow)',
+                          }}>
+                            {a.extraktion_status === 'extraherad' ? 'Läst' : a.extraktion_status}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
-
-                {/* Granskning om det krävs */}
-                {projekt.analys_komplett === false && (
-                  <GranskningSida projektId={projektId} />
-                )}
+                {projekt.analys_komplett !== null && <GranskningSida projektId={projektId} />}
               </div>
             </TabsContent>
 
-            {/* TAB 2: AI-analys */}
-            <TabsContent value="analys">
-              <div className="space-y-4">
-                <GranskningSida projektId={projektId} />
+            {/* TAB 2: Kravmatchning */}
+            <TabsContent value="kravmatchning">
+              <JämförelseVy
+                projektId={projektId}
+                data={kravmatch as Parameters<typeof JämförelseVy>[0]['data']}
+                onKörMatchning={körKravmatchning}
+                laddar={matchLaddar}
+              />
+            </TabsContent>
 
-                {/* Jämförelse */}
-                <div
-                  style={{
-                    background: 'var(--navy-mid)',
-                    border: '1px solid var(--navy-border)',
-                    borderRadius: 12,
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    className="flex items-center gap-2.5"
-                    style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}
+            {/* TAB 3: Anbud */}
+            <TabsContent value="anbud">
+              {!utkast ? (
+                <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px 18px', textAlign: 'center' }}>
+                  <p style={{ fontSize: 14, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                    Kör kravmatchning först, sedan kan AI:n generera ett anbudsutkast.
+                  </p>
+                  <Button
+                    onClick={körAnbudsGenerering}
+                    disabled={anbudLaddar || projekt.jämförelse_status !== 'klar'}
+                    style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
                   >
-                    <span style={{ fontSize: 16 }}>⚖️</span>
-                    <span style={{ fontSize: 14, fontWeight: 700 }}>Jämförelse</span>
-                    {anbudExtraherade >= 2 && projekt.jämförelse_status === 'ej_startad' && (
-                      <Button
-                        onClick={körJämförelse}
-                        disabled={jämförLaddar}
-                        className="ml-auto"
-                        style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, padding: '6px 12px' }}
-                      >
-                        {jämförLaddar ? 'Jämför...' : 'Kör jämförelse'}
-                      </Button>
-                    )}
-                  </div>
-                  <div style={{ padding: '16px 18px' }}>
-                    {anbudExtraherade < 2 ? (
-                      <p style={{ fontSize: 13, color: 'var(--muted-custom)' }}>
-                        Ladda upp minst 2 anbud och vänta på extraktion innan jämförelse.
-                      </p>
-                    ) : (
-                      <JämförelseVy
-                        projektId={projektId}
-                        data={projekt.jämförelse_resultat as Parameters<typeof JämförelseVy>[0]['data']}
-                        onKörJämförelse={körJämförelse}
-                        laddar={jämförLaddar}
-                      />
-                    )}
-                  </div>
+                    {anbudLaddar ? 'Genererar anbud...' : '⚡ Generera anbudsutkast'}
+                  </Button>
                 </div>
-              </div>
-            </TabsContent>
+              ) : (
+                <div className="space-y-4">
+                  {/* Kalkyl */}
+                  <KalkylVy kalkyl={rekData?.kalkyl as Record<string, unknown> | undefined} />
 
-            {/* TAB 3: Kalkyl */}
-            <TabsContent value="kalkyl">
-              {(() => {
-                const rekData = projekt.rekommendation as Record<string, unknown> | null
-                const kalkyl = rekData?.kalkyl as {
-                  moment?: Array<{ beskrivning: string; timmar: number; timpris: number; materialkostnad: number; belopp: number }>
-                  totalbelopp?: number
-                  moms?: number
-                  totalt_inkl_moms?: number
-                } | null
-
-                if (!kalkyl || !kalkyl.moment) {
-                  return (
-                    <div
-                      style={{
-                        background: 'var(--navy-mid)',
-                        border: '1px solid var(--navy-border)',
-                        borderRadius: 12,
-                        padding: '32px 18px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 16 }}>
-                        Kör jämförelse och rekommendation först för att generera kalkyl.
-                      </p>
-                      <Button
-                        onClick={körRekommendation}
-                        disabled={rekLaddar || projekt.jämförelse_status !== 'klar'}
-                        style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
-                      >
-                        {rekLaddar ? 'Genererar...' : 'Generera rekommendation & kalkyl'}
-                      </Button>
-                    </div>
-                  )
-                }
-
-                return (
-                  <div
-                    style={{
-                      background: 'var(--navy-mid)',
-                      border: '1px solid var(--navy-border)',
-                      borderRadius: 12,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div
-                      className="flex items-center gap-2.5"
-                      style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}
-                    >
-                      <span style={{ fontSize: 16 }}>🧮</span>
-                      <span style={{ fontSize: 14, fontWeight: 700 }}>Kalkyl</span>
-                    </div>
-                    <div style={{ padding: '0 18px 18px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                          <tr>
-                            {['Moment', 'Timmar', 'Material', 'Belopp'].map(h => (
-                              <th
-                                key={h}
-                                style={{
-                                  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-                                  letterSpacing: '0.07em', color: 'var(--muted-custom)',
-                                  padding: '8px 10px', borderBottom: '1px solid var(--navy-border)',
-                                  textAlign: h === 'Moment' ? 'left' : 'right',
-                                }}
-                              >
-                                {h}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {kalkyl.moment.map((m, i) => (
-                            <tr key={i}>
-                              <td style={{ padding: '10px', fontSize: 13, borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                                {m.beskrivning}
-                              </td>
-                              <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                                {m.timmar}
-                              </td>
-                              <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                                {m.materialkostnad.toLocaleString('sv-SE')} kr
-                              </td>
-                              <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                                {m.belopp.toLocaleString('sv-SE')} kr
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-
-                      {/* Total */}
-                      <div
-                        className="flex justify-between items-center"
-                        style={{
-                          background: 'var(--navy)',
-                          borderRadius: 10,
-                          padding: '14px 16px',
-                          marginTop: 12,
-                        }}
-                      >
-                        <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt inkl. moms</span>
-                        <span
-                          className="font-mono"
-                          style={{ fontSize: 22, fontWeight: 800, color: 'var(--yellow)' }}
-                        >
-                          {(kalkyl.totalt_inkl_moms ?? 0).toLocaleString('sv-SE')} kr
-                        </span>
-                      </div>
-
-                      <div className="flex gap-3 mt-4">
-                        <Button
-                          onClick={körRekommendation}
-                          disabled={rekLaddar}
-                          style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
-                        >
-                          {rekLaddar ? 'Genererar...' : 'Generera anbud'}
+                  {/* Redigerbart utkast */}
+                  <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>📋 Anbudsutkast (redigerbart)</span>
+                      <div className="flex gap-2">
+                        <Button onClick={sparaUtkast} disabled={sparar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
+                          {sparar ? 'Sparar...' : 'Spara'}
                         </Button>
-                        <Button
-                          onClick={exportera}
-                          variant="outline"
-                          style={{ borderColor: 'var(--navy-border)', color: 'var(--soft)' }}
-                        >
+                        <Button onClick={exportera} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
                           Exportera
                         </Button>
+                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>
+                          Generera om
+                        </Button>
                       </div>
                     </div>
+                    <textarea
+                      value={utkast}
+                      onChange={e => setUtkast(e.target.value)}
+                      style={{
+                        width: '100%', minHeight: 500, padding: 18,
+                        background: 'var(--navy)', color: 'var(--soft)',
+                        border: 'none', fontSize: 13, lineHeight: 1.7,
+                        fontFamily: 'var(--font-mono), monospace', resize: 'vertical',
+                      }}
+                    />
                   </div>
-                )
-              })()}
+                </div>
+              )}
             </TabsContent>
 
-            {/* TAB 4: Rekommendation */}
-            <TabsContent value="rekommendation">
-              <div className="space-y-4">
-                <RekommendationsVy
-                  data={projekt.rekommendation as Parameters<typeof RekommendationsVy>[0]['data']}
-                  onGenerera={körRekommendation}
-                  onExportera={exportera}
-                  laddar={rekLaddar}
-                />
-                <UppföljningsDashboard />
+            {/* TAB 4: Skicka */}
+            <TabsContent value="skicka">
+              <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '24px' }}>
+                {projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning' ? (
+                  <div className="space-y-4">
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>Anbud inskickat</div>
+                    <p style={{ fontSize: 13, color: 'var(--muted-custom)' }}>
+                      Anbudet markerades som skickat. Uppdatera tilldelningsstatus nedan.
+                    </p>
+                    <div className="flex gap-3">
+                      <Button onClick={() => uppdateraTilldelning('vunnet')} style={{ background: 'var(--green)', color: 'var(--navy)' }}>
+                        ✅ Vunnet
+                      </Button>
+                      <Button onClick={() => uppdateraTilldelning('forlorat')} style={{ background: 'var(--red)', color: 'white' }}>
+                        ❌ Förlorat
+                      </Button>
+                      <Button onClick={() => uppdateraTilldelning('vantar')} variant="outline" style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}>
+                        ⏳ Väntar
+                      </Button>
+                    </div>
+                    {projekt.tilldelning_status && (
+                      <div style={{ marginTop: 12, fontSize: 14, fontWeight: 700, color: projekt.tilldelning_status === 'vunnet' ? 'var(--green)' : projekt.tilldelning_status === 'forlorat' ? 'var(--red)' : 'var(--orange)' }}>
+                        Status: {projekt.tilldelning_status === 'vunnet' ? 'Vunnet ✅' : projekt.tilldelning_status === 'forlorat' ? 'Förlorat ❌' : 'Väntar på besked ⏳'}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <p style={{ fontSize: 14, color: 'var(--muted-custom)' }}>
+                      {utkast ? 'Granska anbudsutkastet i Anbud-fliken, justera vid behov, och markera som skickat.' : 'Generera ett anbudsutkast först.'}
+                    </p>
+                    {utkast && (
+                      <Button onClick={markeraSomSkickat} style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 14, padding: '12px 24px' }}>
+                        📤 Markera som skickat
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* Sidebar panel */}
+        {/* Sidebar */}
         <div style={{ padding: 24 }}>
-          {/* Deadline */}
-          <div
-            style={{
-              background: 'var(--navy-mid)',
-              border: '1px solid var(--navy-border)',
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 14,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.07em',
-                color: 'var(--muted-custom)',
-                marginBottom: 12,
-              }}
-            >
-              Deadline
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--orange)', marginBottom: 4 }}>
-              {dagarKvar !== null ? `${dagarKvar} dagar` : '—'}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
-              {deadline ? new Date(deadline).toLocaleDateString('sv-SE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Ej angiven'}
-            </div>
-          </div>
-
-          {/* Uppladdade filer */}
-          <div
-            style={{
-              background: 'var(--navy-mid)',
-              border: '1px solid var(--navy-border)',
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 14,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.07em',
-                color: 'var(--muted-custom)',
-                marginBottom: 12,
-              }}
-            >
-              Underlag ({anbud.length})
-            </div>
+          {/* Dokument */}
+          <SidePanel title={`Dokument (${anbud.length})`}>
             {anbud.length === 0 ? (
               <div style={{ fontSize: 12, color: 'var(--slate)' }}>Inga filer uppladdade</div>
-            ) : (
-              anbud.map(a => (
-                <div key={a.id} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 8 }}>
-                  <span style={{ color: 'var(--blue-accent)' }}>📄</span>
-                  <span className="truncate" style={{ color: 'var(--soft)' }}>{a.filnamn}</span>
-                  <span
-                    style={{
-                      marginLeft: 'auto',
-                      width: 7,
-                      height: 7,
-                      borderRadius: '50%',
-                      flexShrink: 0,
-                      background:
-                        a.extraktion_status === 'extraherad' ? 'var(--green)' :
-                        a.extraktion_status === 'fel' ? 'var(--red)' : 'var(--yellow)',
-                    }}
-                  />
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Certifikat */}
-          {anbud.some(a => a.extraherad_data) && (
-            <div
-              style={{
-                background: 'var(--navy-mid)',
-                border: '1px solid var(--navy-border)',
-                borderRadius: 12,
-                padding: 16,
-                marginBottom: 14,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.07em',
-                  color: 'var(--muted-custom)',
-                  marginBottom: 12,
-                }}
-              >
-                Certifikat
+            ) : anbud.map(a => (
+              <div key={a.id} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 8 }}>
+                <span style={{ color: 'var(--blue-accent)' }}>📄</span>
+                <span className="truncate" style={{ color: 'var(--soft)' }}>{a.filnamn}</span>
+                <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: a.extraktion_status === 'extraherad' ? 'var(--green)' : a.extraktion_status === 'fel' ? 'var(--red)' : 'var(--yellow)' }} />
               </div>
-              {(() => {
-                const rekData = projekt.rekommendation as Record<string, unknown> | null
-                const certs = (rekData?.certifikat_uppfyllda ?? []) as Array<{ krav: string; uppfyllt: boolean }>
-                if (certs.length === 0) {
-                  return <div style={{ fontSize: 12, color: 'var(--slate)' }}>Generera rekommendation för att se certifikatkrav</div>
-                }
-                return certs.map((c, i) => (
-                  <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 8 }}>
-                    <div
-                      style={{
-                        width: 7,
-                        height: 7,
-                        borderRadius: '50%',
-                        flexShrink: 0,
-                        background: c.uppfyllt ? 'var(--green)' : 'var(--red)',
-                      }}
-                    />
-                    <span style={{ color: 'var(--soft)' }}>{c.krav}</span>
-                  </div>
-                ))
-              })()}
-            </div>
+            ))}
+          </SidePanel>
+
+          {/* Kravmatchning summary */}
+          {kravmatch && (
+            <SidePanel title="Kravmatchning">
+              <div style={{ fontSize: 12, color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO-GO' ? 'var(--red)' : 'var(--orange)', fontWeight: 700, marginBottom: 8 }}>
+                {goNoGo === 'GO' ? 'GO – Lämna anbud' : goNoGo === 'NO-GO' ? 'NO-GO' : 'GO med reservation'}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--soft)' }}>
+                {(kravmatch as Record<string, unknown>).sammanfattning as string}
+              </div>
+            </SidePanel>
           )}
 
-          {/* Aktivitetslogg */}
-          <div
-            style={{
-              background: 'var(--navy-mid)',
-              border: '1px solid var(--navy-border)',
-              borderRadius: 12,
-              padding: 16,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.07em',
-                color: 'var(--muted-custom)',
-                marginBottom: 12,
-              }}
-            >
-              Aktivitet
-            </div>
+          {/* Aktivitet */}
+          <SidePanel title="Aktivitet">
             {logg.length === 0 ? (
               <div style={{ fontSize: 12, color: 'var(--slate)' }}>Ingen aktivitet ännu</div>
-            ) : (
-              logg.slice(0, 5).map(l => (
-                <div key={l.id} className="flex gap-2.5" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 10 }}>
-                  <span className="font-mono flex-shrink-0" style={{ fontSize: 10, marginTop: 1 }}>
-                    {new Date(l.skapad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  <span style={{ color: 'var(--soft)' }}>
-                    {l.meddelande ?? `${l.steg}: ${l.status}`}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+            ) : logg.slice(0, 5).map(l => (
+              <div key={l.id} className="flex gap-2.5" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 10 }}>
+                <span className="font-mono flex-shrink-0" style={{ fontSize: 10, marginTop: 1 }}>
+                  {new Date(l.skapad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <span style={{ color: 'var(--soft)' }}>{l.meddelande ?? `${l.steg}: ${l.status}`}</span>
+              </div>
+            ))}
+          </SidePanel>
         </div>
       </div>
+    </div>
+  )
+}
+
+function KalkylVy({ kalkyl }: { kalkyl?: Record<string, unknown> }) {
+  if (!kalkyl) return null
+  const moment = (kalkyl.moment ?? []) as Array<{ beskrivning: string; timmar: number; materialkostnad: number; belopp: number }>
+  const totalt = (kalkyl.totalt_inkl_moms ?? 0) as number
+  return (
+    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)', fontSize: 14, fontWeight: 700 }}>🧮 Kalkyl</div>
+      <div style={{ padding: '0 18px 18px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              {['Moment', 'Timmar', 'Material', 'Belopp'].map(h => (
+                <th key={h} style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted-custom)', padding: '8px 10px', borderBottom: '1px solid var(--navy-border)', textAlign: h === 'Moment' ? 'left' : 'right' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {moment.map((m, i) => (
+              <tr key={i}>
+                <td style={{ padding: '10px', fontSize: 13, borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.beskrivning}</td>
+                <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.timmar}</td>
+                <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.materialkostnad?.toLocaleString('sv-SE')} kr</td>
+                <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.belopp?.toLocaleString('sv-SE')} kr</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="flex justify-between items-center" style={{ background: 'var(--navy)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt inkl. moms</span>
+          <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--yellow)' }}>{totalt.toLocaleString('sv-SE')} kr</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SidePanel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--muted-custom)', marginBottom: 12 }}>{title}</div>
+      {children}
     </div>
   )
 }
