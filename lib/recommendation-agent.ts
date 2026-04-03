@@ -99,8 +99,8 @@ export async function genereraAnbud(projektId: string): Promise<AnbudsResultat> 
 
   if (!projekt) throw new Error('Projekt hittades inte')
 
-  const fuText = projekt['förfrågningsunderlag_text'] as string | null
-  if (!fuText) throw new Error('Inget FU att basera anbud på')
+  const kravmatchning = projekt.kravmatchning
+  if (!kravmatchning) throw new Error('Kör analys först')
 
   // Hämta elfirmans profil
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,8 +111,6 @@ export async function genereraAnbud(projektId: string): Promise<AnbudsResultat> 
     .single() as { data: any }
 
   if (!profil) throw new Error('Företagsprofil saknas')
-
-  const kravmatchning = projekt.kravmatchning
 
   await supabase
     .from('projekt')
@@ -137,13 +135,10 @@ Telefon: ${profil.telefon ?? 'Ej angivet'}
 Timpris standard: ${profil.timpris_standard ?? 650} kr/tim
 Timpris jour: ${profil.timpris_jour ?? 950} kr/tim
 
-KRAVMATCHNING:
-${kravmatchning ? JSON.stringify(kravmatchning, null, 2) : 'Ingen kravmatchning körd'}
+ANALYSRESULTAT (från AI-scanning av förfrågningsunderlaget):
+${JSON.stringify(kravmatchning, null, 2).slice(0, 15000)}
 
-FÖRFRÅGNINGSUNDERLAG:
-${fuText.slice(0, 50000)}
-
-Generera ett komplett anbudsutkast med kalkyl baserat på elfirmans timpriser.`,
+Baserat på analysresultatet ovan, generera ett komplett anbudsutkast med kalkyl. Använd elfirmans timpriser.`,
         },
       ],
     })
