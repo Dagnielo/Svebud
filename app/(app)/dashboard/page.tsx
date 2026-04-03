@@ -42,6 +42,17 @@ export default function DashboardPage() {
   const [dragOverKolumn, setDragOverKolumn] = useState<string | null>(null)
   const supabase = createClient()
 
+  async function flyttaProjekt(projektId: string, tillKolumn: string) {
+    const uppdatering: Record<string, unknown> = { pipeline_status: tillKolumn }
+    if (tillKolumn === 'inskickat') uppdatering.skickat_datum = new Date().toISOString()
+    if (tillKolumn === 'tilldelning') uppdatering.tilldelning_datum = new Date().toISOString()
+
+    await supabase.from('projekt').update(uppdatering).eq('id', projektId)
+
+    // Uppdatera lokalt direkt
+    setProjekt(prev => prev.map(p => p.id === projektId ? { ...p, pipeline_status: tillKolumn } as typeof p : p))
+  }
+
   const hämtaData = useCallback(async () => {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) return
@@ -355,18 +366,29 @@ export default function DashboardPage() {
               {/* Pipeline grid */}
               <div className="grid grid-cols-4 gap-4">
                 {[
-                  { label: 'Inkorg', color: 'var(--yellow)', items: inkorg },
-                  { label: 'Under arbete', color: 'var(--blue-accent)', items: underArbete },
-                  { label: 'Inskickat', color: 'var(--green)', items: inskickat },
-                  { label: 'Tilldelning', color: 'var(--orange)', items: tilldelning },
+                  { label: 'Inkorg', key: 'inkorg', color: 'var(--yellow)', items: inkorg },
+                  { label: 'Under arbete', key: 'under_arbete', color: 'var(--blue-accent)', items: underArbete },
+                  { label: 'Inskickat', key: 'inskickat', color: 'var(--green)', items: inskickat },
+                  { label: 'Tilldelning', key: 'tilldelning', color: 'var(--orange)', items: tilldelning },
                 ].map(col => (
                   <div
                     key={col.label}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverKolumn(col.key) }}
+                    onDragLeave={() => setDragOverKolumn(null)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setDragOverKolumn(null)
+                      if (dragProjektId) {
+                        flyttaProjekt(dragProjektId, col.key)
+                        setDragProjektId(null)
+                      }
+                    }}
                     style={{
                       background: 'var(--navy-mid)',
-                      border: '1px solid var(--navy-border)',
+                      border: dragOverKolumn === col.key ? `2px solid ${col.color}` : '1px solid var(--navy-border)',
                       borderRadius: 14,
                       overflow: 'hidden',
+                      transition: 'border 0.15s',
                     }}
                   >
                     <div
@@ -376,27 +398,9 @@ export default function DashboardPage() {
                         borderBottom: '1px solid var(--navy-border)',
                       }}
                     >
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          background: col.color,
-                          flexShrink: 0,
-                        }}
-                      />
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: col.color, flexShrink: 0 }} />
                       <span style={{ fontSize: 13, fontWeight: 700 }}>{col.label}</span>
-                      <span
-                        className="ml-auto"
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 700,
-                          background: 'var(--navy-light)',
-                          color: 'var(--muted-custom)',
-                          padding: '2px 7px',
-                          borderRadius: 10,
-                        }}
-                      >
+                      <span className="ml-auto" style={{ fontSize: 11, fontWeight: 700, background: 'var(--navy-light)', color: 'var(--muted-custom)', padding: '2px 7px', borderRadius: 10 }}>
                         {col.items.length}
                       </span>
                     </div>
@@ -406,14 +410,21 @@ export default function DashboardPage() {
                       style={{ padding: 12, minHeight: 200 }}
                     >
                       {col.items.length === 0 ? (
-                        <div
-                          className="flex items-center justify-center flex-1"
-                          style={{ fontSize: 12, color: 'var(--slate)' }}
-                        >
-                          Inga projekt
+                        <div className="flex items-center justify-center flex-1" style={{ fontSize: 12, color: dragOverKolumn === col.key ? col.color : 'var(--slate)' }}>
+                          {dragOverKolumn === col.key ? 'Släpp här' : 'Inga projekt'}
                         </div>
                       ) : (
-                        col.items.map(p => <ProjektKort key={p.id} projekt={p} />)
+                        col.items.map(p => (
+                          <div
+                            key={p.id}
+                            draggable
+                            onDragStart={() => setDragProjektId(p.id)}
+                            onDragEnd={() => { setDragProjektId(null); setDragOverKolumn(null) }}
+                            style={{ cursor: 'grab', opacity: dragProjektId === p.id ? 0.5 : 1 }}
+                          >
+                            <ProjektKort projekt={p} />
+                          </div>
+                        ))
                       )}
                     </div>
                   </div>
