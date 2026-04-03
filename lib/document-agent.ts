@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import * as XLSX from 'xlsx'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,23 +8,10 @@ const supabase = createClient(
 
 export type DokumentResultat = {
   text: string
-  metod: 'claude-direkt' | 'text-extract' | 'manuell'
+  metod: 'claude-pdf' | 'mammoth' | 'xlsx' | 'text-extract' | 'manuell'
   antalSidor?: number
   fel?: string
-  base64?: string
-  mediaType?: string
 }
-
-// Filtyper som Claude kan läsa direkt (skickas som document-bilagor)
-const CLAUDE_DIREKT_TYPER: Record<string, string> = {
-  'pdf': 'application/pdf',
-  'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'doc': 'application/msword',
-}
-
-// Filtyper som läses som ren text
-const TEXT_TYPER = ['xml', 'txt', 'eml', 'csv', 'html', 'htm', 'json']
 
 export async function läsInDokument(
   filBuffer: Buffer,
@@ -32,80 +20,89 @@ export async function läsInDokument(
 ): Promise<DokumentResultat> {
   const ext = filnamn.split('.').pop()?.toLowerCase() ?? ''
 
-  // PDF, Word, Excel → Claude läser direkt
-  if (CLAUDE_DIREKT_TYPER[ext] || filtyp === 'application/pdf' ||
-      filtyp.includes('wordprocessingml') || filtyp.includes('spreadsheetml') ||
-      filtyp === 'application/msword') {
-    return {
-      text: '',
-      metod: 'claude-direkt',
-      base64: filBuffer.toString('base64'),
-      mediaType: CLAUDE_DIREKT_TYPER[ext] ?? filtyp,
-    }
+  // PDF → Claude läser direkt (text sparas inte, PDF hämtas vid scanning)
+  if (filtyp === 'application/pdf' || ext === 'pdf') {
+    return { text: '[PDF — läses direkt av AI vid scanning]', metod: 'claude-pdf' }
   }
 
-  // Text-baserade filer (XML, TXT, EML, CSV, HTML)
-  if (TEXT_TYPER.includes(ext) || filtyp.startsWith('text/') || filtyp === 'application/xml') {
+  // DOCX → mammoth extraherar text
+  if (filtyp.includes('wordprocessingml') || ext === 'docx') {
+    return await läsDocx(filBuffer)
+  }
+
+  // DOC (gamla Word)
+  if (filtyp === 'application/msword' || ext === 'doc') {
+    return await läsDocx(filBuffer) // mammoth klarar ibland doc också
+  }
+
+  // XLSX → SheetJS
+  if (filtyp.includes('spreadsheetml') || ext === 'xlsx') {
+    return await läsXlsx(filBuffer)
+  }
+
+  // Text-baserade (XML, TXT, EML, CSV, HTML)
+  if (['xml', 'txt', 'csv', 'html', 'htm', 'json'].includes(ext) || filtyp.startsWith('text/') || filtyp === 'application/xml') {
     const text = filBuffer.toString('utf-8')
-
-    // EML (e-post) — extrahera kropp
-    if (ext === 'eml') {
-      return { text: parsaEml(text), metod: 'text-extract' }
-    }
-
+    if (ext === 'eml') return { text: parsaEml(text), metod: 'text-extract' }
     return { text, metod: 'text-extract' }
   }
 
-  // MSG (Outlook) — extrahera som text
-  if (ext === 'msg' || filtyp === 'application/vnd.ms-outlook') {
-    // MSG-filer är binära, skicka till Claude direkt
-    return {
-      text: '',
-      metod: 'claude-direkt',
-      base64: filBuffer.toString('base64'),
-      mediaType: 'application/pdf', // Claude hanterar det ändå
-    }
+  // MSG (Outlook)
+  if (ext === 'msg') {
+    return { text: '[Outlook-mail — ej stödd, spara som .eml istället]', metod: 'manuell', fel: 'Outlook .msg stöds ej. Spara mailet som .eml eller kopiera texten.' }
   }
 
-  // Bildfiler → Claude kan läsa bilder med text
+  // Bilder → Claude läser direkt
   if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
-    return {
-      text: '',
-      metod: 'claude-direkt',
-      base64: filBuffer.toString('base64'),
-      mediaType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
-    }
+    return { text: '[Bild — läses direkt av AI vid scanning]', metod: 'claude-pdf' }
   }
 
   return { text: '', metod: 'manuell', fel: `Filtypen .${ext} stöds inte.` }
 }
 
-/**
- * Enkel parser för .eml-filer — extraherar ämne, avsändare och brödtext.
- */
+async function läsDocx(buffer: Buffer): Promise<DokumentResultat> {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mammoth = require('mammoth') as { extractRawText: (opts: { buffer: Buffer }) => Promise<{ value: string }> }
+    const result = await mammoth.extractRawText({ buffer })
+    const text = result.value?.trim()
+    if (!text || text.length < 10) return { text: '', metod: 'mammoth', fel: 'Filen verkar vara tom.' }
+    return { text, metod: 'mammoth' }
+  } catch (err) {
+    return { text: '', metod: 'mammoth', fel: `Kunde inte läsa filen: ${err instanceof Error ? err.message : 'Okänt fel'}` }
+  }
+}
+
+async function läsXlsx(buffer: Buffer): Promise<DokumentResultat> {
+  try {
+    const workbook = XLSX.read(buffer, { type: 'buffer' })
+    const allText: string[] = []
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName]
+      const csv = XLSX.utils.sheet_to_csv(sheet)
+      allText.push(`--- ${sheetName} ---\n${csv}`)
+    }
+    const text = allText.join('\n\n').trim()
+    if (!text || text.length < 10) return { text: '', metod: 'xlsx', fel: 'Filen verkar vara tom.' }
+    return { text, metod: 'xlsx' }
+  } catch (err) {
+    return { text: '', metod: 'xlsx', fel: `Kunde inte läsa filen: ${err instanceof Error ? err.message : 'Okänt fel'}` }
+  }
+}
+
 function parsaEml(raw: string): string {
   const lines = raw.split('\n')
-  let ämne = ''
-  let från = ''
-  let till = ''
-  let brödtext = ''
-  let inBody = false
-  let blankLineHit = false
-
+  let ämne = '', från = '', till = '', brödtext = '', blankLineHit = false
   for (const line of lines) {
     if (!blankLineHit) {
       if (line.startsWith('Subject:')) ämne = line.replace('Subject:', '').trim()
       else if (line.startsWith('From:')) från = line.replace('From:', '').trim()
       else if (line.startsWith('To:')) till = line.replace('To:', '').trim()
-      else if (line.trim() === '') {
-        blankLineHit = true
-        inBody = true
-      }
-    } else if (inBody) {
+      else if (line.trim() === '') blankLineHit = true
+    } else {
       brödtext += line + '\n'
     }
   }
-
   return `MAIL\nFrån: ${från}\nTill: ${till}\nÄmne: ${ämne}\n\n${brödtext.trim()}`
 }
 
@@ -120,8 +117,6 @@ export async function laddaUppOchLäs(
   const safeFilnamn = filnamn.replace(/[^a-z0-9._-]/gi, '_')
   const storagePath = `${användareId}/${projektId}/${Date.now()}_${safeFilnamn}`
 
-  // Ladda upp till Supabase Storage
-  // Säkerställ att content-type accepteras av bucket
   const safeContentType = filtyp || 'application/octet-stream'
   const { error: uploadError } = await supabase.storage
     .from('anbudsdokument')
@@ -131,10 +126,8 @@ export async function laddaUppOchLäs(
     throw new Error(`Uppladdning misslyckades: ${uploadError.message}`)
   }
 
-  // Läs in dokumentet
   const resultat = await läsInDokument(buffer, filnamn, filtyp)
 
-  // Skapa anbud-rad
   const { data: anbud, error: anbudError } = await supabase
     .from('anbud')
     .insert({
@@ -146,7 +139,6 @@ export async function laddaUppOchLäs(
       rå_text: resultat.text || null,
       extraktion_status: resultat.fel ? 'fel' : 'läst',
       inläsningsmetod: resultat.metod,
-      antal_sidor: resultat.antalSidor,
       bearbetning_startad: new Date().toISOString(),
       bearbetning_klar: new Date().toISOString(),
     })

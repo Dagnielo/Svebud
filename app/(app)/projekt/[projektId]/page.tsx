@@ -280,8 +280,30 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
               {aktivtSteg === 3 && 'Steg 3: Granska och justera anbudsutkastet'}
               {aktivtSteg >= 4 && 'Steg 4: Markera anbudet som skickat'}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 2 }}>
-              {aktivtSteg === 1 && 'Ladda upp PDF, Word, Excel eller klistra in mailtext. Klicka sedan "Scanna efter krav".'}
+            <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 4 }}>
+              {aktivtSteg === 1 && anbud.length === 0 && 'Ladda upp PDF, Word, Excel eller klistra in mailtext.'}
+              {aktivtSteg === 1 && anbud.length > 0 && (
+                <span className="flex items-center gap-3" style={{ marginTop: 4 }}>
+                  <span>{anbud.length} dokument uppladdade. Starta scanning för att hitta krav:</span>
+                  <Button
+                    onClick={async () => {
+                      setAktivTab('krav')
+                      setMatchLaddar(true)
+                      await fetch('/api/anbud/extrahera', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ projektId }),
+                      })
+                      await hämta()
+                      setMatchLaddar(false)
+                    }}
+                    disabled={matchLaddar}
+                    style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px' }}
+                  >
+                    {matchLaddar ? '⏳ Scannar...' : '🔍 Scanna efter krav →'}
+                  </Button>
+                </span>
+              )}
               {aktivtSteg === 2 && 'Gå igenom varje krav och markera Ja/Nej/Osäker. Klicka sedan "Kör kravmatchning".'}
               {aktivtSteg === 3 && 'AI har genererat ett utkast. Redigera texten, justera kalkylen och exportera.'}
               {aktivtSteg >= 4 && 'Allt klart! Uppdatera om ni vann eller förlorade uppdraget.'}
@@ -309,8 +331,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
                     <div className="flex items-center gap-2.5" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>Uppladdade dokument ({anbud.length})</span>
-                      <span className="ml-auto font-mono" style={{ fontSize: 10, fontWeight: 800, background: 'var(--yellow-glow)', color: 'var(--yellow)', padding: '3px 8px', borderRadius: 5, border: '1px solid rgba(245,196,0,0.3)' }}>
-                        {anbudExtraherade}/{anbud.length} lästa
+                      <span className="ml-auto font-mono" style={{ fontSize: 10, fontWeight: 800, background: 'var(--green-bg)', color: 'var(--green)', padding: '3px 8px', borderRadius: 5 }}>
+                        {anbud.length} uppladdade ✓
                       </span>
                     </div>
                     <div style={{ padding: '12px 18px' }}>
@@ -339,8 +361,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
                 {/* Kravscanning + ja/nej-svar */}
                 <GranskningSida
                   projektId={projektId}
+                  externtScanning={matchLaddar}
                   onKravBesvarade={async () => {
-                    // Kör kravmatchning efter att svar sparats
                     await körKravmatchning()
                   }}
                 />

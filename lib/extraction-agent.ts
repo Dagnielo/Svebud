@@ -69,11 +69,25 @@ Tolka implicit krav även från informell text:
 - Kontaktuppgifter i mailet → beställare/kontaktperson
 Konfidens sätts lägre (60-80) för implicita krav jämfört med explicita (90-100).
 
+PROJEKTINFORMATION — KRITISKT:
+Du MÅSTE extrahera ALL tillgänglig projektinformation NOGGRANT. Sök igenom ALLA dokument efter:
+- Beställare/organisation: Ofta i sidhuvud, på första sidan, eller i administrativa föreskrifter
+- Kontaktperson: Namn + telefon/e-post till den som ansvarar för upphandlingen
+- Org.nr: Ofta nära beställarens namn
+- Sista anbudsdag: Datum + ofta klockslag. Sök efter "anbud ska vara inkommet senast", "sista dag", "anbudstid"
+- Avtalsvillkor: AB 04, ABT 06, ABT 94 etc. Ofta under "Administrativa föreskrifter" avsnitt AFB
+- Prismodell: Fast pris, löpande räkning, ramavtal etc.
+- Uppskattat värde: Kontraktsvärde, uppskattad omsättning etc.
+- Uppdragsbeskrivning: Detaljerad beskrivning av vad som ska utföras
+
+Om ett fält finns i dokumentet men du missar det är det ett ALLVARLIGT FEL.
+Returnera null BARA om informationen verkligen saknas i alla dokument.
+
 VIKTIGT:
-- Var NOGGRANN — missa inte krav som finns gömda i bilagor, underkapitel eller informell text
+- Var NOGGRANN — missa inte krav eller projektinfo som finns i bilagor eller underkapitel
 - Om osäker om ska/bör, markera som "ska" med lägre konfidens
 - Sök efter krav i ALL text, inte bara uppenbara avsnitt
-- Ett mail med "vi söker offert för X" innehåller ALLTID implicita krav
+- Ange alltid EXAKT dokumentnamn i källa-fältet (t.ex. "06.1 Administrativa föreskrifter, AFB.22")
 
 Returnera ENDAST giltig JSON:
 {
@@ -105,11 +119,7 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
   const { samlaFUDokument, byggClaudeContent, samlaFUText } = await import('@/lib/fu-agent')
 
   // Samla alla dokument
-  const { delar } = await samlaFUDokument(projektId)
-
-  if (delar.length === 0) {
-    throw new Error('Inga dokument hittades i projektet')
-  }
+  const delar = await samlaFUDokument(projektId)
 
   // Spara FU-text (för bakåtkompatibilitet)
   await samlaFUText(projektId)
@@ -130,7 +140,7 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
       anbud_id: firstAnbud.id,
       steg: 'fu_scanning',
       status: 'startad',
-      meddelande: `Scannar ${delar.length} dokument (${delar.filter(d => d.typ === 'pdf').length} PDF, ${delar.filter(d => d.typ === 'text').length} text)`,
+      meddelande: `Scannar ${delar.length} dokument (${delar.filter((d: {typ: string}) => d.typ === 'pdf').length} PDF, ${delar.filter((d: {typ: string}) => d.typ === 'text').length} text)`,
     })
   }
 

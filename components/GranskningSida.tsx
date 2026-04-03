@@ -39,6 +39,7 @@ type Dokument = {
 type Props = {
   projektId: string
   onKravBesvarade?: (krav: KravMedSvar[]) => void
+  externtScanning?: boolean
 }
 
 type Vy = 'dokument' | 'kategori'
@@ -48,11 +49,12 @@ const kategoriIkon: Record<string, string> = {
   kvalitet: '✅', säkerhet: '🦺', tidsplan: '📅', juridik: '⚖️', övrigt: '📌',
 }
 
-export default function GranskningSida({ projektId, onKravBesvarade }: Props) {
+export default function GranskningSida({ projektId, onKravBesvarade, externtScanning }: Props) {
   const [data, setData] = useState<ExtraktionsData | null>(null)
   const [dokument, setDokument] = useState<Dokument[]>([])
   const [loading, setLoading] = useState(true)
-  const [scanning, setScanning] = useState(false)
+  const [internScanning, setInternScanning] = useState(false)
+  const scanning = externtScanning || internScanning
   const [vy, setVy] = useState<Vy>('dokument')
   const [kravSvar, setKravSvar] = useState<Record<number, { svar: 'ja' | 'nej' | 'osäker'; kommentar: string }>>({})
   const supabase = createClient()
@@ -87,14 +89,14 @@ export default function GranskningSida({ projektId, onKravBesvarade }: Props) {
   }, [projektId])
 
   async function körScanning() {
-    setScanning(true)
+    setInternScanning(true)
     await fetch('/api/anbud/extrahera', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ projektId }),
     })
     await hämta()
-    setScanning(false)
+    setInternScanning(false)
   }
 
   function sättSvar(kravIndex: number, svar: 'ja' | 'nej' | 'osäker') {
@@ -113,6 +115,29 @@ export default function GranskningSida({ projektId, onKravBesvarade }: Props) {
 
   if (loading) return <div className="animate-pulse h-40 rounded-lg" style={{ background: 'var(--navy-mid)' }} />
 
+  if (scanning) {
+    return (
+      <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--yellow)', borderRadius: 12, padding: '24px' }}>
+        <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
+          <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid var(--navy-border)', borderTop: '3px solid var(--yellow)', borderRadius: '50%' }} />
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--yellow)' }}>Scannar dokument efter krav...</div>
+            <div style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>AI:n läser alla dokument och identifierar ska-krav och bör-krav. Det tar ca 30-90 sekunder.</div>
+          </div>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          {dokument.map((d, i) => (
+            <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'var(--navy-light)' }}>
+              <div className="animate-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />
+              <span style={{ color: 'var(--soft)' }}>{d.filnamn}</span>
+              <span style={{ color: 'var(--muted-custom)', marginLeft: 'auto', fontSize: 10 }}>Läser...</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   if (!data) {
     return (
       <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px', textAlign: 'center' }}>
@@ -120,7 +145,7 @@ export default function GranskningSida({ projektId, onKravBesvarade }: Props) {
           Dokumenten behöver scannas för att hitta krav.
         </p>
         <Button onClick={körScanning} disabled={scanning} style={{ background: 'var(--yellow)', color: 'var(--navy)' }}>
-          {scanning ? 'Scannar dokument...' : '🔍 Scanna efter krav'}
+          🔍 Scanna efter krav
         </Button>
       </div>
     )
@@ -160,7 +185,34 @@ export default function GranskningSida({ projektId, onKravBesvarade }: Props) {
     onKravBesvarade?.(kravMedSvar)
   }
 
-  // Gruppera per dokument
+  // Matcha ett krav till ett dokument baserat på källa-fältet
+  function matchaKravTillDokument(källa: string, filnamn: string): boolean {
+    const kl = källa.toLowerCase()
+    const fl = filnamn.toLowerCase()
+
+    // Exakt filnamn
+    if (kl.includes(fl)) return true
+
+    // Filnamn utan nummer-prefix: "06.1 Administrativa..." → "administrativa..."
+    const utanPrefix = fl.replace(/^\d+\.\d+\s*/, '')
+    if (utanPrefix.length > 3 && kl.includes(utanPrefix.replace(/\.[^.]+$/, ''))) return true
+
+    // Kärnnamn: "espd-request.xml" i källa, "06.7 espd-request.xml" i filnamn
+    const kärnNamn = fl.replace(/^\d+\.\d+\s*/, '').replace(/\.[^.]+$/, '')
+    if (kärnNamn.length > 3 && kl.includes(kärnNamn)) return true
+
+    // Nummer-match: "06.1" i källa
+    const numMatch = fl.match(/^(\d+\.\d+)/)
+    if (numMatch && kl.includes(numMatch[1])) return true
+
+    // Delord-match: splitta filnamn på ord och kolla om 2+ ord finns i källa
+    const filOrd = kärnNamn.split(/[\s_-]+/).filter(o => o.length > 3)
+    const matchadeOrd = filOrd.filter(o => kl.includes(o))
+    if (filOrd.length > 0 && matchadeOrd.length >= Math.min(2, filOrd.length)) return true
+
+    return false
+  }
+
   function kravPerDokument(): Array<{ dokNamn: string; krav: Array<Krav & { globalIndex: number }> }> {
     const result: Record<string, Array<Krav & { globalIndex: number }>> = {}
     for (const d of dokument) result[d.filnamn] = []
@@ -168,23 +220,10 @@ export default function GranskningSida({ projektId, onKravBesvarade }: Props) {
     allaKrav.forEach((k, globalIndex) => {
       let matchat = false
       for (const d of dokument) {
-        const dNamnKort = d.filnamn.replace(/\.[^.]+$/, '').toLowerCase()
-        const källaLower = k.källa.toLowerCase()
-        if (källaLower.includes(dNamnKort) || källaLower.includes(d.filnamn.toLowerCase()) ||
-            (dNamnKort.length > 5 && källaLower.includes(dNamnKort.slice(0, 10)))) {
+        if (matchaKravTillDokument(k.källa, d.filnamn)) {
           result[d.filnamn].push({ ...k, globalIndex })
           matchat = true
           break
-        }
-      }
-      if (!matchat) {
-        for (const d of dokument) {
-          const numMatch = d.filnamn.match(/^(\d+\.\d+)/)
-          if (numMatch && k.källa.includes(numMatch[1])) {
-            result[d.filnamn].push({ ...k, globalIndex })
-            matchat = true
-            break
-          }
         }
       }
       if (!matchat) {
@@ -193,7 +232,9 @@ export default function GranskningSida({ projektId, onKravBesvarade }: Props) {
       }
     })
 
-    return Object.entries(result).map(([dokNamn, krav]) => ({ dokNamn, krav }))
+    return Object.entries(result)
+      .map(([dokNamn, krav]) => ({ dokNamn, krav }))
+      .filter(d => d.krav.length > 0 || dokument.some(doc => doc.filnamn === d.dokNamn))
   }
 
   const perDok = kravPerDokument()
