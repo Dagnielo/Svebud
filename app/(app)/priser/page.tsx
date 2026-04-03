@@ -11,8 +11,8 @@ const planer = [
     namn: 'Bas',
     månad: 490,
     år: 4704,
-    priceMonthly: 'price_1TIF1KQEdjSVrQk5vNrf0wH7',
-    priceYearly: 'price_1TIF1LQEdjSVrQk5BGHs0Sg3',
+    priceMonthly: 'price_1TI5P9G2OHP36TtOP4dlBTeJ',
+    priceYearly: 'price_1TI5WKG2OHP36TtOqHLz1oC2',
     beskrivning: 'För ensamföretagare',
     funktioner: [
       '5 anbud per månad',
@@ -29,8 +29,8 @@ const planer = [
     namn: 'Pro',
     månad: 1290,
     år: 12384,
-    priceMonthly: 'price_1TIF1eQEdjSVrQk5BBnLBUat',
-    priceYearly: 'price_1TIF1eQEdjSVrQk5ZUPjJMdo',
+    priceMonthly: 'price_1TI5bvG2OHP36TtOlsQtNv2v',
+    priceYearly: 'price_1TI5cLG2OHP36TtOy8I73duJ',
     beskrivning: 'För firmor med 5–15 montörer',
     funktioner: [
       'Obegränsade anbud',
@@ -49,8 +49,8 @@ const planer = [
     namn: 'Business',
     månad: 2990,
     år: 28704,
-    priceMonthly: 'price_1TIF1gQEdjSVrQk5btTLvKNJ',
-    priceYearly: 'price_1TIF1hQEdjSVrQk51zXJNym7',
+    priceMonthly: 'price_1TI5dZG2OHP36TtOy8qsLhPY',
+    priceYearly: 'price_1TI5dzG2OHP36TtOGEMC7MAN',
     beskrivning: 'För firmor med 15–50 montörer',
     funktioner: [
       'Obegränsade anbud',
