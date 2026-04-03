@@ -58,10 +58,22 @@ BÖR-KRAV: Krav som anges som meriterande. Sökord: "bör", "önskvärt", "merit
 
 KÄLLA: Ange EXAKT var i dokumentet kravet hittas (dokumentnamn + avsnitt/sida om möjligt).
 
+INFORMELLA DOKUMENT (mail, fritext):
+Förfrågningar kommer inte alltid som formella FU. Ibland är det ett mail eller fritext.
+Tolka implicit krav även från informell text:
+- "vi behöver" / "vi söker" / "vi vill ha" → ska-krav
+- "helst" / "gärna" / "det vore bra om" → bör-krav
+- "måste vara klart innan X" → deadline + tidsplan-krav
+- "ni ska ha F-skatt" → certifikat ska-krav
+- Nämnd typ av arbete → kapacitet/erfarenhet ska-krav
+- Kontaktuppgifter i mailet → beställare/kontaktperson
+Konfidens sätts lägre (60-80) för implicita krav jämfört med explicita (90-100).
+
 VIKTIGT:
-- Var NOGGRANN — missa inte krav som finns gömda i bilagor eller underkapitel
+- Var NOGGRANN — missa inte krav som finns gömda i bilagor, underkapitel eller informell text
 - Om osäker om ska/bör, markera som "ska" med lägre konfidens
 - Sök efter krav i ALL text, inte bara uppenbara avsnitt
+- Ett mail med "vi söker offert för X" innehåller ALLTID implicita krav
 
 Returnera ENDAST giltig JSON:
 {
@@ -90,12 +102,17 @@ Returnera ENDAST giltig JSON:
  * Extraherar krav från ALLA dokument i ett projekt (samlat FU).
  */
 export async function extraheraFrånProjekt(projektId: string): Promise<ExtraktionsResultat> {
-  const { samlaFUText } = await import('@/lib/fu-agent')
-  const samladText = await samlaFUText(projektId)
+  const { samlaFUDokument, byggClaudeContent, samlaFUText } = await import('@/lib/fu-agent')
 
-  if (!samladText) {
-    throw new Error('Inga dokument med text hittades i projektet')
+  // Samla alla dokument
+  const { delar } = await samlaFUDokument(projektId)
+
+  if (delar.length === 0) {
+    throw new Error('Inga dokument hittades i projektet')
   }
+
+  // Spara FU-text (för bakåtkompatibilitet)
+  await samlaFUText(projektId)
 
   const startTid = Date.now()
 
@@ -113,11 +130,19 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
       anbud_id: firstAnbud.id,
       steg: 'fu_scanning',
       status: 'startad',
-      meddelande: `Scannar ${samladText.length} tecken från alla dokument`,
+      meddelande: `Scannar ${delar.length} dokument (${delar.filter(d => d.typ === 'pdf').length} PDF, ${delar.filter(d => d.typ === 'text').length} text)`,
     })
   }
 
   try {
+    // Bygg content med PDF:er som direkta bilagor
+    const messageContent = byggClaudeContent(
+      delar,
+      `Scanna ALLA ovanstående dokument noggrant. De utgör tillsammans ett förfrågningsunderlag.
+Extrahera ALL projektinfo samt ALLA ska-krav (inklusive "skall"-krav) och bör-krav.
+Ange exakt vilket dokument och avsnitt varje krav kommer från.`
+    )
+
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 8192,
@@ -125,7 +150,7 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
       messages: [
         {
           role: 'user',
-          content: `Scanna detta förfrågningsunderlag (kan bestå av flera dokument) och extrahera ALL projektinfo samt ALLA ska-krav och bör-krav:\n\n${samladText.slice(0, 80000)}`,
+          content: messageContent,
         },
       ],
     })

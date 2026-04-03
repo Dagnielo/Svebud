@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client'
 import AnbudsUppladdning from '@/components/AnbudsUppladdning'
 import GranskningSida from '@/components/GranskningSida'
 import JämförelseVy from '@/components/JämförelseVy'
-import AgentStatusBar from '@/components/AgentStatusBar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 
@@ -63,6 +62,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [anbudLaddar, setAnbudLaddar] = useState(false)
   const [utkast, setUtkast] = useState('')
   const [sparar, setSparar] = useState(false)
+  const [aktivTab, setAktivTab] = useState('dokument')
   const router = useRouter()
   const supabase = createClient()
 
@@ -213,59 +213,92 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
         )}
       </div>
 
-      {/* Stepper */}
-      <div className="flex items-stretch" style={{ padding: '24px 32px 0', marginBottom: 24 }}>
-        {stegLabels.map((label, i) => {
-          const nr = i + 1
-          const done = aktivtSteg > nr
-          const active = aktivtSteg === nr
-          const isLast = i === stegLabels.length - 1
-          return (
-            <div key={label} className="flex-1 relative">
-              <div className="flex flex-col items-center" style={{ padding: '0 8px' }}>
-                <div
-                  className="flex items-center justify-center relative z-[2]"
-                  style={{
-                    width: 36, height: 36, borderRadius: '50%',
-                    border: `2px solid ${done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--steel)'}`,
-                    background: done ? 'var(--green)' : active ? 'var(--yellow-glow)' : 'var(--navy-mid)',
-                    color: done ? 'var(--navy)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
-                    fontSize: 13, fontWeight: 800,
-                    boxShadow: active ? '0 0 0 4px var(--yellow-glow)' : 'none',
-                  }}
+      {/* Stepper — klickbar, EN indikator */}
+      <div style={{ padding: '24px 32px 0', marginBottom: 16 }}>
+        <div className="flex items-stretch">
+          {stegLabels.map((label, i) => {
+            const nr = i + 1
+            const done = aktivtSteg > nr
+            const active = aktivtSteg === nr
+            const isLast = i === stegLabels.length - 1
+            const tabMap = ['dokument', 'krav', 'anbud', 'skicka']
+            return (
+              <div key={label} className="flex-1 relative">
+                <button
+                  onClick={() => setAktivTab(tabMap[i])}
+                  className="flex flex-col items-center w-full"
+                  style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
-                  {done ? '✓' : nr}
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)', marginTop: 8, textAlign: 'center' }}>
-                  {label}
-                </span>
+                  <div
+                    className="flex items-center justify-center relative z-[2]"
+                    style={{
+                      width: 40, height: 40, borderRadius: '50%',
+                      border: `2px solid ${done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--steel)'}`,
+                      background: done ? 'var(--green)' : active ? 'var(--yellow-glow)' : 'var(--navy-mid)',
+                      color: done ? 'var(--navy)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
+                      fontSize: 14, fontWeight: 800,
+                      boxShadow: active ? '0 0 0 4px var(--yellow-glow)' : 'none',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {done ? '✓' : nr}
+                  </div>
+                  <span style={{
+                    fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center',
+                    color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
+                  }}>
+                    {label}
+                  </span>
+                  <span style={{
+                    fontSize: 10, marginTop: 2, textAlign: 'center',
+                    color: done ? 'var(--green)' : active ? 'var(--soft)' : 'var(--slate)',
+                  }}>
+                    {done ? 'Klart ✓' : active ? '← Du är här' : ''}
+                  </span>
+                </button>
+                {!isLast && (
+                  <div className="absolute z-[1]" style={{ top: 20, left: 'calc(50% + 20px)', right: 'calc(-50% + 20px)', height: 2, background: done ? 'var(--green)' : 'var(--steel)' }} />
+                )}
               </div>
-              {!isLast && (
-                <div className="absolute z-[1]" style={{ top: 18, left: 'calc(50% + 18px)', right: 'calc(-50% + 18px)', height: 2, background: done ? 'var(--green)' : 'var(--steel)' }} />
-              )}
+            )
+          })}
+        </div>
+
+        {/* Nästa steg — tydlig instruktion */}
+        <div style={{
+          marginTop: 16, padding: '12px 16px', borderRadius: 10,
+          background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <span style={{ fontSize: 18 }}>
+            {aktivtSteg === 1 ? '📎' : aktivtSteg === 2 ? '🔍' : aktivtSteg === 3 ? '📋' : '📤'}
+          </span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
+              {aktivtSteg === 1 && 'Steg 1: Ladda upp alla dokument i förfrågningsunderlaget'}
+              {aktivtSteg === 2 && 'Steg 2: Besvara ska-kraven och kör kravmatchning'}
+              {aktivtSteg === 3 && 'Steg 3: Granska och justera anbudsutkastet'}
+              {aktivtSteg >= 4 && 'Steg 4: Markera anbudet som skickat'}
             </div>
-          )
-        })}
+            <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 2 }}>
+              {aktivtSteg === 1 && 'Ladda upp PDF, Word, Excel eller klistra in mailtext. Klicka sedan "Scanna efter krav".'}
+              {aktivtSteg === 2 && 'Gå igenom varje krav och markera Ja/Nej/Osäker. Klicka sedan "Kör kravmatchning".'}
+              {aktivtSteg === 3 && 'AI har genererat ett utkast. Redigera texten, justera kalkylen och exportera.'}
+              {aktivtSteg >= 4 && 'Allt klart! Uppdatera om ni vann eller förlorade uppdraget.'}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Content + sidebar */}
       <div className="grid" style={{ gridTemplateColumns: '1fr 320px', gap: 0 }}>
         <div style={{ padding: '0 32px 32px', borderRight: '1px solid var(--navy-border)' }}>
-          <div style={{ marginBottom: 20 }}>
-            <AgentStatusBar
-              antalExtraherade={anbudExtraherade}
-              jämförelseStatus={projekt.jämförelse_status}
-              rekommendationStatus={projekt.rekommendation_status}
-              antalAktivaBrev={0}
-            />
-          </div>
-
-          <Tabs defaultValue="dokument">
-            <TabsList style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 10, marginBottom: 20 }}>
-              <TabsTrigger value="dokument">📎 Dokument</TabsTrigger>
-              <TabsTrigger value="kravmatchning">⚡ Kravmatchning</TabsTrigger>
-              <TabsTrigger value="anbud">📋 Anbud</TabsTrigger>
-              <TabsTrigger value="skicka">📤 Skicka</TabsTrigger>
+          <Tabs value={aktivTab} onValueChange={setAktivTab}>
+            <TabsList className="hidden">
+              <TabsTrigger value="dokument">Dokument</TabsTrigger>
+              <TabsTrigger value="krav">Krav</TabsTrigger>
+              <TabsTrigger value="anbud">Anbud</TabsTrigger>
+              <TabsTrigger value="skicka">Skicka</TabsTrigger>
             </TabsList>
 
             {/* TAB 1: Dokument */}
@@ -296,18 +329,32 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
                     </div>
                   </div>
                 )}
-                {projekt.analys_komplett !== null && <GranskningSida projektId={projektId} />}
+                {/* Granskning visas i Krav-fliken */}
               </div>
             </TabsContent>
 
-            {/* TAB 2: Kravmatchning */}
-            <TabsContent value="kravmatchning">
-              <JämförelseVy
-                projektId={projektId}
-                data={kravmatch as Parameters<typeof JämförelseVy>[0]['data']}
-                onKörMatchning={körKravmatchning}
-                laddar={matchLaddar}
-              />
+            {/* TAB 2: Krav & matchning */}
+            <TabsContent value="krav">
+              <div className="space-y-4">
+                {/* Kravscanning + ja/nej-svar */}
+                <GranskningSida
+                  projektId={projektId}
+                  onKravBesvarade={async () => {
+                    // Kör kravmatchning efter att svar sparats
+                    await körKravmatchning()
+                  }}
+                />
+
+                {/* GO/NO-GO resultat */}
+                {kravmatch && (
+                  <JämförelseVy
+                    projektId={projektId}
+                    data={kravmatch as Parameters<typeof JämförelseVy>[0]['data']}
+                    onKörMatchning={körKravmatchning}
+                    laddar={matchLaddar}
+                  />
+                )}
+              </div>
             </TabsContent>
 
             {/* TAB 3: Anbud */}

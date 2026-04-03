@@ -1,8 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import * as XLSX from 'xlsx'
-
-type PdfParseResult = { text: string; numpages: number }
-type MammothResult = { value: string }
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,121 +7,106 @@ const supabase = createClient(
 
 export type DokumentResultat = {
   text: string
-  metod: 'pdf-parse' | 'mammoth' | 'xlsx' | 'manuell'
+  metod: 'claude-direkt' | 'text-extract' | 'manuell'
   antalSidor?: number
   fel?: string
+  base64?: string
+  mediaType?: string
 }
+
+// Filtyper som Claude kan läsa direkt (skickas som document-bilagor)
+const CLAUDE_DIREKT_TYPER: Record<string, string> = {
+  'pdf': 'application/pdf',
+  'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'doc': 'application/msword',
+}
+
+// Filtyper som läses som ren text
+const TEXT_TYPER = ['xml', 'txt', 'eml', 'csv', 'html', 'htm', 'json']
 
 export async function läsInDokument(
   filBuffer: Buffer,
   filnamn: string,
   filtyp: string
 ): Promise<DokumentResultat> {
-  const ext = filnamn.split('.').pop()?.toLowerCase()
+  const ext = filnamn.split('.').pop()?.toLowerCase() ?? ''
 
-  if (filtyp === 'application/pdf' || ext === 'pdf') {
-    return await läsPdf(filBuffer)
-  }
-
-  if (
-    filtyp === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-    ext === 'docx'
-  ) {
-    return await läsDocx(filBuffer)
-  }
-
-  if (
-    filtyp === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-    ext === 'xlsx'
-  ) {
-    return await läsXlsx(filBuffer)
-  }
-
-  if (filtyp === 'application/msword' || ext === 'doc') {
+  // PDF, Word, Excel → Claude läser direkt
+  if (CLAUDE_DIREKT_TYPER[ext] || filtyp === 'application/pdf' ||
+      filtyp.includes('wordprocessingml') || filtyp.includes('spreadsheetml') ||
+      filtyp === 'application/msword') {
     return {
       text: '',
-      metod: 'manuell',
-      fel: 'Gamla .doc-filer stöds inte. Konvertera till .docx i Word innan uppladdning.',
+      metod: 'claude-direkt',
+      base64: filBuffer.toString('base64'),
+      mediaType: CLAUDE_DIREKT_TYPER[ext] ?? filtyp,
     }
   }
 
-  return {
-    text: '',
-    metod: 'manuell',
-    fel: `Filtypen ${filtyp} stöds inte. Använd PDF, DOCX eller XLSX.`,
+  // Text-baserade filer (XML, TXT, EML, CSV, HTML)
+  if (TEXT_TYPER.includes(ext) || filtyp.startsWith('text/') || filtyp === 'application/xml') {
+    const text = filBuffer.toString('utf-8')
+
+    // EML (e-post) — extrahera kropp
+    if (ext === 'eml') {
+      return { text: parsaEml(text), metod: 'text-extract' }
+    }
+
+    return { text, metod: 'text-extract' }
   }
+
+  // MSG (Outlook) — extrahera som text
+  if (ext === 'msg' || filtyp === 'application/vnd.ms-outlook') {
+    // MSG-filer är binära, skicka till Claude direkt
+    return {
+      text: '',
+      metod: 'claude-direkt',
+      base64: filBuffer.toString('base64'),
+      mediaType: 'application/pdf', // Claude hanterar det ändå
+    }
+  }
+
+  // Bildfiler → Claude kan läsa bilder med text
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
+    return {
+      text: '',
+      metod: 'claude-direkt',
+      base64: filBuffer.toString('base64'),
+      mediaType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+    }
+  }
+
+  return { text: '', metod: 'manuell', fel: `Filtypen .${ext} stöds inte.` }
 }
 
-async function läsPdf(buffer: Buffer): Promise<DokumentResultat> {
-  try {
-    // Importera lib direkt för att undvika pdf-parse:s inbyggda testfils-körning
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdfParse = require('pdf-parse/lib/pdf-parse.js') as (buf: Buffer) => Promise<PdfParseResult>
-    const data = await pdfParse(buffer)
-    const text = data.text?.trim()
+/**
+ * Enkel parser för .eml-filer — extraherar ämne, avsändare och brödtext.
+ */
+function parsaEml(raw: string): string {
+  const lines = raw.split('\n')
+  let ämne = ''
+  let från = ''
+  let till = ''
+  let brödtext = ''
+  let inBody = false
+  let blankLineHit = false
 
-    if (!text || text.length < 20) {
-      return {
-        text: '',
-        metod: 'pdf-parse',
-        antalSidor: data.numpages,
-        fel: 'PDF:en verkar vara inskannad (bildfil). Texten kunde inte läsas. Använd manuell inmatning.',
+  for (const line of lines) {
+    if (!blankLineHit) {
+      if (line.startsWith('Subject:')) ämne = line.replace('Subject:', '').trim()
+      else if (line.startsWith('From:')) från = line.replace('From:', '').trim()
+      else if (line.startsWith('To:')) till = line.replace('To:', '').trim()
+      else if (line.trim() === '') {
+        blankLineHit = true
+        inBody = true
       }
+    } else if (inBody) {
+      brödtext += line + '\n'
     }
-
-    return { text, metod: 'pdf-parse', antalSidor: data.numpages }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Okänt fel'
-    if (message.includes('password') || message.includes('encrypted')) {
-      return {
-        text: '',
-        metod: 'pdf-parse',
-        fel: 'PDF:en är lösenordsskyddad och kan inte läsas.',
-      }
-    }
-    return { text: '', metod: 'pdf-parse', fel: `Kunde inte läsa PDF: ${message}` }
   }
-}
 
-async function läsDocx(buffer: Buffer): Promise<DokumentResultat> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mammoth = require('mammoth') as { extractRawText: (opts: { buffer: Buffer }) => Promise<MammothResult> }
-    const result = await mammoth.extractRawText({ buffer })
-    const text = result.value?.trim()
-
-    if (!text || text.length < 10) {
-      return { text: '', metod: 'mammoth', fel: 'DOCX-filen verkar vara tom.' }
-    }
-
-    return { text, metod: 'mammoth' }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Okänt fel'
-    return { text: '', metod: 'mammoth', fel: `Kunde inte läsa DOCX: ${message}` }
-  }
-}
-
-async function läsXlsx(buffer: Buffer): Promise<DokumentResultat> {
-  try {
-    const workbook = XLSX.read(buffer, { type: 'buffer' })
-    const allText: string[] = []
-
-    for (const sheetName of workbook.SheetNames) {
-      const sheet = workbook.Sheets[sheetName]
-      const csv = XLSX.utils.sheet_to_csv(sheet)
-      allText.push(`--- ${sheetName} ---\n${csv}`)
-    }
-
-    const text = allText.join('\n\n').trim()
-    if (!text || text.length < 10) {
-      return { text: '', metod: 'xlsx', fel: 'Excel-filen verkar vara tom.' }
-    }
-
-    return { text, metod: 'xlsx' }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Okänt fel'
-    return { text: '', metod: 'xlsx', fel: `Kunde inte läsa XLSX: ${message}` }
-  }
+  return `MAIL\nFrån: ${från}\nTill: ${till}\nÄmne: ${ämne}\n\n${brödtext.trim()}`
 }
 
 export async function laddaUppOchLäs(
@@ -140,13 +121,18 @@ export async function laddaUppOchLäs(
   const storagePath = `${användareId}/${projektId}/${Date.now()}_${safeFilnamn}`
 
   // Ladda upp till Supabase Storage
+  // Säkerställ att content-type accepteras av bucket
+  const safeContentType = filtyp || 'application/octet-stream'
   const { error: uploadError } = await supabase.storage
     .from('anbudsdokument')
-    .upload(storagePath, buffer, { contentType: filtyp })
+    .upload(storagePath, buffer, { contentType: safeContentType, upsert: true })
 
   if (uploadError) {
     throw new Error(`Uppladdning misslyckades: ${uploadError.message}`)
   }
+
+  // Läs in dokumentet
+  const resultat = await läsInDokument(buffer, filnamn, filtyp)
 
   // Skapa anbud-rad
   const { data: anbud, error: anbudError } = await supabase
@@ -157,42 +143,18 @@ export async function laddaUppOchLäs(
       filtyp,
       filstorlek: buffer.length,
       storage_path: storagePath,
-      extraktion_status: 'läser_dokument',
+      rå_text: resultat.text || null,
+      extraktion_status: resultat.fel ? 'fel' : 'läst',
+      inläsningsmetod: resultat.metod,
+      antal_sidor: resultat.antalSidor,
       bearbetning_startad: new Date().toISOString(),
+      bearbetning_klar: new Date().toISOString(),
     })
     .select('id')
     .single()
 
   if (anbudError || !anbud) {
     throw new Error(`Kunde inte skapa anbud: ${anbudError?.message}`)
-  }
-
-  // Läs in dokumentet
-  const resultat = await läsInDokument(buffer, filnamn, filtyp)
-
-  // Uppdatera anbud med resultat
-  await supabase
-    .from('anbud')
-    .update({
-      rå_text: resultat.text,
-      extraktion_status: resultat.fel ? 'fel' : 'läst',
-      inläsningsmetod: resultat.metod,
-      antal_sidor: resultat.antalSidor,
-      bearbetning_klar: new Date().toISOString(),
-    })
-    .eq('id', anbud.id)
-
-  // Trigga samlad FU-extraktion för hela projektet
-  if (!resultat.fel && resultat.text.length > 0) {
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/anbud/extrahera`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projektId }),
-      })
-    } catch {
-      // Extraktion triggas separat
-    }
   }
 
   return { anbudId: anbud.id, resultat }

@@ -23,20 +23,13 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
   const [filer, setFiler] = useState<FilStatus[]>([])
   const [progress, setProgress] = useState(0)
   const [dragActive, setDragActive] = useState(false)
+  const [visaTextInput, setVisaTextInput] = useState(false)
+  const [textInput, setTextInput] = useState('')
+  const [spararText, setSpararText] = useState(false)
 
-  const tillåtnaTyper = [
-    'application/pdf',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/xml',
-    'application/xml',
-  ]
-
-  const tillåtnaExt = ['pdf', 'docx', 'doc', 'xlsx', 'xml']
+  const tillåtnaExt = ['pdf', 'docx', 'doc', 'xlsx', 'xml', 'txt', 'csv', 'eml', 'msg', 'html', 'htm', 'png', 'jpg', 'jpeg', 'gif', 'webp']
 
   function filÄrTillåten(fil: File): boolean {
-    if (tillåtnaTyper.includes(fil.type)) return true
     const ext = fil.name.split('.').pop()?.toLowerCase()
     return tillåtnaExt.includes(ext ?? '')
   }
@@ -47,14 +40,14 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
 
     if (godkända.length === 0) {
       setStatus('fel')
-      setFiler([{ namn: 'Inga giltiga filer', status: 'fel', meddelande: 'Använd PDF, DOCX, XLSX eller XML. Max 20 MB per fil.' }])
+      setFiler([{ namn: 'Inga giltiga filer', status: 'fel', meddelande: 'Filtyp ej stödd eller för stor' }])
       return
     }
 
     setStatus('laddar_upp')
     const filStatuser: FilStatus[] = [
       ...godkända.map(f => ({ namn: f.name, status: 'väntar' as const })),
-      ...avvisade.map(f => ({ namn: f.name, status: 'fel' as const, meddelande: 'Filtyp ej stödd eller för stor' })),
+      ...avvisade.map(f => ({ namn: f.name, status: 'fel' as const, meddelande: 'Ej stödd filtyp' })),
     ]
     setFiler([...filStatuser])
 
@@ -72,15 +65,11 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
       formData.append('projektId', projektId)
 
       try {
-        const res = await fetch('/api/anbud/ladda-upp', {
-          method: 'POST',
-          body: formData,
-        })
-
+        const res = await fetch('/api/anbud/ladda-upp', { method: 'POST', body: formData })
         const data = await res.json()
 
         if (!res.ok) {
-          filStatuser[i] = { namn: fil.name, status: 'fel', meddelande: data.fel ?? 'Uppladdning misslyckades' }
+          filStatuser[i] = { namn: fil.name, status: 'fel', meddelande: data.fel ?? 'Misslyckades' }
         } else if (data.varning) {
           filStatuser[i] = { namn: fil.name, status: 'varning', meddelande: data.varning }
           sistaAnbudId = data.anbudId
@@ -102,6 +91,20 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
     if (sistaAnbudId) onUppladdat?.(sistaAnbudId)
   }, [projektId, onUppladdat])
 
+  async function sparaText() {
+    if (!textInput.trim()) return
+    setSpararText(true)
+
+    // Skapa en textfil och ladda upp
+    const blob = new Blob([textInput], { type: 'text/plain' })
+    const fil = new File([blob], `inklistrad_text_${Date.now()}.txt`, { type: 'text/plain' })
+
+    await laddaUppFlerFiler([fil])
+    setTextInput('')
+    setVisaTextInput(false)
+    setSpararText(false)
+  }
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragActive(false)
@@ -121,35 +124,50 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
         <CardTitle style={{ fontSize: 15 }}>Ladda upp förfrågningsunderlag</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Drag & drop zon */}
         <div
-          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-            dragActive ? 'border-[#F5C400]' : ''
-          }`}
-          style={{ borderColor: dragActive ? 'var(--yellow)' : 'var(--navy-border)', background: dragActive ? 'var(--yellow-glow)' : 'transparent' }}
+          style={{
+            border: '2px dashed',
+            borderColor: dragActive ? 'var(--yellow)' : 'var(--navy-border)',
+            background: dragActive ? 'var(--yellow-glow)' : 'transparent',
+            borderRadius: 8,
+            padding: '24px',
+            textAlign: 'center',
+            transition: 'all 0.2s',
+          }}
           onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
           onDragLeave={() => setDragActive(false)}
           onDrop={handleDrop}
         >
-          {status === 'idle' && (
+          {status === 'idle' && !visaTextInput && (
             <>
               <p style={{ color: 'var(--muted-custom)', marginBottom: 8, fontSize: 14 }}>
                 Dra och släpp <strong style={{ color: 'var(--white)' }}>alla dokument</strong> i förfrågningsunderlaget hit
               </p>
-              <p style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 12 }}>
-                PDF, DOCX, XLSX, XML · Max 20 MB per fil · Flera filer samtidigt
+              <p style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 16 }}>
+                PDF · Word · Excel · Mail · Bilder · XML · Max 20 MB per fil
               </p>
-              <Button
-                variant="outline"
-                onClick={() => document.getElementById('fu-fil-input')?.click()}
-                style={{ borderColor: 'var(--navy-border)', color: 'var(--soft)' }}
-              >
-                Välj filer
-              </Button>
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => document.getElementById('fu-fil-input')?.click()}
+                  style={{ borderColor: 'var(--navy-border)', color: 'var(--soft)' }}
+                >
+                  📁 Välj filer
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setVisaTextInput(true)}
+                  style={{ borderColor: 'var(--navy-border)', color: 'var(--soft)' }}
+                >
+                  📋 Klistra in text / mail
+                </Button>
+              </div>
               <input
                 id="fu-fil-input"
                 type="file"
                 className="hidden"
-                accept=".pdf,.docx,.doc,.xlsx,.xml"
+                accept=".pdf,.docx,.doc,.xlsx,.xml,.txt,.csv,.eml,.msg,.html,.htm,.png,.jpg,.jpeg,.gif,.webp"
                 multiple
                 onChange={handleFileInput}
               />
@@ -165,7 +183,7 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
             </div>
           )}
 
-          {(status === 'klar' || status === 'fel') && filer.length > 0 && (
+          {(status === 'klar' || status === 'fel') && filer.length > 0 && !visaTextInput && (
             <div className="space-y-2">
               <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: status === 'klar' ? 'var(--green)' : 'var(--red)' }}>
@@ -173,21 +191,75 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
                     ? `${filer.filter(f => f.status === 'klar').length} filer uppladdade`
                     : 'Uppladdning misslyckades'}
                 </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => { setStatus('idle'); setFiler([]); setProgress(0) }}
-                  style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)', fontSize: 12 }}
-                >
-                  Ladda upp fler
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setStatus('idle'); setFiler([]); setProgress(0) }}
+                    style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)', fontSize: 12 }}
+                  >
+                    Ladda upp fler
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setVisaTextInput(true) }}
+                    style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)', fontSize: 12 }}
+                  >
+                    📋 Klistra in text
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </div>
 
+        {/* Text-input för mail/fritext */}
+        {visaTextInput && (
+          <div style={{ marginTop: 12 }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>📋 Klistra in mailtext eller förfrågningstext</span>
+              <button
+                onClick={() => setVisaTextInput(false)}
+                style={{ fontSize: 12, color: 'var(--muted-custom)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                ✕ Stäng
+              </button>
+            </div>
+            <textarea
+              value={textInput}
+              onChange={e => setTextInput(e.target.value)}
+              placeholder={'Klistra in (Cmd+V) hela mailet eller texten här...\n\nExempel:\nFrån: upphandling@brf-solstrålen.se\nÄmne: Förfrågan om elinstallation\n\nHej,\nVi söker offerter för...'}
+              style={{
+                width: '100%',
+                minHeight: 200,
+                padding: 12,
+                borderRadius: 8,
+                background: 'var(--navy)',
+                border: '1px solid var(--navy-border)',
+                color: 'var(--soft)',
+                fontSize: 13,
+                lineHeight: 1.6,
+                resize: 'vertical',
+              }}
+            />
+            <div className="flex gap-2 mt-3">
+              <Button
+                onClick={sparaText}
+                disabled={spararText || !textInput.trim()}
+                style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 13 }}
+              >
+                {spararText ? 'Sparar...' : '💾 Spara som dokument'}
+              </Button>
+              <span style={{ fontSize: 11, color: 'var(--slate)', alignSelf: 'center' }}>
+                {textInput.length > 0 ? `${textInput.length} tecken` : ''}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Fillista */}
-        {filer.length > 0 && (
+        {filer.length > 0 && !visaTextInput && (
           <div style={{ marginTop: 12 }}>
             {filer.map((f, i) => (
               <div
