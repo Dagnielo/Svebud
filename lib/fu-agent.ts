@@ -25,7 +25,7 @@ export async function samlaFUDokument(projektId: string): Promise<DokumentDel[]>
     .from('anbud')
     .select('*')
     .eq('projekt_id', projektId)
-    .eq('extraktion_status', 'läst')
+    .not('extraktion_status', 'eq', 'fel')
     .order('skapad', { ascending: true }) as { data: any[] | null }
 
   if (!anbud || anbud.length === 0) {
@@ -38,7 +38,7 @@ export async function samlaFUDokument(projektId: string): Promise<DokumentDel[]>
     const ext = (a.filnamn as string).split('.').pop()?.toLowerCase() ?? ''
     const metod = a.inläsningsmetod as string
 
-    if (metod === 'claude-pdf' && ext === 'pdf') {
+    if ((metod === 'claude-pdf' || metod === 'claude-direkt') && ext === 'pdf') {
       // PDF — hämta från storage och skicka direkt till Claude
       const { data: fileData } = await supabase.storage
         .from('anbudsdokument')
@@ -53,7 +53,7 @@ export async function samlaFUDokument(projektId: string): Promise<DokumentDel[]>
           mediaType: 'application/pdf',
         })
       }
-    } else if (metod === 'claude-pdf' && ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
+    } else if ((metod === 'claude-pdf' || metod === 'claude-direkt') && ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) {
       // Bild — hämta och skicka som image
       const { data: fileData } = await supabase.storage
         .from('anbudsdokument')
@@ -68,8 +68,40 @@ export async function samlaFUDokument(projektId: string): Promise<DokumentDel[]>
           mediaType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
         })
       }
+    } else if (['docx', 'doc'].includes(ext)) {
+      // DOCX — extrahera text med mammoth
+      const { data: fileData } = await supabase.storage
+        .from('anbudsdokument')
+        .download(a.storage_path)
+
+      if (fileData) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const mammoth = require('mammoth') as { extractRawText: (opts: { buffer: Buffer }) => Promise<{ value: string }> }
+          const buffer = Buffer.from(await fileData.arrayBuffer())
+          const result = await mammoth.extractRawText({ buffer })
+          if (result.value && result.value.length > 10) {
+            delar.push({ filnamn: a.filnamn, typ: 'text', text: result.value })
+          }
+        } catch { /* ignore */ }
+      }
+    } else if (ext === 'xlsx') {
+      // XLSX — extrahera med SheetJS
+      const { data: fileData } = await supabase.storage
+        .from('anbudsdokument')
+        .download(a.storage_path)
+
+      if (fileData) {
+        try {
+          const XLSX = await import('xlsx')
+          const buffer = Buffer.from(await fileData.arrayBuffer())
+          const wb = XLSX.read(buffer, { type: 'buffer' })
+          const text = wb.SheetNames.map(name => `--- ${name} ---\n${XLSX.utils.sheet_to_csv(wb.Sheets[name])}`).join('\n\n')
+          if (text.length > 10) delar.push({ filnamn: a.filnamn, typ: 'text', text })
+        } catch { /* ignore */ }
+      }
     } else {
-      // DOCX/XLSX/XML/TXT — text redan extraherad
+      // Text redan extraherad (XML, TXT, EML, mammoth, xlsx)
       const text = a['rå_text'] as string | null
       if (text && text.length > 10 && !text.startsWith('[')) {
         delar.push({ filnamn: a.filnamn, typ: 'text', text })
@@ -79,6 +111,39 @@ export async function samlaFUDokument(projektId: string): Promise<DokumentDel[]>
 
   if (delar.length === 0) {
     throw new Error('Inga läsbara dokument hittades')
+  }
+
+  // Begränsa total storlek — Claude max 200k tokens (~150k tecken)
+  // Prioritera: PDF:er först (viktigast), sen text
+  // Om för stora, ta bort de minst viktiga (instruktioner, ESPD etc.)
+  const totalBase64 = delar.filter(d => d.base64).reduce((sum, d) => sum + (d.base64?.length ?? 0), 0)
+  const MAX_BASE64 = 2_500_000 // ~1.8MB base64 ≈ ~120k tokens, lämnar utrymme för prompt + svar
+
+  if (totalBase64 > MAX_BASE64) {
+    // Sortera PDF:er: administrativa föreskrifter och rambeskrivningar först
+    const pdfDelar = delar.filter(d => d.typ === 'pdf')
+    const textDelar = delar.filter(d => d.typ === 'text')
+
+    // Prioritera dokument med "administrativa", "ram", "krav" i namnet
+    const prioriterade = ['administrativ', 'ram', 'krav', 'anbud', 'ordning']
+    pdfDelar.sort((a, b) => {
+      const aP = prioriterade.some(p => a.filnamn.toLowerCase().includes(p)) ? 0 : 1
+      const bP = prioriterade.some(p => b.filnamn.toLowerCase().includes(p)) ? 0 : 1
+      return aP - bP
+    })
+
+    // Ta med PDF:er tills vi når gränsen
+    const inkluderadePdf: DokumentDel[] = []
+    let running = 0
+    for (const d of pdfDelar) {
+      const size = d.base64?.length ?? 0
+      if (running + size < MAX_BASE64) {
+        inkluderadePdf.push(d)
+        running += size
+      }
+    }
+
+    return [...inkluderadePdf, ...textDelar]
   }
 
   return delar
