@@ -45,7 +45,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [anbudLaddar, setAnbudLaddar] = useState(false)
   const [utkast, setUtkast] = useState('')
   const [sparar, setSparar] = useState(false)
-  const [aktivTab, setAktivTab] = useState('dokument')
+  const [aktivTab, setAktivTab] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -130,6 +130,14 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   }
 
   const aktivtSteg = getAktivtSteg(projekt)
+
+  // Sätt rätt tab automatiskt baserat på steg
+  if (aktivTab === null) {
+    if (aktivtSteg >= 3) setAktivTab('anbud')
+    else if (aktivtSteg === 2) setAktivTab('analys')
+    else setAktivTab('dokument')
+  }
+
   const kravmatch = projekt.kravmatchning as Record<string, unknown> | null
   const goNoGo = kravmatch?.go_no_go as string | undefined
   const rekData = projekt.rekommendation as Record<string, unknown> | null
@@ -219,7 +227,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       {/* Content + sidebar */}
       <div className="grid" style={{ gridTemplateColumns: '1fr 320px', gap: 0 }}>
         <div style={{ padding: '0 32px 32px', borderRight: '1px solid var(--navy-border)' }}>
-          <Tabs value={aktivTab} onValueChange={setAktivTab}>
+          <Tabs value={aktivTab ?? 'dokument'} onValueChange={setAktivTab}>
             <TabsList className="hidden">
               <TabsTrigger value="dokument">Dokument</TabsTrigger>
               <TabsTrigger value="analys">Analys</TabsTrigger>
