@@ -107,10 +107,54 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     await hämta()
   }
 
-  async function exportera() {
-    const res = await fetch(`/api/projekt/${projektId}/rekommendation/exportera`)
-    const data = await res.json()
-    if (data.url) window.open(data.url, '_blank')
+  function kopieraText() {
+    navigator.clipboard.writeText(utkast)
+    alert('Kopierat till urklipp!')
+  }
+
+  function exporteraSomPdf() {
+    const win = window.open('', '_blank')
+    if (!win) return
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Anbud</title>
+<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333}
+h1{font-size:20px}h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:8px}h3{font-size:14px}
+table{width:100%;border-collapse:collapse;margin:16px 0}th,td{border:1px solid #ddd;padding:8px;text-align:left}
+th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
+    // Enkel markdown → HTML
+    const html = utkast
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.*$)/gm, '<li>$1</li>')
+      .replace(/^---$/gm, '<hr>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+    win.document.write(`<p>${html}</p></body></html>`)
+    win.document.close()
+    setTimeout(() => win.print(), 500)
+  }
+
+  function exporteraSomWord() {
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;line-height:1.5}h1{font-size:18pt}h2{font-size:14pt}h3{font-size:12pt}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:6px}</style></head>
+<body>${utkast
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.*$)/gm, '<li>$1</li>')
+      .replace(/^---$/gm, '<hr>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')}</body></html>`
+
+    const blob = new Blob([html], { type: 'application/msword' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `anbud_${projekt?.namn?.replace(/[^a-z0-9åäö]/gi, '_') ?? 'utkast'}.doc`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   if (loading) {
@@ -292,10 +336,12 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
                       <span style={{ fontSize: 14, fontWeight: 700 }}>📋 Anbudsutkast (redigerbart)</span>
                       <div className="flex gap-2">
                         <Button onClick={sparaUtkast} disabled={sparar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
-                          {sparar ? 'Sparar...' : 'Spara'}
+                          {sparar ? 'Sparar...' : '💾 Spara'}
                         </Button>
-                        <Button onClick={exportera} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>Exportera</Button>
-                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>Generera om</Button>
+                        <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📋 Kopiera text</Button>
+                        <Button onClick={exporteraSomPdf} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📄 PDF</Button>
+                        <Button onClick={exporteraSomWord} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📝 Word</Button>
+                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>🔄 Generera om</Button>
                       </div>
                     </div>
                     <textarea
