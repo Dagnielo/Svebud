@@ -45,6 +45,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [anbudLaddar, setAnbudLaddar] = useState(false)
   const [utkast, setUtkast] = useState('')
   const [sparar, setSparar] = useState(false)
+  const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
   const [aktivTab, setAktivTab] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -112,16 +113,25 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     alert('Kopierat till urklipp!')
   }
 
-  function exporteraSomPdf() {
-    const win = window.open('', '_blank')
-    if (!win) return
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Anbud</title>
-<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333}
-h1{font-size:20px}h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:8px}h3{font-size:14px}
-table{width:100%;border-collapse:collapse;margin:16px 0}th,td{border:1px solid #ddd;padding:8px;text-align:left}
-th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
-    // Enkel markdown → HTML
-    const html = utkast
+  function byggKalkylHtml() {
+    const mom = kalkylMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
+    if (mom.length === 0) return ''
+    const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
+    const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
+    const totExkl = totArbete + totMaterial
+    const moms = Math.round(totExkl * 0.25)
+    const totInkl = totExkl + moms
+    return `<h2>Kalkyl</h2>
+<table><thead><tr><th>Moment</th><th style="text-align:right">Timmar</th><th style="text-align:right">Timpris</th><th style="text-align:right">Material</th><th style="text-align:right">Belopp</th></tr></thead><tbody>
+${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.timmar}</td><td style="text-align:right">${m.timpris} kr</td><td style="text-align:right">${m.materialkostnad.toLocaleString('sv-SE')} kr</td><td style="text-align:right"><strong>${(m.timmar * m.timpris + m.materialkostnad).toLocaleString('sv-SE')} kr</strong></td></tr>`).join('\n')}
+</tbody></table>
+<p><strong>Arbete:</strong> ${totArbete.toLocaleString('sv-SE')} kr | <strong>Material:</strong> ${totMaterial.toLocaleString('sv-SE')} kr</p>
+<p><strong>Totalt exkl. moms:</strong> ${totExkl.toLocaleString('sv-SE')} kr | <strong>Moms 25%:</strong> ${moms.toLocaleString('sv-SE')} kr</p>
+<h3>Totalt inkl. moms: ${totInkl.toLocaleString('sv-SE')} kr</h3>`
+  }
+
+  function mdTillHtml(md: string) {
+    return md
       .replace(/^### (.*$)/gm, '<h3>$1</h3>')
       .replace(/^## (.*$)/gm, '<h2>$1</h2>')
       .replace(/^# (.*$)/gm, '<h1>$1</h1>')
@@ -130,7 +140,19 @@ th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
       .replace(/^---$/gm, '<hr>')
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br>')
-    win.document.write(`<p>${html}</p></body></html>`)
+  }
+
+  function exporteraSomPdf() {
+    const win = window.open('', '_blank')
+    if (!win) return
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Anbud - ${projekt?.namn}</title>
+<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333}
+h1{font-size:20px}h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:8px}h3{font-size:14px}
+table{width:100%;border-collapse:collapse;margin:16px 0}th,td{border:1px solid #ddd;padding:8px;text-align:left}
+th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
+    win.document.write(`<p>${mdTillHtml(utkast)}</p>`)
+    win.document.write(byggKalkylHtml())
+    win.document.write('</body></html>')
     win.document.close()
     setTimeout(() => win.print(), 500)
   }
@@ -138,15 +160,7 @@ th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
   function exporteraSomWord() {
     const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;line-height:1.5}h1{font-size:18pt}h2{font-size:14pt}h3{font-size:12pt}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:6px}</style></head>
-<body>${utkast
-      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^- (.*$)/gm, '<li>$1</li>')
-      .replace(/^---$/gm, '<hr>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>')}</body></html>`
+<body>${mdTillHtml(utkast)}${byggKalkylHtml()}</body></html>`
 
     const blob = new Blob([html], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
@@ -328,7 +342,7 @@ th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
               ) : (
                 <div className="space-y-4">
                   {/* Kalkyl */}
-                  <KalkylVy kalkyl={rekData?.kalkyl as Record<string, unknown> | undefined} />
+                  <KalkylVy kalkyl={rekData?.kalkyl as Record<string, unknown> | undefined} onChange={setKalkylMoment} />
 
                   {/* Redigerbart utkast */}
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
@@ -421,36 +435,118 @@ th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
   )
 }
 
-function KalkylVy({ kalkyl }: { kalkyl?: Record<string, unknown> }) {
+type KalkylMoment = { beskrivning: string; timmar: number; timpris: number; materialkostnad: number; belopp: number }
+
+function KalkylVy({ kalkyl, onChange }: { kalkyl?: Record<string, unknown>; onChange?: (moment: KalkylMoment[]) => void }) {
   if (!kalkyl) return null
-  const moment = (kalkyl.moment ?? []) as Array<{ beskrivning: string; timmar: number; materialkostnad: number; belopp: number }>
-  const totalt = (kalkyl.totalt_inkl_moms ?? 0) as number
+
+  const initialMoment = (kalkyl.moment ?? []) as KalkylMoment[]
+  const [moment, setMoment] = useState<KalkylMoment[]>(initialMoment.map(m => ({
+    ...m,
+    timpris: m.timpris ?? 650,
+    belopp: m.belopp ?? (m.timmar * (m.timpris ?? 650) + (m.materialkostnad ?? 0)),
+  })))
+
+  function uppdatera(index: number, fält: keyof KalkylMoment, värde: string) {
+    setMoment(prev => {
+      const ny = [...prev]
+      if (fält === 'beskrivning') {
+        ny[index] = { ...ny[index], beskrivning: värde }
+      } else {
+        const num = parseFloat(värde) || 0
+        ny[index] = { ...ny[index], [fält]: num }
+        ny[index].belopp = ny[index].timmar * ny[index].timpris + ny[index].materialkostnad
+      }
+      onChange?.(ny)
+      return ny
+    })
+  }
+
+  function läggTillMoment() {
+    setMoment(prev => {
+      const ny = [...prev, { beskrivning: '', timmar: 0, timpris: 650, materialkostnad: 0, belopp: 0 }]
+      onChange?.(ny)
+      return ny
+    })
+  }
+
+  function taBortMoment(index: number) {
+    setMoment(prev => {
+      const ny = prev.filter((_, i) => i !== index)
+      onChange?.(ny)
+      return ny
+    })
+  }
+
+  const totaltArbete = moment.reduce((s, m) => s + m.timmar * m.timpris, 0)
+  const totaltMaterial = moment.reduce((s, m) => s + m.materialkostnad, 0)
+  const totalExklMoms = totaltArbete + totaltMaterial
+  const moms = Math.round(totalExklMoms * 0.25)
+  const totalInklMoms = totalExklMoms + moms
+
+  const inputStyle = { background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 6, color: 'var(--white)', fontFamily: 'var(--font-mono), monospace', fontSize: 13, padding: '4px 8px', width: 70, textAlign: 'right' as const }
+
   return (
     <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
-      <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)', fontSize: 14, fontWeight: 700 }}>🧮 Kalkyl</div>
+      <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
+        <span style={{ fontSize: 14, fontWeight: 700 }}>🧮 Kalkyl (redigerbar)</span>
+        <button onClick={läggTillMoment} style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>
+          + Lägg till moment
+        </button>
+      </div>
       <div style={{ padding: '0 18px 18px' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              {['Moment', 'Timmar', 'Material', 'Belopp'].map(h => (
-                <th key={h} style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted-custom)', padding: '8px 10px', borderBottom: '1px solid var(--navy-border)', textAlign: h === 'Moment' ? 'left' : 'right' }}>{h}</th>
+              {['Moment', 'Timmar', 'Timpris', 'Material', 'Belopp', ''].map(h => (
+                <th key={h} style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted-custom)', padding: '8px 6px', borderBottom: '1px solid var(--navy-border)', textAlign: h === 'Moment' || h === '' ? 'left' : 'right' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {moment.map((m, i) => (
               <tr key={i}>
-                <td style={{ padding: '10px', fontSize: 13, borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.beskrivning}</td>
-                <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.timmar}</td>
-                <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.materialkostnad?.toLocaleString('sv-SE')} kr</td>
-                <td className="font-mono" style={{ padding: '10px', fontSize: 13, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)' }}>{m.belopp?.toLocaleString('sv-SE')} kr</td>
+                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input value={m.beskrivning} onChange={e => uppdatera(i, 'beskrivning', e.target.value)} style={{ ...inputStyle, width: '100%', textAlign: 'left' }} />
+                </td>
+                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input type="number" value={m.timmar} onChange={e => uppdatera(i, 'timmar', e.target.value)} style={inputStyle} />
+                </td>
+                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input type="number" value={m.timpris} onChange={e => uppdatera(i, 'timpris', e.target.value)} style={inputStyle} />
+                </td>
+                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input type="number" value={m.materialkostnad} onChange={e => uppdatera(i, 'materialkostnad', e.target.value)} style={inputStyle} />
+                </td>
+                <td className="font-mono" style={{ padding: '6px', fontSize: 13, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)', color: 'var(--white)' }}>
+                  {m.belopp.toLocaleString('sv-SE')} kr
+                </td>
+                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <button onClick={() => taBortMoment(i)} style={{ fontSize: 12, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="flex justify-between items-center" style={{ background: 'var(--navy)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
-          <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt inkl. moms</span>
-          <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--yellow)' }}>{totalt.toLocaleString('sv-SE')} kr</span>
+
+        {/* Summering */}
+        <div style={{ background: 'var(--navy)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+            <span>Arbete</span><span className="font-mono">{totaltArbete.toLocaleString('sv-SE')} kr</span>
+          </div>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+            <span>Material</span><span className="font-mono">{totaltMaterial.toLocaleString('sv-SE')} kr</span>
+          </div>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+            <span>Totalt exkl. moms</span><span className="font-mono">{totalExklMoms.toLocaleString('sv-SE')} kr</span>
+          </div>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 8 }}>
+            <span>Moms 25%</span><span className="font-mono">{moms.toLocaleString('sv-SE')} kr</span>
+          </div>
+          <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt inkl. moms</span>
+            <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--yellow)' }}>{totalInklMoms.toLocaleString('sv-SE')} kr</span>
+          </div>
         </div>
       </div>
     </div>

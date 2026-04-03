@@ -38,6 +38,8 @@ export default function DashboardPage() {
   const [skapar, setSkapar] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const router = useRouter()
+  const [dragProjektId, setDragProjektId] = useState<string | null>(null)
+  const [dragOverKolumn, setDragOverKolumn] = useState<string | null>(null)
   const supabase = createClient()
 
   const hämtaData = useCallback(async () => {
