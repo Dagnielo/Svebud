@@ -18,9 +18,13 @@ const CERTIFIKAT_LISTA = [
     { namn: 'SSG Heta Arbeten', key: 'ssg_heta' },
     { namn: 'SSG Online', key: 'ssg_online' },
   ]},
+  { kategori: 'Arbetsmiljö', items: [
+    { namn: 'BAS-U (Byggarbetsmiljösamordnare Utförande)', key: 'bas_u' },
+    { namn: 'BAS-P (Byggarbetsmiljösamordnare Planering)', key: 'bas_p' },
+    { namn: 'Heta arbeten – certifiering', key: 'heta_arbeten' },
+  ]},
   { kategori: 'Övrigt', items: [
     { namn: 'ID06-kort (samtliga montörer)', key: 'id06' },
-    { namn: 'Heta arbeten – certifiering', key: 'heta_arbeten' },
     { namn: 'Ansvarsförsäkring', key: 'ansvarsforsaking' },
     { namn: 'F-skattsedel', key: 'f_skatt' },
     { namn: 'ISO 9001 Kvalitetsledning', key: 'iso9001' },
