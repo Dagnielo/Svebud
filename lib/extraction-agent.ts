@@ -8,218 +8,86 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export type ExtraktionsFält = {
-  värde: string | number | null
+export type Krav = {
+  krav: string
+  typ: 'ska' | 'bör'
+  kategori: string
+  källa: string
   konfidens: number
 }
 
 export type ExtraktionsResultat = {
   analys_komplett: boolean
-  saknade_kritiska_falt: string[]
-  fält: {
-    beställare: ExtraktionsFält
-    kontaktperson: ExtraktionsFält
-    org_nr: ExtraktionsFält
-    sista_anbudsdag: ExtraktionsFält
-    planerad_start: ExtraktionsFält
-    avtalsvillkor: ExtraktionsFält
-    prismodell: ExtraktionsFält
-    uppdragsbeskrivning: ExtraktionsFält
-    värde_kr: ExtraktionsFält
-    utvärderingskriterier: ExtraktionsFält
-  }
+  beställare: string | null
+  kontaktperson: string | null
+  org_nr: string | null
+  sista_anbudsdag: string | null
+  planerad_start: string | null
+  avtalsvillkor: string | null
+  prismodell: string | null
+  uppdragsbeskrivning: string | null
+  värde_kr: number | null
+  utvärderingskriterier: string | null
   kund_typ: 'konsument' | 'naringsidkare' | 'brf' | null
-  rot_tillämpligt: boolean
-  gron_teknik_tillämpligt: boolean
-  gron_teknik_typ: string | null
-  foreslaget_avtalsvillkor: string
-  certifikat_krav: Array<{
-    krav: string
-    obligatoriskt: boolean
-    konfidens: number
-  }>
+  ska_krav: Krav[]
+  bör_krav: Krav[]
+  saknade_kritiska_falt: string[]
 }
 
-const SYSTEM_PROMPT = `Du är en AI-assistent som extraherar strukturerad information ur förfrågningsunderlag för elinstallationsuppdrag.
+const SYSTEM_PROMPT = `Du är en AI-assistent som analyserar förfrågningsunderlag (FU) för elinstallationsuppdrag i Sverige.
 
-KRITISK REGEL – KONFIDENSVÄRDEN:
-För varje extraherat fält, returnera ett konfidensvärde 0–100 som anger hur säker du är.
-- 90–100: Uppgiften finns explicit angiven i underlaget
-- 60–89:  Uppgiften kan härledas med rimlig säkerhet
-- 30–59:  Uppgiften är oklar, tvetydig eller delvis angiven
-- 0–29:   Uppgiften saknas eller kan inte läsas
+HUVUDUPPGIFT: Scanna ALLA dokument och extrahera:
+1. Grundläggande projektinformation
+2. ALLA ska-krav (obligatoriska krav som måste uppfyllas)
+3. ALLA bör-krav (meriterande krav som ger fördelar)
 
-KRITISK REGEL – ANALYS_KOMPLETT:
-Sätt analys_komplett: false om NÅGOT av dessa fält har konfidens under 70:
-  beställare, kontaktperson, sista_anbudsdag, avtalsvillkor, uppdragsbeskrivning
+KATEGORIER FÖR KRAV:
+- "certifikat" – Auktorisationer, behörigheter, utbildningar (AL, A, B, SSG, ID06 etc.)
+- "erfarenhet" – Referensuppdrag, erfarenhet av liknande projekt
+- "kapacitet" – Antal montörer, maskiner, resurser
+- "ekonomi" – Omsättning, försäkringar, kreditvärdighet
+- "kvalitet" – ISO-certifieringar, kvalitetssystem, miljöledning
+- "säkerhet" – Arbetsmiljöplaner, riskanalyser, skyddsutrustning
+- "tidsplan" – Deadlines, milstolpar, tillgänglighet
+- "juridik" – Avtalsvillkor, garantier, ansvarsfrågor
+- "övrigt" – Övriga krav
 
-KRITISK REGEL – ALDRIG FABRICERA:
-Om ett fält saknas, returnera null och ett lågt konfidensvärde.
-Gissa ALDRIG ett datum, ett namn eller ett avtalsvillkor utan explicit stöd i texten.
+SKA-KRAV: Krav som uttryckligen anges som obligatoriska. Sökord: "ska", "skall", "måste", "krav", "obligatoriskt", "krävs", "erfordras", "fordras", "villkor för".
+Notera: "ska" och "skall" är SAMMA sak — "skall" är äldre svenska och förekommer ofta i juridiska dokument och förfrågningsunderlag.
+BÖR-KRAV: Krav som anges som meriterande. Sökord: "bör", "önskvärt", "meriterande", "fördel om", "positivt om", "gärna", "uppskattas".
 
-KUNDTYP:
-Identifiera kundtyp baserat på beställarens namn och org.nr:
-- "BRF [namn]", "Bostadsrättsförening" → kund_typ: 'brf'
-- Privatperson utan org.nr → kund_typ: 'konsument'
-- Företagsnamn med org.nr → kund_typ: 'naringsidkare'
-- Oklart → kund_typ: null
+KÄLLA: Ange EXAKT var i dokumentet kravet hittas (dokumentnamn + avsnitt/sida om möjligt).
 
-GRÖN TEKNIK:
-Grön Teknik är tillämpligt om:
-- kund_typ = 'konsument' (privatperson äger bostaden)
-- Arbetet gäller installation av: solceller | laddbox | batteri
+VIKTIGT:
+- Var NOGGRANN — missa inte krav som finns gömda i bilagor eller underkapitel
+- Om osäker om ska/bör, markera som "ska" med lägre konfidens
+- Sök efter krav i ALL text, inte bara uppenbara avsnitt
 
-AVTALSVILLKOR:
-- Konsument utan angivna villkor → 'EL 19 / Konsumenttjänstlagen'
-- BRF utan angivna villkor → 'AB 04'
-- Näringsidkare utan angivna villkor → 'AB 04'
-- Om FU anger villkor → använd det som står
-
-Returnera ENDAST giltig JSON med denna struktur (inga förklaringar):
+Returnera ENDAST giltig JSON:
 {
   "analys_komplett": boolean,
-  "saknade_kritiska_falt": string[],
-  "fält": {
-    "beställare":        { "värde": string|null, "konfidens": 0-100 },
-    "kontaktperson":     { "värde": string|null, "konfidens": 0-100 },
-    "org_nr":            { "värde": string|null, "konfidens": 0-100 },
-    "sista_anbudsdag":   { "värde": string|null, "konfidens": 0-100 },
-    "planerad_start":    { "värde": string|null, "konfidens": 0-100 },
-    "avtalsvillkor":     { "värde": string|null, "konfidens": 0-100 },
-    "prismodell":        { "värde": string|null, "konfidens": 0-100 },
-    "uppdragsbeskrivning": { "värde": string|null, "konfidens": 0-100 },
-    "värde_kr":          { "värde": number|null,  "konfidens": 0-100 },
-    "utvärderingskriterier": { "värde": string|null, "konfidens": 0-100 }
-  },
+  "beställare": string|null,
+  "kontaktperson": string|null,
+  "org_nr": string|null,
+  "sista_anbudsdag": string|null,
+  "planerad_start": string|null,
+  "avtalsvillkor": string|null,
+  "prismodell": string|null,
+  "uppdragsbeskrivning": string|null,
+  "värde_kr": number|null,
+  "utvärderingskriterier": string|null,
   "kund_typ": "konsument"|"naringsidkare"|"brf"|null,
-  "rot_tillämpligt": boolean,
-  "gron_teknik_tillämpligt": boolean,
-  "gron_teknik_typ": string|null,
-  "foreslaget_avtalsvillkor": string,
-  "certifikat_krav": [
-    { "krav": string, "obligatoriskt": boolean, "konfidens": 0-100 }
-  ]
+  "ska_krav": [
+    { "krav": "Beskrivning av kravet", "typ": "ska", "kategori": "certifikat|erfarenhet|kapacitet|ekonomi|kvalitet|säkerhet|tidsplan|juridik|övrigt", "källa": "Dokument X, avsnitt Y", "konfidens": 0-100 }
+  ],
+  "bör_krav": [
+    { "krav": "Beskrivning av kravet", "typ": "bör", "kategori": "...", "källa": "...", "konfidens": 0-100 }
+  ],
+  "saknade_kritiska_falt": ["fält som saknas i FU:et"]
 }`
-
-export async function extraheraFrånText(
-  anbudId: string,
-  text: string
-): Promise<ExtraktionsResultat> {
-  const startTid = Date.now()
-
-  // Logga start
-  await supabase.from('extraktion_log').insert({
-    anbud_id: anbudId,
-    steg: 'extraktion',
-    status: 'startad',
-    meddelande: `Startar extraktion av ${text.length} tecken`,
-  })
-
-  // Uppdatera status
-  await supabase
-    .from('anbud')
-    .update({ extraktion_status: 'extraherar' })
-    .eq('id', anbudId)
-
-  try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: `Analysera detta förfrågningsunderlag och extrahera all strukturerad information:\n\n${text.slice(0, 50000)}`,
-        },
-      ],
-    })
-
-    const content = response.content[0]
-    if (content.type !== 'text') {
-      throw new Error('Oväntat svar från Claude')
-    }
-
-    const resultat = parseClaudeJSON<ExtraktionsResultat>(content.text)
-    const varaktighet = Date.now() - startTid
-    const tokens = (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0)
-
-    // Beräkna lägsta konfidens bland kritiska fält
-    const kritiskaFält = ['beställare', 'kontaktperson', 'sista_anbudsdag', 'avtalsvillkor', 'uppdragsbeskrivning'] as const
-    const lägstaKonfidens = Math.min(
-      ...kritiskaFält.map(f => resultat.fält[f]?.konfidens ?? 0)
-    )
-
-    // Uppdatera anbud
-    await supabase
-      .from('anbud')
-      .update({
-        extraherad_data: resultat.fält,
-        extraktion_status: 'extraherad',
-        konfidensvärden: Object.fromEntries(
-          Object.entries(resultat.fält).map(([k, v]) => [k, (v as ExtraktionsFält).konfidens])
-        ),
-        kund_typ: resultat.kund_typ,
-        rot_tillämpligt: resultat.rot_tillämpligt,
-        gron_teknik_tillämpligt: resultat.gron_teknik_tillämpligt,
-        gron_teknik_typ: resultat.gron_teknik_typ,
-        foreslaget_avtalsvillkor: resultat.foreslaget_avtalsvillkor,
-      })
-      .eq('id', anbudId)
-
-    // Uppdatera projekt
-    const { data: anbud } = await supabase
-      .from('anbud')
-      .select('projekt_id')
-      .eq('id', anbudId)
-      .single()
-
-    if (anbud) {
-      await supabase
-        .from('projekt')
-        .update({
-          analys_komplett: resultat.analys_komplett,
-          saknade_falt: resultat.saknade_kritiska_falt,
-          lägsta_konfidens: lägstaKonfidens,
-          gron_teknik: resultat.gron_teknik_tillämpligt,
-          gron_teknik_typ: resultat.gron_teknik_typ ? [resultat.gron_teknik_typ] : [],
-        })
-        .eq('id', anbud.projekt_id)
-    }
-
-    // Logga framgång
-    await supabase.from('extraktion_log').insert({
-      anbud_id: anbudId,
-      steg: 'extraktion',
-      status: 'klar',
-      meddelande: `Extraktion klar. Komplett: ${resultat.analys_komplett}. Lägsta konfidens: ${lägstaKonfidens}`,
-      tokens_använda: tokens,
-      varaktighet_ms: varaktighet,
-    })
-
-    return resultat
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Okänt fel'
-
-    await supabase
-      .from('anbud')
-      .update({ extraktion_status: 'fel' })
-      .eq('id', anbudId)
-
-    await supabase.from('extraktion_log').insert({
-      anbud_id: anbudId,
-      steg: 'extraktion',
-      status: 'fel',
-      meddelande: message,
-      varaktighet_ms: Date.now() - startTid,
-    })
-
-    throw err
-  }
-}
 
 /**
  * Extraherar krav från ALLA dokument i ett projekt (samlat FU).
- * Samlar text från alla uppladdade filer och kör extraktion på helheten.
  */
 export async function extraheraFrånProjekt(projektId: string): Promise<ExtraktionsResultat> {
   const { samlaFUText } = await import('@/lib/fu-agent')
@@ -231,15 +99,33 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
 
   const startTid = Date.now()
 
+  // Logga start
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: firstAnbud } = await supabase
+    .from('anbud')
+    .select('id')
+    .eq('projekt_id', projektId)
+    .limit(1)
+    .single() as { data: any }
+
+  if (firstAnbud) {
+    await supabase.from('extraktion_log').insert({
+      anbud_id: firstAnbud.id,
+      steg: 'fu_scanning',
+      status: 'startad',
+      meddelande: `Scannar ${samladText.length} tecken från alla dokument`,
+    })
+  }
+
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: SYSTEM_PROMPT,
       messages: [
         {
           role: 'user',
-          content: `Analysera detta förfrågningsunderlag (kan bestå av flera dokument) och extrahera all strukturerad information:\n\n${samladText.slice(0, 80000)}`,
+          content: `Scanna detta förfrågningsunderlag (kan bestå av flera dokument) och extrahera ALL projektinfo samt ALLA ska-krav och bör-krav:\n\n${samladText.slice(0, 80000)}`,
         },
       ],
     })
@@ -251,20 +137,12 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
     const varaktighet = Date.now() - startTid
     const tokens = (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0)
 
-    const kritiskaFält = ['beställare', 'kontaktperson', 'sista_anbudsdag', 'avtalsvillkor', 'uppdragsbeskrivning'] as const
-    const lägstaKonfidens = Math.min(
-      ...kritiskaFält.map(f => resultat.fält[f]?.konfidens ?? 0)
-    )
-
-    // Uppdatera projektet med extraktionsresultat
+    // Spara resultat på projektet
     await supabase
       .from('projekt')
       .update({
         analys_komplett: resultat.analys_komplett,
         saknade_falt: resultat.saknade_kritiska_falt,
-        lägsta_konfidens: lägstaKonfidens,
-        gron_teknik: resultat.gron_teknik_tillämpligt,
-        gron_teknik_typ: resultat.gron_teknik_typ ? [resultat.gron_teknik_typ] : [],
         jämförelse_resultat: resultat as unknown as Record<string, unknown>,
       })
       .eq('id', projektId)
@@ -276,20 +154,12 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
       .eq('projekt_id', projektId)
 
     // Logga
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: firstAnbud } = await supabase
-      .from('anbud')
-      .select('id')
-      .eq('projekt_id', projektId)
-      .limit(1)
-      .single() as { data: any }
-
     if (firstAnbud) {
       await supabase.from('extraktion_log').insert({
         anbud_id: firstAnbud.id,
-        steg: 'fu_extraktion',
+        steg: 'fu_scanning',
         status: 'klar',
-        meddelande: `Samlad FU-extraktion klar. ${resultat.analys_komplett ? 'Komplett' : 'Ofullständig'}. Konfidens: ${lägstaKonfidens}`,
+        meddelande: `Scanning klar: ${resultat.ska_krav.length} ska-krav, ${resultat.bör_krav.length} bör-krav hittade`,
         tokens_använda: tokens,
         varaktighet_ms: varaktighet,
       })
@@ -301,6 +171,17 @@ export async function extraheraFrånProjekt(projektId: string): Promise<Extrakti
       .from('projekt')
       .update({ analys_komplett: false })
       .eq('id', projektId)
+
+    if (firstAnbud) {
+      await supabase.from('extraktion_log').insert({
+        anbud_id: firstAnbud.id,
+        steg: 'fu_scanning',
+        status: 'fel',
+        meddelande: err instanceof Error ? err.message : 'Okänt fel',
+        varaktighet_ms: Date.now() - startTid,
+      })
+    }
+
     throw err
   }
 }
