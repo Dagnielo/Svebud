@@ -116,26 +116,7 @@ export default function GranskningSida({ projektId, onKravBesvarade, externtScan
   if (loading) return <div className="animate-pulse h-40 rounded-lg" style={{ background: 'var(--navy-mid)' }} />
 
   if (scanning) {
-    return (
-      <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--yellow)', borderRadius: 12, padding: '24px' }}>
-        <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
-          <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid var(--navy-border)', borderTop: '3px solid var(--yellow)', borderRadius: '50%' }} />
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--yellow)' }}>Scannar dokument efter krav...</div>
-            <div style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>AI:n läser alla dokument och identifierar ska-krav och bör-krav. Det tar ca 30-90 sekunder.</div>
-          </div>
-        </div>
-        <div style={{ marginTop: 8 }}>
-          {dokument.map((d, i) => (
-            <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'var(--navy-light)' }}>
-              <div className="animate-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />
-              <span style={{ color: 'var(--soft)' }}>{d.filnamn}</span>
-              <span style={{ color: 'var(--muted-custom)', marginLeft: 'auto', fontSize: 10 }}>Läser...</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
+    return <ScanningIndikator dokument={dokument} />
   }
 
   if (!data) {
@@ -427,6 +408,60 @@ function InfoRad({ label, värde }: { label: string; värde: string | null }) {
     <div style={{ padding: '6px 0' }}>
       <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 2 }}>{label}</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: värde ? 'var(--white)' : 'var(--slate)' }}>{värde ?? '—'}</div>
+    </div>
+  )
+}
+
+function ScanningIndikator({ dokument }: { dokument: Dokument[] }) {
+  const [sekunder, setSekunder] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => setSekunder(s => s + 1), 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const progress = Math.min(sekunder / 90 * 100, 95) // Max 95% tills klar
+
+  return (
+    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--yellow)', borderRadius: 12, padding: '24px' }}>
+      <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
+        <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid var(--navy-border)', borderTop: '3px solid var(--yellow)', borderRadius: '50%', flexShrink: 0 }} />
+        <div className="flex-1">
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--yellow)' }}>
+            Scannar {dokument.length} dokument efter krav...
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>
+            AI:n läser alla dokument samtidigt och identifierar ska-krav och bör-krav
+          </div>
+        </div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--yellow)', fontFamily: 'var(--font-mono), monospace', flexShrink: 0 }}>
+          {sekunder}s
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--navy-light)', marginBottom: 16 }}>
+        <div style={{ width: `${progress}%`, height: '100%', borderRadius: 2, background: 'var(--yellow)', transition: 'width 1s linear' }} />
+      </div>
+
+      {/* Dokumentlista */}
+      <div>
+        {dokument.map((d, i) => (
+          <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 4, padding: '5px 8px', borderRadius: 6, background: 'var(--navy-light)' }}>
+            <div className="animate-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)', flexShrink: 0 }} />
+            <span style={{ color: 'var(--soft)', flex: 1 }}>{d.filnamn}</span>
+            <span style={{ color: 'var(--muted-custom)', fontSize: 10 }}>
+              {d.filnamn.endsWith('.pdf') ? 'PDF → Claude' : d.filnamn.endsWith('.docx') ? 'Word → text' : d.filnamn.endsWith('.xml') ? 'XML → text' : 'Läses'}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {sekunder > 90 && (
+        <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'var(--orange-bg)', fontSize: 12, color: 'var(--orange)' }}>
+          Scanningen tar längre tid än vanligt. Vänta eller ladda om sidan.
+        </div>
+      )}
     </div>
   )
 }
