@@ -137,8 +137,11 @@ Timpris jour: ${profil.timpris_jour ?? 950} kr/tim
 
 ANALYSRESULTAT (från AI-scanning av förfrågningsunderlaget):
 ${JSON.stringify(kravmatchning, null, 2).slice(0, 15000)}
+${projekt.rekommendation?.kalkyl ? `
+BEFINTLIG KALKYL (justerad av användaren — ANVÄND DENNA som grund, ändra INTE priser eller moment):
+${JSON.stringify(projekt.rekommendation.kalkyl, null, 2)}
 
-Baserat på analysresultatet ovan, generera ett komplett anbudsutkast med kalkyl. Använd elfirmans timpriser.`,
+Baserat på analysresultatet och den BEFINTLIGA KALKYLEN ovan, generera ett komplett anbudsutkast. Behåll exakt samma moment och priser som i kalkylen.` : `Baserat på analysresultatet ovan, generera ett komplett anbudsutkast med kalkyl. Använd elfirmans timpriser.`}`,
         },
       ],
     })

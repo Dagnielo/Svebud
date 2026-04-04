@@ -53,6 +53,16 @@ export default function DashboardPage() {
     setProjekt(prev => prev.map(p => p.id === projektId ? { ...p, pipeline_status: tillKolumn } as typeof p : p))
   }
 
+  async function raderaProjekt(projektId: string) {
+    setProjekt(prev => prev.filter(p => p.id !== projektId))
+    await fetch(`/api/projekt/${projektId}/radera`, { method: 'DELETE' })
+  }
+
+  async function uppdateraDeadline(projektId: string, datum: string | null) {
+    setProjekt(prev => prev.map(p => p.id === projektId ? { ...p, deadline: datum } as typeof p : p))
+    await supabase.from('projekt').update({ deadline: datum }).eq('id', projektId)
+  }
+
   const hämtaData = useCallback(async () => {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) return
@@ -422,7 +432,7 @@ export default function DashboardPage() {
                             onDragEnd={() => { setDragProjektId(null); setDragOverKolumn(null) }}
                             style={{ cursor: 'grab', opacity: dragProjektId === p.id ? 0.5 : 1 }}
                           >
-                            <ProjektKort projekt={p} />
+                            <ProjektKort projekt={p} onRadera={raderaProjekt} onDeadlineChange={uppdateraDeadline} />
                           </div>
                         ))
                       )}

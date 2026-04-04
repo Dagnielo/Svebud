@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AnbudsUppladdning from '@/components/AnbudsUppladdning'
 import GranskningSida from '@/components/GranskningSida'
+import SnabboffertVy, { type SnabbMoment } from '@/components/SnabboffertVy'
 import RotKalkyl from '@/components/RotKalkyl'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { marked } from 'marked'
 import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument-style'
+
+type Inskickning = {
+  datum: string
+  version: number
+  kommentar?: string
+  utkast?: string
+}
 
 type ProjektData = {
   id: string
@@ -24,9 +32,12 @@ type ProjektData = {
   tilldelning_status: string | null
   anbudsutkast: string | null
   anbudsutkast_redigerat: string | null
+  deadline: string | null
+  skickat_datum: string | null
+  inskickningar: Inskickning[] | null
 }
 
-type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string }
+type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
 type LoggRad = { id: string; steg: string; status: string; meddelande: string | null; skapad: string }
 
 const stegLabels = ['Dokument', 'Analys & GO/NO-GO', 'Anbud & Skicka']
@@ -50,6 +61,12 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
   const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number }>({ rotBelopp: 0, kundBetalar: 0 })
+  const [analysTyp, setAnalysTyp] = useState<'formell' | 'snabb' | null>(null)
+  const [snabbMoment, setSnabbMoment] = useState<SnabbMoment[] | null>(null)
+  const [expanderadDok, setExpanderadDok] = useState<string | null>(null)
+  const [visaHistorik, setVisaHistorik] = useState(false)
+  const [skickaKommentar, setSkickaKommentar] = useState('')
+  const [expanderadVersion, setExpanderadVersion] = useState<number | null>(null)
   const [förhandsgranskning, setFörhandsgranskning] = useState(false)
   const [aktivTab, setAktivTab] = useState<string | null>(null)
   const router = useRouter()
@@ -61,6 +78,10 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       const pd = p as unknown as ProjektData
       setProjekt(pd)
       setUtkast(pd.anbudsutkast_redigerat ?? pd.anbudsutkast ?? '')
+      // Detektera analystyp
+      const jr = (p as Record<string, unknown>).jämförelse_resultat as Record<string, unknown> | null
+      if (jr?.analystyp === 'snabb') setAnalysTyp('snabb')
+      else if (jr && !jr.analystyp) setAnalysTyp('formell')
     }
     const { data: a } = await supabase.from('anbud').select('*').eq('projekt_id', projektId).order('skapad', { ascending: false })
     if (a) setAnbud(a as unknown as AnbudRad[])
@@ -81,30 +102,79 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   async function körAnalys() {
     setAktivTab('analys')
     setAnalysLaddar(true)
-    await fetch('/api/anbud/extrahera', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projektId }),
-    })
+    try {
+      const res = await fetch('/api/anbud/extrahera', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projektId }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        alert(`Analysfel: ${data.fel ?? `HTTP ${res.status}`}`)
+      }
+    } catch (err) {
+      alert(`Nätverksfel: ${err instanceof Error ? err.message : 'Okänt fel'}`)
+    }
     await hämta()
     setAnalysLaddar(false)
   }
 
   async function körAnbudsGenerering() {
     setAnbudLaddar(true)
+    // Om snabboffert: spara justerade moment som kalkyl-data på projektet
+    if (analysTyp === 'snabb' && snabbMoment) {
+      const totArbete = snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)
+      const totMaterial = snabbMoment.reduce((s, m) => s + m.materialkostnad, 0)
+      const total = totArbete + totMaterial
+      await supabase.from('projekt').update({
+        rekommendation: {
+          ...(projekt?.rekommendation as Record<string, unknown> ?? {}),
+          kalkyl: {
+            moment: snabbMoment,
+            totalt_arbete: totArbete,
+            totalt_material: totMaterial,
+            totalbelopp: total,
+            moms: Math.round(total * 0.25),
+            totalt_inkl_moms: total + Math.round(total * 0.25),
+          },
+        },
+      }).eq('id', projektId)
+    }
     await fetch(`/api/projekt/${projektId}/rekommendation`, { method: 'POST' })
     await hämta()
     setAnbudLaddar(false)
+    setAktivTab('anbud')
   }
 
-  async function sparaUtkast() {
-    setSparar(true)
-    await supabase.from('projekt').update({ anbudsutkast_redigerat: utkast }).eq('id', projektId)
+  // Auto-save utkast med debounce
+  useEffect(() => {
+    if (!utkast) return
     setSparar(false)
-  }
+    const t = setTimeout(async () => {
+      setSparar(true)
+      await supabase.from('projekt').update({ anbudsutkast_redigerat: utkast }).eq('id', projektId)
+      setSparar(false)
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [utkast])
 
-  async function markeraSomSkickat() {
-    await supabase.from('projekt').update({ pipeline_status: 'inskickat', skickat_datum: new Date().toISOString() }).eq('id', projektId)
+  async function markeraSomSkickat(kommentar?: string) {
+    const nu = new Date().toISOString()
+    const { data: p } = await supabase.from('projekt').select('*').eq('id', projektId).single()
+    const befintliga = ((p as Record<string, unknown>)?.inskickningar as Inskickning[]) ?? []
+    const nyVersion = befintliga.length + 1
+    const nyaInskickningar: Inskickning[] = [...befintliga, {
+      datum: nu,
+      version: nyVersion,
+      utkast: utkast,
+      ...(kommentar ? { kommentar } : {}),
+    }]
+
+    await supabase.from('projekt').update({
+      pipeline_status: 'inskickat',
+      skickat_datum: nu,
+      inskickningar: nyaInskickningar,
+    }).eq('id', projektId)
     await hämta()
   }
 
@@ -113,12 +183,28 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     await hämta()
   }
 
+  async function raderaDokument(anbudId: string, storagePath: string | null) {
+    if (!confirm('Vill du radera detta dokument?')) return
+    // Ta bort loggar
+    await supabase.from('extraktion_log').delete().eq('anbud_id', anbudId)
+    // Ta bort fil från storage
+    if (storagePath) {
+      await supabase.storage.from('anbudsdokument').remove([storagePath])
+    }
+    // Ta bort anbud-raden
+    await supabase.from('anbud').delete().eq('id', anbudId)
+    // Uppdatera lokalt
+    setAnbud(prev => prev.filter(a => a.id !== anbudId))
+  }
+
   function kopieraText() {
     navigator.clipboard.writeText(utkast)
     alert('Kopierat till urklipp!')
   }
 
   function byggKalkylHtml() {
+    // Undvik dubbel kalkyl — om utkastet redan har en kalkylsektion, lägg inte till en till
+    if (utkast && /##\s*kalkyl/i.test(utkast)) return ''
     const mom = kalkylMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
     if (mom.length === 0) return ''
     const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
@@ -232,15 +318,45 @@ hr{border:none;border-top:1pt solid #e0e0e0}
           <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{projekt.namn}</h1>
           <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 1 }}>{projekt.beskrivning ?? ''}</p>
         </div>
-        {goNoGo && (
-          <span style={{
-            fontSize: 12, fontWeight: 800, textTransform: 'uppercase', padding: '5px 12px', borderRadius: 6,
-            background: goNoGo === 'GO' ? 'var(--green-bg)' : goNoGo === 'NO_GO' ? 'var(--red-bg)' : 'var(--orange-bg)',
-            color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO_GO' ? 'var(--red)' : 'var(--orange)',
-          }}>
-            {goNoGo === 'GO' ? 'GO' : goNoGo === 'NO_GO' ? 'NO-GO' : 'GO m. reservation'}
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {/* Deadline */}
+          <div className="flex items-center gap-1.5">
+            <span style={{ fontSize: 12 }}>📅</span>
+            {!projekt.deadline && (
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--yellow)', marginRight: 4 }}>
+                Sätt deadline →
+              </span>
+            )}
+            <input
+              type="date"
+              value={projekt.deadline ?? ''}
+              onChange={async (e) => {
+                const val = e.target.value || null
+                setProjekt(prev => prev ? { ...prev, deadline: val } : prev)
+                await supabase.from('projekt').update({ deadline: val }).eq('id', projektId)
+              }}
+              style={{
+                background: 'var(--navy)',
+                border: projekt.deadline ? '1px solid var(--navy-border)' : '1px dashed var(--yellow)',
+                borderRadius: 6,
+                color: projekt.deadline ? 'var(--white)' : 'var(--yellow)',
+                fontSize: 12,
+                padding: '4px 8px',
+                cursor: 'pointer',
+              }}
+            />
+          </div>
+
+          {goNoGo && (
+            <span style={{
+              fontSize: 12, fontWeight: 800, textTransform: 'uppercase', padding: '5px 12px', borderRadius: 6,
+              background: goNoGo === 'GO' ? 'var(--green-bg)' : goNoGo === 'NO_GO' ? 'var(--red-bg)' : 'var(--orange-bg)',
+              color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO_GO' ? 'var(--red)' : 'var(--orange)',
+            }}>
+              {goNoGo === 'GO' ? 'GO' : goNoGo === 'NO_GO' ? 'NO-GO' : 'GO m. reservation'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* 3-stegs stepper */}
@@ -329,8 +445,61 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     </div>
                     <div style={{ padding: '12px 18px' }}>
                       {anbud.map(a => (
-                        <div key={a.id} className="flex items-center justify-between" style={{ padding: '6px 0', borderBottom: '1px solid rgba(36,54,80,0.3)' }}>
-                          <span style={{ fontSize: 13 }}>{a.filnamn}</span>
+                        <div key={a.id} style={{ borderBottom: '1px solid rgba(36,54,80,0.3)' }}>
+                          <div className="flex items-center gap-2" style={{ padding: '8px 0' }}>
+                            <div
+                              className="flex items-center gap-2 flex-1 cursor-pointer"
+                              onClick={() => a.rå_text && setExpanderadDok(expanderadDok === a.id ? null : a.id)}
+                              style={{ fontSize: 13 }}
+                            >
+                              <span style={{ color: 'var(--blue-accent)' }}>📄</span>
+                              <span className="flex-1">{a.filnamn}</span>
+                              {a.rå_text ? (
+                                <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                                  {expanderadDok === a.id ? '▲ Dölj text' : '▼ Visa text'}
+                                </span>
+                              ) : (
+                                <span style={{ fontSize: 10, color: 'var(--slate)', fontStyle: 'italic' }}>
+                                  PDF — läses direkt av AI
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => raderaDokument(a.id, a.storage_path)}
+                              style={{
+                                fontSize: 12,
+                                color: 'var(--red)',
+                                background: 'var(--red-bg)',
+                                border: '1px solid rgba(255,77,77,0.3)',
+                                borderRadius: 6,
+                                cursor: 'pointer',
+                                padding: '3px 8px',
+                                flexShrink: 0,
+                              }}
+                            >
+                              Radera
+                            </button>
+                          </div>
+                          {expanderadDok === a.id && a.rå_text && (
+                            <div
+                              style={{
+                                padding: '12px 14px',
+                                marginBottom: 8,
+                                borderRadius: 8,
+                                background: 'var(--navy)',
+                                border: '1px solid var(--navy-border)',
+                                fontSize: 12,
+                                lineHeight: 1.7,
+                                color: 'var(--soft)',
+                                whiteSpace: 'pre-wrap',
+                                maxHeight: 400,
+                                overflowY: 'auto',
+                                fontFamily: 'var(--font-mono), monospace',
+                              }}
+                            >
+                              {a.rå_text}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -339,14 +508,42 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               </div>
             </TabsContent>
 
-            {/* TAB 2: Analys & GO/NO-GO */}
+            {/* TAB 2: Analys & GO/NO-GO eller Snabboffert */}
             <TabsContent value="analys">
-              <GranskningSida projektId={projektId} externtScanning={analysLaddar} />
+              {analysTyp === 'snabb' ? (
+                <SnabboffertVy projektId={projektId} onMomentChange={setSnabbMoment} />
+              ) : (
+                <GranskningSida projektId={projektId} externtScanning={analysLaddar} />
+              )}
               {projekt.jämförelse_status === 'klar' && !utkast && (
                 <div style={{ marginTop: 16, textAlign: 'center' }}>
                   <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, padding: '12px 32px' }}>
                     {anbudLaddar ? '⏳ Genererar anbud...' : '📋 Generera anbudsutkast →'}
                   </Button>
+                  {analysTyp && (
+                    <button
+                      onClick={() => {
+                        const nyttTyp = analysTyp === 'snabb' ? 'formell' : 'snabb'
+                        setAnalysLaddar(true)
+                        fetch('/api/anbud/extrahera', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ projektId, tvingaTyp: nyttTyp }),
+                        }).then(() => hämta()).finally(() => setAnalysLaddar(false))
+                      }}
+                      style={{
+                        marginTop: 8,
+                        fontSize: 11,
+                        color: 'var(--muted-custom)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      {analysTyp === 'snabb' ? 'Byt till formell kravanalys →' : 'Byt till snabboffert →'}
+                    </button>
+                  )}
                 </div>
               )}
             </TabsContent>
@@ -364,28 +561,43 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Kalkyl */}
-                  <KalkylVy kalkyl={rekData?.kalkyl as Record<string, unknown> | undefined} onChange={setKalkylMoment} />
+                  {/* Kalkyl — visa bara vid formell analys (snabboffert har redigerbar kalkyl i Tab 2) */}
+                  {analysTyp !== 'snabb' && (
+                    <>
+                      <KalkylVy kalkyl={rekData?.kalkyl as Record<string, unknown> | undefined} onChange={setKalkylMoment} />
+                      <RotKalkyl
+                        arbeteExMoms={
+                          (kalkylMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? [])
+                            .reduce((s, m) => s + m.timmar * m.timpris, 0)
+                        }
+                        materialExMoms={
+                          (kalkylMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? [])
+                            .reduce((s, m) => s + m.materialkostnad, 0)
+                        }
+                        projektId={projektId}
+                        onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
+                      />
+                    </>
+                  )}
 
-                  {/* ROT-kalkyl */}
-                  <RotKalkyl
-                    arbeteExMoms={
-                      (kalkylMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? [])
-                        .reduce((s, m) => s + m.timmar * m.timpris, 0)
-                    }
-                    materialExMoms={
-                      (kalkylMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? [])
-                        .reduce((s, m) => s + m.materialkostnad, 0)
-                    }
-                    projektId={projektId}
-                    onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
-                  />
+                  {/* ROT-kalkyl för snabboffert — använder moment från Tab 2 */}
+                  {analysTyp === 'snabb' && snabbMoment && (
+                    <RotKalkyl
+                      arbeteExMoms={snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)}
+                      materialExMoms={snabbMoment.reduce((s, m) => s + m.materialkostnad, 0)}
+                      projektId={projektId}
+                      onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
+                    />
+                  )}
 
                   {/* Redigerbart utkast */}
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
                     <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>📋 Anbudsutkast (redigerbart)</span>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
+                        {sparar && (
+                          <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>Sparar...</span>
+                        )}
                         <Button
                           onClick={() => setFörhandsgranskning(!förhandsgranskning)}
                           variant="outline"
@@ -397,9 +609,6 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           }}
                         >
                           {förhandsgranskning ? '✏️ Redigera' : '👁 Förhandsgranska'}
-                        </Button>
-                        <Button onClick={sparaUtkast} disabled={sparar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
-                          {sparar ? 'Sparar...' : '💾 Spara'}
                         </Button>
                         <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📋 Kopiera text</Button>
                         <Button onClick={exporteraSomPdf} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📄 PDF</Button>
@@ -427,31 +636,147 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     )}
                   </div>
 
-                  {/* Skicka & tilldelning */}
+                  {/* Markera som skickat */}
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '20px 24px' }}>
-                    {projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning' ? (
-                      <div className="space-y-4">
-                        <div style={{ fontSize: 15, fontWeight: 700 }}>✅ Anbud inskickat</div>
-                        <p style={{ fontSize: 13, color: 'var(--muted-custom)' }}>Uppdatera tilldelningsstatus:</p>
-                        <div className="flex gap-3">
-                          <Button onClick={() => uppdateraTilldelning('vunnet')} style={{ background: 'var(--green)', color: 'var(--navy)' }}>✅ Vunnet</Button>
-                          <Button onClick={() => uppdateraTilldelning('forlorat')} style={{ background: 'var(--red)', color: 'white' }}>❌ Förlorat</Button>
-                          <Button onClick={() => uppdateraTilldelning('vantar')} variant="outline" style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}>⏳ Väntar</Button>
-                        </div>
-                        {projekt.tilldelning_status && (
-                          <div style={{ fontSize: 14, fontWeight: 700, color: projekt.tilldelning_status === 'vunnet' ? 'var(--green)' : projekt.tilldelning_status === 'forlorat' ? 'var(--red)' : 'var(--orange)' }}>
-                            Status: {projekt.tilldelning_status === 'vunnet' ? 'Vunnet ✅' : projekt.tilldelning_status === 'forlorat' ? 'Förlorat ❌' : 'Väntar ⏳'}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <Button onClick={markeraSomSkickat} style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 14, padding: '12px 24px' }}>
-                          📤 Markera som skickat
-                        </Button>
-                      </div>
-                    )}
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                        Kommentar (valfritt)
+                      </label>
+                      <input
+                        value={skickaKommentar}
+                        onChange={e => setSkickaKommentar(e.target.value)}
+                        placeholder="T.ex. Skickat via e-post till Maria Lindqvist..."
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: 8,
+                          background: 'var(--navy)',
+                          border: '1px solid var(--navy-border)',
+                          color: 'var(--white)',
+                          fontSize: 13,
+                        }}
+                      />
+                    </div>
+                    <div className="text-center">
+                      <Button
+                        onClick={() => {
+                          markeraSomSkickat(skickaKommentar.trim() || undefined)
+                          setSkickaKommentar('')
+                        }}
+                        style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 14, padding: '12px 24px' }}
+                      >
+                        📤 Markera som skickat
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* Inskickningshistorik */}
+                  {(projekt.inskickningar?.length ?? 0) > 0 && (
+                    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '16px 24px' }}>
+                      <button
+                        onClick={() => setVisaHistorik(!visaHistorik)}
+                        className="flex items-center justify-between w-full"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span style={{ fontSize: 14 }}>📋</span>
+                          <span style={{ fontSize: 14, fontWeight: 700 }}>
+                            Inskickningshistorik
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, background: 'var(--navy-light)', color: 'var(--muted-custom)', padding: '2px 8px', borderRadius: 20 }}>
+                            {projekt.inskickningar?.length ?? 0}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                          {visaHistorik ? '▲ Dölj' : '▼ Visa'}
+                        </span>
+                      </button>
+
+                      {visaHistorik && (
+                        <div style={{ marginTop: 12 }}>
+                          {[...(projekt.inskickningar ?? [])].reverse().map((insk, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                marginBottom: 6,
+                                borderRadius: 8,
+                                background: i === 0 ? 'var(--green-bg)' : 'var(--navy)',
+                                border: i === 0 ? '1px solid rgba(0,198,122,0.3)' : '1px solid var(--navy-border)',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              <button
+                                onClick={() => setExpanderadVersion(expanderadVersion === insk.version ? null : insk.version)}
+                                className="flex items-center justify-between w-full"
+                                style={{
+                                  padding: '10px 14px',
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: insk.utkast ? 'pointer' : 'default',
+                                }}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    background: i === 0 ? 'var(--green)' : 'var(--navy-light)',
+                                    color: i === 0 ? 'var(--navy)' : 'var(--muted-custom)',
+                                    padding: '2px 8px',
+                                    borderRadius: 4,
+                                  }}>
+                                    v{insk.version}
+                                  </span>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: i === 0 ? 'var(--white)' : 'var(--muted-custom)' }}>
+                                    {new Date(insk.datum).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    {' kl '}
+                                    {new Date(insk.datum).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                  {i === 0 && (
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--green)' }}>Senaste</span>
+                                  )}
+                                </div>
+                                {insk.utkast && (
+                                  <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                                    {expanderadVersion === insk.version ? '▲ Dölj anbud' : '▼ Visa anbud'}
+                                  </span>
+                                )}
+                              </button>
+                              {insk.kommentar && (
+                                <div style={{ fontSize: 12, color: 'var(--soft)', padding: '0 14px 8px', marginLeft: 36 }}>
+                                  💬 {insk.kommentar}
+                                </div>
+                              )}
+                              {expanderadVersion === insk.version && insk.utkast && (
+                                <div
+                                  style={{
+                                    borderTop: '1px solid var(--navy-border)',
+                                    background: '#fff',
+                                    maxHeight: 500,
+                                    overflowY: 'auto',
+                                  }}
+                                  dangerouslySetInnerHTML={{
+                                    __html: `<style>${DOKUMENT_CSS}</style><div class="dokument">${mdTillHtml(insk.utkast)}</div>`
+                                  }}
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tilldelning */}
+                  {(projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') && (
+                    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '16px 24px' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Hur gick det?</div>
+                      <div className="flex gap-3">
+                        <Button onClick={() => uppdateraTilldelning('vunnet')} style={{ background: projekt.tilldelning_status === 'vunnet' ? 'var(--green)' : 'transparent', color: projekt.tilldelning_status === 'vunnet' ? 'var(--navy)' : 'var(--green)', border: '1px solid var(--green)' }}>✅ Vunnet</Button>
+                        <Button onClick={() => uppdateraTilldelning('forlorat')} style={{ background: projekt.tilldelning_status === 'forlorat' ? 'var(--red)' : 'transparent', color: projekt.tilldelning_status === 'forlorat' ? 'white' : 'var(--red)', border: '1px solid var(--red)' }}>❌ Förlorat</Button>
+                        <Button onClick={() => uppdateraTilldelning('vantar')} style={{ background: projekt.tilldelning_status === 'vantar' ? 'var(--orange)' : 'transparent', color: projekt.tilldelning_status === 'vantar' ? 'var(--navy)' : 'var(--orange)', border: '1px solid var(--orange)' }}>⏳ Väntar</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>

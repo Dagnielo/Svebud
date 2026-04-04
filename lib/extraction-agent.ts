@@ -193,14 +193,24 @@ export async function analyseraOchMatcha(projektId: string): Promise<AnalysResul
     const totalKrav = resultat.matchade_krav.length + resultat.kräver_bekräftelse.length + resultat.ej_uppfyllda.length
 
     // Spara allt på projektet
+    const uppdatering: Record<string, unknown> = {
+      analys_komplett: true,
+      jämförelse_resultat: resultat as unknown as Record<string, unknown>,
+      jämförelse_status: 'klar',
+      kravmatchning: resultat as unknown as Record<string, unknown>,
+    }
+
+    // Auto-sätt deadline om AI:n hittade sista anbudsdag
+    if (resultat.sista_anbudsdag) {
+      const d = new Date(resultat.sista_anbudsdag)
+      if (!isNaN(d.getTime())) {
+        uppdatering.deadline = d.toISOString().split('T')[0]
+      }
+    }
+
     await supabase
       .from('projekt')
-      .update({
-        analys_komplett: true,
-        jämförelse_resultat: resultat as unknown as Record<string, unknown>,
-        jämförelse_status: 'klar',
-        kravmatchning: resultat as unknown as Record<string, unknown>,
-      })
+      .update(uppdatering)
       .eq('id', projektId)
 
     // Markera anbud som extraherade

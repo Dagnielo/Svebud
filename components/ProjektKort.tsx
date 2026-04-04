@@ -13,10 +13,13 @@ type Projekt = {
   tilldelning_status?: string
   tier: string
   skapad: string
+  deadline?: string | null
 }
 
 type Props = {
   projekt: Projekt
+  onRadera?: (id: string) => void
+  onDeadlineChange?: (id: string, datum: string | null) => void
 }
 
 function dagarSedanSkapad(skapad: string) {
@@ -50,7 +53,7 @@ function getStatusDotColor(p: Projekt): string {
   return 'var(--muted-custom)'
 }
 
-export default function ProjektKort({ projekt }: Props) {
+export default function ProjektKort({ projekt, onRadera, onDeadlineChange }: Props) {
   return (
     <Link href={`/projekt/${projekt.id}`} className="block" style={{ textDecoration: 'none' }}>
       <div
@@ -102,6 +105,75 @@ export default function ProjektKort({ projekt }: Props) {
           </span>
         </div>
 
+        {/* Deadline — alltid synlig */}
+        <div
+          className="flex items-center gap-1.5"
+          style={{ marginBottom: 6 }}
+          onClick={e => { e.preventDefault(); e.stopPropagation() }}
+        >
+          {projekt.deadline ? (() => {
+            const d = new Date(projekt.deadline)
+            const dagar = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+            const passerad = dagar < 0
+            const brådskande = dagar >= 0 && dagar <= 3
+            return (
+              <>
+                <span style={{ fontSize: 11 }}>{passerad ? '⚠' : brådskande ? '🔥' : '📅'}</span>
+                <input
+                  type="date"
+                  value={projekt.deadline}
+                  onChange={e => onDeadlineChange?.(projekt.id, e.target.value || null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: passerad ? 'var(--red)' : brådskande ? 'var(--orange)' : 'var(--muted-custom)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    padding: 0,
+                    width: 95,
+                  }}
+                />
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: passerad ? 'var(--red)' : brådskande ? 'var(--orange)' : 'var(--slate)',
+                }}>
+                  {passerad
+                    ? 'Passerad!'
+                    : dagar === 0
+                      ? 'Idag!'
+                      : dagar === 1
+                        ? 'Imorgon'
+                        : `${dagar}d kvar`}
+                </span>
+              </>
+            )
+          })() : (
+            <>
+              <span style={{ fontSize: 11 }}>📅</span>
+              <input
+                type="date"
+                value=""
+                onChange={e => onDeadlineChange?.(projekt.id, e.target.value || null)}
+                style={{
+                  background: 'transparent',
+                  border: '1px dashed var(--steel)',
+                  borderRadius: 4,
+                  color: 'var(--yellow)',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: '1px 6px',
+                }}
+              />
+              <span style={{ fontSize: 10, color: 'var(--yellow)', fontWeight: 600 }}>
+                Sätt deadline
+              </span>
+            </>
+          )}
+        </div>
+
         {projekt.analys_komplett === false && (
           <span
             style={{
@@ -119,6 +191,30 @@ export default function ProjektKort({ projekt }: Props) {
           style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--navy-border)' }}
         >
           <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>Öppna →</span>
+          {onRadera && (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (confirm(`Vill du verkligen radera "${projekt.namn}"? Detta går inte att ångra.`)) {
+                  onRadera(projekt.id)
+                }
+              }}
+              style={{
+                fontSize: 11,
+                color: 'var(--slate)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 6px',
+                borderRadius: 4,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.background = 'var(--red-bg)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--slate)'; e.currentTarget.style.background = 'none' }}
+            >
+              🗑
+            </button>
+          )}
         </div>
       </div>
     </Link>

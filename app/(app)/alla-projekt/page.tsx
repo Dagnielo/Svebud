@@ -264,14 +264,18 @@ export default function AllaProjektPage() {
                 const anbud = anbudMap[p.id]
                 const docs = anbudCount[p.id] ?? 0
                 const värde = anbud?.extraherad_data?.['värde_kr']?.värde
-                const deadline = anbud?.extraherad_data?.['sista_anbudsdag']?.värde as string | undefined
+                // Deadline: primärt från projekt.deadline, fallback till anbud-data
+                const deadlineRaw = (p as Record<string, unknown>).deadline as string | null
+                  ?? (anbud?.extraherad_data?.['sista_anbudsdag']?.värde as string | undefined)
+                  ?? null
                 const kundTyp = anbud?.kund_typ
                 const ai = getAiStatus(p)
 
-                const deadlineDate = deadline ? new Date(deadline) : null
+                const deadlineDate = deadlineRaw ? new Date(deadlineRaw) : null
                 const dagarKvar = deadlineDate
                   ? Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
                   : null
+                const passerad = dagarKvar !== null && dagarKvar < 0
                 const brådskande = dagarKvar !== null && dagarKvar <= 3 && dagarKvar >= 0
 
                 return (
@@ -314,24 +318,34 @@ export default function AllaProjektPage() {
                     <div>
                       {deadlineDate ? (
                         <div>
-                          <div style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: brådskande ? 'var(--red)' : dagarKvar !== null && dagarKvar <= 7 ? 'var(--orange)' : 'var(--muted-custom)',
-                          }}>
-                            {deadlineDate.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}
-                          </div>
-                          {dagarKvar !== null && dagarKvar >= 0 && (
-                            <div style={{
-                              fontSize: 10,
-                              color: brådskande ? 'var(--red)' : 'var(--slate)',
+                          <div className="flex items-center gap-1.5">
+                            <span style={{ fontSize: 11 }}>{passerad ? '⚠' : brådskande ? '🔥' : '📅'}</span>
+                            <span style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: passerad ? 'var(--red)' : brådskande ? 'var(--orange)' : 'var(--white)',
                             }}>
-                              {dagarKvar === 0 ? 'Idag!' : `${dagarKvar}d kvar`}
-                            </div>
-                          )}
-                          {dagarKvar !== null && dagarKvar < 0 && (
-                            <div style={{ fontSize: 10, color: 'var(--red)' }}>Passerad</div>
-                          )}
+                              {deadlineDate.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}
+                            </span>
+                          </div>
+                          <div style={{
+                            fontSize: 10,
+                            fontWeight: 600,
+                            marginTop: 2,
+                            padding: '1px 6px',
+                            borderRadius: 4,
+                            display: 'inline-block',
+                            background: passerad ? 'var(--red-bg)' : brådskande ? 'var(--orange-bg)' : 'transparent',
+                            color: passerad ? 'var(--red)' : brådskande ? 'var(--orange)' : 'var(--slate)',
+                          }}>
+                            {passerad
+                              ? `Passerad (${Math.abs(dagarKvar!)}d sedan)`
+                              : dagarKvar === 0
+                                ? 'Idag!'
+                                : dagarKvar === 1
+                                  ? 'Imorgon'
+                                  : `${dagarKvar}d kvar`}
+                          </div>
                         </div>
                       ) : (
                         <span style={{ fontSize: 12, color: 'var(--slate)' }}>—</span>
