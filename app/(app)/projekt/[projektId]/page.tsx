@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AnbudsUppladdning from '@/components/AnbudsUppladdning'
 import GranskningSida from '@/components/GranskningSida'
+import RotKalkyl from '@/components/RotKalkyl'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { marked } from 'marked'
+import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument-style'
 
 type ProjektData = {
   id: string
@@ -46,6 +49,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [utkast, setUtkast] = useState('')
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
+  const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number }>({ rotBelopp: 0, kundBetalar: 0 })
+  const [förhandsgranskning, setFörhandsgranskning] = useState(false)
   const [aktivTab, setAktivTab] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -121,45 +126,63 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     const totExkl = totArbete + totMaterial
     const moms = Math.round(totExkl * 0.25)
     const totInkl = totExkl + moms
-    return `<h2>Kalkyl</h2>
-<table><thead><tr><th>Moment</th><th style="text-align:right">Timmar</th><th style="text-align:right">Timpris</th><th style="text-align:right">Material</th><th style="text-align:right">Belopp</th></tr></thead><tbody>
-${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.timmar}</td><td style="text-align:right">${m.timpris} kr</td><td style="text-align:right">${m.materialkostnad.toLocaleString('sv-SE')} kr</td><td style="text-align:right"><strong>${(m.timmar * m.timpris + m.materialkostnad).toLocaleString('sv-SE')} kr</strong></td></tr>`).join('\n')}
+    const rotSektion = rotData.rotBelopp > 0
+      ? `<h2>Prissammanfattning med skattereduktion</h2>
+<table><thead><tr><th>Post</th><th style="text-align:right">Belopp</th></tr></thead><tbody>
+<tr><td>Totalt inkl. moms</td><td style="text-align:right">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td>Skattereduktion</td><td style="text-align:right">-${rotData.rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td><strong>Kunden betalar</strong></td><td style="text-align:right"><strong>${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong></td></tr>
 </tbody></table>
-<p><strong>Arbete:</strong> ${totArbete.toLocaleString('sv-SE')} kr | <strong>Material:</strong> ${totMaterial.toLocaleString('sv-SE')} kr</p>
-<p><strong>Totalt exkl. moms:</strong> ${totExkl.toLocaleString('sv-SE')} kr | <strong>Moms 25%:</strong> ${moms.toLocaleString('sv-SE')} kr</p>
-<h3>Totalt inkl. moms: ${totInkl.toLocaleString('sv-SE')} kr</h3>`
+<p style="font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete.
+Kunden ansvarar för att de uppfyller Skatteverkets villkor för skattereduktion.</em></p>`
+      : ''
+
+    return `<h2>Kalkyl</h2>
+<table>
+<thead><tr><th>Moment</th><th style="text-align:right">Timmar</th><th style="text-align:right">Timpris</th><th style="text-align:right">Material</th><th style="text-align:right">Belopp</th></tr></thead>
+<tbody>
+${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.timmar}</td><td style="text-align:right">${m.timpris.toLocaleString('sv-SE')} kr</td><td style="text-align:right">${m.materialkostnad.toLocaleString('sv-SE')} kr</td><td style="text-align:right"><strong>${(m.timmar * m.timpris + m.materialkostnad).toLocaleString('sv-SE')} kr</strong></td></tr>`).join('\n')}
+</tbody>
+<tfoot>
+<tr style="border-top:2px solid #0E1B2E"><td colspan="3"></td><td style="text-align:right;padding:8px 14px;color:#666">Arbete</td><td style="text-align:right;padding:8px 14px;font-weight:600">${totArbete.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td colspan="3"></td><td style="text-align:right;padding:4px 14px;color:#666">Material</td><td style="text-align:right;padding:4px 14px;font-weight:600">${totMaterial.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td colspan="3"></td><td style="text-align:right;padding:4px 14px;color:#666">Exkl. moms</td><td style="text-align:right;padding:4px 14px;font-weight:600">${totExkl.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td colspan="3"></td><td style="text-align:right;padding:4px 14px;color:#666">Moms 25%</td><td style="text-align:right;padding:4px 14px;font-weight:600">${moms.toLocaleString('sv-SE')} kr</td></tr>
+<tr style="background:#0E1B2E;color:#fff"><td colspan="3"></td><td style="text-align:right;padding:12px 14px;font-weight:700">Totalt inkl. moms</td><td style="text-align:right;padding:12px 14px;font-size:16px;font-weight:800">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
+</tfoot>
+</table>
+${rotSektion}`
   }
 
   function mdTillHtml(md: string) {
-    return md
-      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^- (.*$)/gm, '<li>$1</li>')
-      .replace(/^---$/gm, '<hr>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>')
+    return marked.parse(md, { async: false }) as string
   }
 
   function exporteraSomPdf() {
     const win = window.open('', '_blank')
     if (!win) return
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Anbud - ${projekt?.namn}</title>
-<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333}
-h1{font-size:20px}h2{font-size:16px;border-bottom:1px solid #ddd;padding-bottom:8px}h3{font-size:14px}
-table{width:100%;border-collapse:collapse;margin:16px 0}th,td{border:1px solid #ddd;padding:8px;text-align:left}
-th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
-    win.document.write(`<p>${mdTillHtml(utkast)}</p>`)
+    win.document.write(EXPORT_HTML_HEAD.replace('<title>Anbud</title>', `<title>Anbud - ${projekt?.namn}</title>`))
+    win.document.write(mdTillHtml(utkast))
     win.document.write(byggKalkylHtml())
-    win.document.write('</body></html>')
+    win.document.write(EXPORT_HTML_FOOT)
     win.document.close()
     setTimeout(() => win.print(), 500)
   }
 
   function exporteraSomWord() {
     const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;line-height:1.5}h1{font-size:18pt}h2{font-size:14pt}h3{font-size:12pt}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:6px}</style></head>
+<head><meta charset="utf-8"><style>
+body{font-family:Calibri,sans-serif;line-height:1.6;color:#1a1a2e;max-width:780px;margin:0 auto;padding:40px}
+h1{font-size:18pt;font-weight:800;border-bottom:3pt solid #F5C400;padding-bottom:8pt;color:#0E1B2E}
+h2{font-size:14pt;font-weight:700;border-bottom:1pt solid #e0e0e0;padding-bottom:4pt;margin-top:24pt;color:#0E1B2E}
+h3{font-size:12pt;font-weight:700;color:#1E2F45}
+table{border-collapse:collapse;width:100%;margin:12pt 0}
+th{background:#0E1B2E;color:#fff;font-size:9pt;text-transform:uppercase;letter-spacing:0.5pt;padding:8pt 10pt;text-align:left}
+td{border-bottom:1pt solid #eef0f2;padding:7pt 10pt}
+tr:nth-child(even){background:#f8f9fb}
+strong{font-weight:700;color:#0E1B2E}
+hr{border:none;border-top:1pt solid #e0e0e0}
+</style></head>
 <body>${mdTillHtml(utkast)}${byggKalkylHtml()}</body></html>`
 
     const blob = new Blob([html], { type: 'application/msword' })
@@ -344,11 +367,37 @@ th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
                   {/* Kalkyl */}
                   <KalkylVy kalkyl={rekData?.kalkyl as Record<string, unknown> | undefined} onChange={setKalkylMoment} />
 
+                  {/* ROT-kalkyl */}
+                  <RotKalkyl
+                    arbeteExMoms={
+                      (kalkylMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? [])
+                        .reduce((s, m) => s + m.timmar * m.timpris, 0)
+                    }
+                    materialExMoms={
+                      (kalkylMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? [])
+                        .reduce((s, m) => s + m.materialkostnad, 0)
+                    }
+                    projektId={projektId}
+                    onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
+                  />
+
                   {/* Redigerbart utkast */}
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
                     <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>📋 Anbudsutkast (redigerbart)</span>
                       <div className="flex gap-2">
+                        <Button
+                          onClick={() => setFörhandsgranskning(!förhandsgranskning)}
+                          variant="outline"
+                          style={{
+                            fontSize: 12,
+                            borderColor: förhandsgranskning ? 'var(--yellow)' : 'var(--navy-border)',
+                            color: förhandsgranskning ? 'var(--yellow)' : 'var(--soft)',
+                            background: förhandsgranskning ? 'var(--yellow-glow)' : 'transparent',
+                          }}
+                        >
+                          {förhandsgranskning ? '✏️ Redigera' : '👁 Förhandsgranska'}
+                        </Button>
                         <Button onClick={sparaUtkast} disabled={sparar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
                           {sparar ? 'Sparar...' : '💾 Spara'}
                         </Button>
@@ -358,11 +407,24 @@ th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>`)
                         <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>🔄 Generera om</Button>
                       </div>
                     </div>
-                    <textarea
-                      value={utkast}
-                      onChange={e => setUtkast(e.target.value)}
-                      style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--navy)', color: 'var(--soft)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
-                    />
+                    {förhandsgranskning ? (
+                      <div
+                        style={{ background: '#fff', minHeight: 500 }}
+                        dangerouslySetInnerHTML={{
+                          __html: `<style>${DOKUMENT_CSS}</style>
+                          <div class="dokument">
+                            ${mdTillHtml(utkast)}
+                            ${byggKalkylHtml()}
+                          </div>`
+                        }}
+                      />
+                    ) : (
+                      <textarea
+                        value={utkast}
+                        onChange={e => setUtkast(e.target.value)}
+                        style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--navy)', color: 'var(--soft)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
+                      />
+                    )}
                   </div>
 
                   {/* Skicka & tilldelning */}

@@ -469,8 +469,8 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
       <a href="#faq" class="nlink">FAQ</a>
     </div>
     <div class="nr">
-      <a href="/login" class="btn-ng">Logga in</a>
-      <a href="#pricing" class="btn-nc">Testa gratis ⚡</a>
+      <a href="/login" class="btn-ng" id="auth-btn">Logga in</a>
+      <a href="#pricing" class="btn-nc" id="cta-btn">Testa gratis ⚡</a>
     </div>
   </div>
 </nav>
@@ -1180,6 +1180,19 @@ async function startCheckout(tier) {
     window.location.href = '/login';
   }
 }
+</script>
+<script>
+(function() {
+  var hasSession = document.cookie.split(';').some(function(c) {
+    return c.trim().indexOf('sb-') === 0 && c.indexOf('auth-token') !== -1;
+  });
+  if (hasSession) {
+    var btn = document.getElementById('auth-btn');
+    if (btn) { btn.href = '/dashboard'; btn.textContent = 'Inloggad'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
+    var cta = document.getElementById('cta-btn');
+    if (cta) { cta.href = '/dashboard'; cta.textContent = 'Dashboard ⚡'; }
+  }
+})();
 </script>
 </body>
 </html>

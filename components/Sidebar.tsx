@@ -15,11 +15,11 @@ type Props = {
 
 const navItems = [
   { href: '/dashboard', icon: '⚡', label: 'Pipeline' },
-  { href: '/dashboard?ny=1', icon: '➕', label: 'Nytt projekt' },
-  { href: '/dashboard?alla=1', icon: '📁', label: 'Alla projekt' },
-  { href: '/dashboard?profil=1', icon: '🏢', label: 'Företagsprofil' },
-  { href: '/dashboard?cert=1', icon: '📜', label: 'Certifikat' },
-  { href: '/dashboard?inst=1', icon: '⚙️', label: 'Inställningar' },
+  { href: '/nytt-projekt', icon: '➕', label: 'Nytt projekt' },
+  { href: '/alla-projekt', icon: '📁', label: 'Alla projekt' },
+  { href: '/profil', icon: '🏢', label: 'Företagsprofil' },
+  { href: '/certifikat', icon: '📜', label: 'Certifikat' },
+  { href: '/installningar', icon: '⚙️', label: 'Inställningar' },
 ]
 
 export default function Sidebar({ user }: Props) {
@@ -43,9 +43,10 @@ export default function Sidebar({ user }: Props) {
       }}
     >
       {/* Logo */}
-      <div
+      <Link
+        href="/"
         className="flex items-center gap-2.5"
-        style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--navy-border)' }}
+        style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--navy-border)', textDecoration: 'none' }}
       >
         <div
           className="flex items-center justify-center flex-shrink-0"
@@ -71,7 +72,7 @@ export default function Sidebar({ user }: Props) {
             v1.0 BETA
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav style={{ padding: '16px 12px 8px' }}>
@@ -89,7 +90,7 @@ export default function Sidebar({ user }: Props) {
           Meny
         </div>
         {navItems.map(item => {
-          const isActive = item.href === '/dashboard' && pathname === '/dashboard'
+          const isActive = pathname === item.href
           return (
             <Link
               key={item.label}
