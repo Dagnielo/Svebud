@@ -564,14 +564,14 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                 <div style={{ color: 'var(--green)' }}>
                   ✅ Granska AI:ns analys och bedömning
                 </div>
-                <div style={{ color: 'var(--muted-custom)' }}>
-                  ○ Justera moment, timmar och materialpriser
+                <div style={{ color: snabbMoment && snabbMoment.length > 0 ? 'var(--green)' : 'var(--muted-custom)' }}>
+                  {snabbMoment && snabbMoment.length > 0 ? '✅' : '○'} Justera moment, timmar och materialpriser
                 </div>
-                <div style={{ color: 'var(--muted-custom)' }}>
-                  ○ Aktivera ROT/Grön teknik om tillämpligt
+                <div style={{ color: rotData.rotBelopp > 0 ? 'var(--green)' : 'var(--muted-custom)' }}>
+                  {rotData.rotBelopp > 0 ? '✅' : '○'} Aktivera ROT/Grön teknik om tillämpligt
                 </div>
-                <div style={{ color: 'var(--muted-custom)' }}>
-                  ○ Välj kontaktperson och generera anbud
+                <div style={{ color: utkast ? 'var(--green)' : 'var(--muted-custom)' }}>
+                  {utkast ? '✅' : '○'} Generera anbud
                 </div>
               </div>
             )}
