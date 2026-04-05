@@ -995,11 +995,12 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         <span style={{ fontSize: 13, fontWeight: 700 }}>✍ Kontaktperson i anbudet</span>
                         <button
                           onClick={() => {
-                            const kp = kontaktpersoner[valdKontakt]
-                            const kontaktText = `\n\n---\n\nMed vänliga hälsningar,\n\n**${kp.namn}**\n${kp.roll ? `${kp.roll}\n` : ''}${kp.epost ? `${kp.epost}\n` : ''}${kp.telefon ? `${kp.telefon}\n` : ''}`
-                            if (utkast.includes('Med vänliga hälsningar')) {
-                              setUtkast(prev => prev.replace(/\n*---\n*\nMed vänliga hälsningar[\s\S]*$/, kontaktText))
+                            if (kontaktInfogad) {
+                              // Ta bort kontaktperson från utkastet
+                              setUtkast(prev => prev.replace(/\n*---\n*\nMed vänliga hälsningar[\s\S]*$/, ''))
                             } else {
+                              const kp = kontaktpersoner[valdKontakt]
+                              const kontaktText = `\n\n---\n\nMed vänliga hälsningar,\n\n**${kp.namn}**\n${kp.roll ? `${kp.roll}\n` : ''}${kp.epost ? `${kp.epost}\n` : ''}${kp.telefon ? `${kp.telefon}\n` : ''}`
                               setUtkast(prev => prev + kontaktText)
                             }
                           }}
@@ -1014,7 +1015,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             cursor: 'pointer',
                           }}
                         >
-                          {kontaktInfogad ? '✅ Infogad' : 'Infoga i anbudet'}
+                          {kontaktInfogad ? '✅ Infogad — ta bort' : 'Infoga i anbudet'}
                         </button>
                       </div>
                       <div className="flex items-center gap-3">
@@ -1065,6 +1066,57 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     onGranska={körGranskning}
                     laddar={kvalitetLaddar}
                   />
+
+                  {/* Frågor till kund */}
+                  {(kundFrågor ?? []).length > 0 && (
+                    <div
+                      style={{
+                        background: 'var(--navy-mid)',
+                        border: '1px solid var(--navy-border)',
+                        borderRadius: 12,
+                        padding: '16px 20px',
+                      }}
+                    >
+                      <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>❓ Frågor till kund</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              if (frågorInfogade) {
+                                setUtkast(prev => prev.replace(/\n*## Frågor vi behöver svar på[\s\S]*?\*Vänligen återkom.*?\*/, ''))
+                              } else {
+                                const text = '\n\n## Frågor vi behöver svar på\n\n' + (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n') + '\n\n*Vänligen återkom med svar på ovanstående så att vi kan ge ett exakt pris.*'
+                                setUtkast(prev => prev + text)
+                              }
+                            }}
+                            style={{
+                              fontSize: 11, fontWeight: 700,
+                              color: frågorInfogade ? 'var(--navy)' : 'var(--yellow)',
+                              background: frågorInfogade ? 'var(--green)' : 'var(--yellow-glow)',
+                              border: `1px solid ${frågorInfogade ? 'var(--green)' : 'rgba(245,196,0,0.3)'}`,
+                              borderRadius: 6, padding: '4px 12px', cursor: 'pointer',
+                            }}
+                          >
+                            {frågorInfogade ? '✅ Infogat — ta bort' : 'Infoga i anbudet'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
+                              navigator.clipboard.writeText(text)
+                            }}
+                            style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
+                          >
+                            📋 Kopiera
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--navy)', border: '1px solid var(--navy-border)', fontSize: 12, color: 'var(--soft)', lineHeight: 1.6 }}>
+                        {(kundFrågor ?? []).map((f, i) => (
+                          <div key={i}>{i + 1}. {f}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Förbered mail till kund */}
                   <div
@@ -1204,61 +1256,6 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                       </button>
                     </div>
 
-                    {/* Frågor till kund — kopierbart */}
-                    {(kundFrågor ?? []).length > 0 && (
-                      <div style={{ marginTop: 12 }}>
-                        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-                          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)' }}>
-                            Frågor till kund
-                          </label>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                const text = '\n\n## Frågor vi behöver svar på\n\n' + (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n') + '\n\n*Vänligen återkom med svar på ovanstående så att vi kan ge ett exakt pris.*'
-                                if (utkast.includes('Frågor vi behöver svar på')) {
-                                  setUtkast(prev => prev.replace(/\n*## Frågor vi behöver svar på[\s\S]*?\*Vänligen återkom.*?\*/, text))
-                                } else {
-                                  setUtkast(prev => prev + text)
-                                }
-                              }}
-                              style={{
-                                fontSize: 11, fontWeight: 700,
-                                color: frågorInfogade ? 'var(--navy)' : 'var(--yellow)',
-                                background: frågorInfogade ? 'var(--green)' : 'var(--yellow-glow)',
-                                border: `1px solid ${frågorInfogade ? 'var(--green)' : 'rgba(245,196,0,0.3)'}`,
-                                borderRadius: 6, padding: '4px 12px', cursor: 'pointer',
-                              }}
-                            >
-                              {frågorInfogade ? '✅ Infogat' : 'Infoga i anbudet'}
-                            </button>
-                            <button
-                              onClick={() => {
-                                const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
-                                navigator.clipboard.writeText(text)
-                              }}
-                              style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
-                            >
-                              Kopiera
-                            </button>
-                          </div>
-                        </div>
-                        <div
-                          style={{
-                            padding: '8px 12px',
-                            borderRadius: 8,
-                            background: 'var(--navy)',
-                            border: '1px solid var(--navy-border)',
-                            fontSize: 12,
-                            color: 'var(--soft)',
-                            lineHeight: 1.6,
-                          }}
-                        >
-                          {(kundFrågor ?? []).map((f, i) => (
-                            <div key={i}>{i + 1}. {f}</div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Markera som skickat */}
