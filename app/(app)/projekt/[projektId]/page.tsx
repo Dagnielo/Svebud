@@ -71,6 +71,10 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [genSteg, setGenSteg] = useState(0)
   const [kundFrågor, setKundFrågor] = useState<string[] | null>(null)
   const [nyFråga, setNyFråga] = useState('')
+  const kontaktInfogad = utkast.includes('Med vänliga hälsningar')
+  const frågorInfogade = utkast.includes('Frågor vi behöver svar på')
+  const [följebrev, setFöljebrev] = useState<string | null>(null)
+  const [följebrevLaddat, setFöljebrevLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
   const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number }>({ rotBelopp: 0, kundBetalar: 0 })
@@ -98,6 +102,13 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       const jr = (p as Record<string, unknown>).jämförelse_resultat as Record<string, unknown> | null
       if (jr?.analystyp === 'snabb') setAnalysTyp('snabb')
       else if (jr && !jr.analystyp) setAnalysTyp('formell')
+      // Initiera följebrev från sparad data
+      const rek = (p as Record<string, unknown>).rekommendation as Record<string, unknown> | null
+      if (rek?.följebrev && följebrev === null) {
+        setFöljebrev(rek.följebrev as string)
+        setFöljebrevLaddat(true)
+      }
+
       // Initiera kundfrågor från analys
       const km = (p as Record<string, unknown>).kravmatchning as Record<string, unknown> | null
       if (km?.frågor_till_kund && kundFrågor === null) {
@@ -139,6 +150,19 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       else setAktivTab('dokument')
     }
   }, [projekt, aktivTab])
+
+  // Auto-save följebrev med debounce
+  useEffect(() => {
+    if (!följebrevLaddat || följebrev === null) return
+    const t = setTimeout(async () => {
+      const { data: p } = await supabase.from('projekt').select('rekommendation').eq('id', projektId).single()
+      const befintlig = (p as Record<string, unknown>)?.rekommendation as Record<string, unknown> ?? {}
+      await supabase.from('projekt').update({
+        rekommendation: { ...befintlig, följebrev },
+      }).eq('id', projektId)
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [följebrev, följebrevLaddat])
 
   // Auto-save kalkylmoment med debounce
   useEffect(() => {
@@ -973,9 +997,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           onClick={() => {
                             const kp = kontaktpersoner[valdKontakt]
                             const kontaktText = `\n\n---\n\nMed vänliga hälsningar,\n\n**${kp.namn}**\n${kp.roll ? `${kp.roll}\n` : ''}${kp.epost ? `${kp.epost}\n` : ''}${kp.telefon ? `${kp.telefon}\n` : ''}`
-                            // Kolla om kontaktinfo redan finns i utkastet
                             if (utkast.includes('Med vänliga hälsningar')) {
-                              // Ersätt befintlig signatur
                               setUtkast(prev => prev.replace(/\n*---\n*\nMed vänliga hälsningar[\s\S]*$/, kontaktText))
                             } else {
                               setUtkast(prev => prev + kontaktText)
@@ -984,15 +1006,15 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           style={{
                             fontSize: 11,
                             fontWeight: 700,
-                            color: 'var(--yellow)',
-                            background: 'var(--yellow-glow)',
-                            border: '1px solid rgba(245,196,0,0.3)',
+                            color: kontaktInfogad ? 'var(--navy)' : 'var(--yellow)',
+                            background: kontaktInfogad ? 'var(--green)' : 'var(--yellow-glow)',
+                            border: `1px solid ${kontaktInfogad ? 'var(--green)' : 'rgba(245,196,0,0.3)'}`,
                             borderRadius: 6,
                             padding: '4px 12px',
                             cursor: 'pointer',
                           }}
                         >
-                          Infoga i anbudet
+                          {kontaktInfogad ? '✅ Infogad' : 'Infoga i anbudet'}
                         </button>
                       </div>
                       <div className="flex items-center gap-3">
@@ -1101,14 +1123,12 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       </label>
                       <div className="flex gap-2">
                         <textarea
-                          id="mail-foljebrev"
-                          readOnly
-                          rows={5}
-                          value={(() => {
+                          rows={8}
+                          value={följebrev ?? (() => {
                             const kp = kontaktpersoner[valdKontakt]
                             const kravmatch = projekt.kravmatchning as Record<string, unknown> | null
                             const beställare = kravmatch?.beställare as string ?? kravmatch?.kontaktperson as string ?? ''
-                            return `Hej${beställare ? ` ${beställare}` : ''},
+                            const defaultText = `Hej${beställare ? ` ${beställare}` : ''},
 
 Tack för förfrågan! Bifogat finner ni vårt anbud avseende ${projekt.namn}.
 
@@ -1117,7 +1137,12 @@ Anbudet är giltigt i 30 dagar. Tveka inte att höra av er om ni har frågor ell
 Med vänliga hälsningar,
 ${kp?.namn ?? ''}${kp?.roll ? `\n${kp.roll}` : ''}
 ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? `\n${kp.epost}` : ''}`
+                            return defaultText
                           })()}
+                          onChange={e => {
+                            setFöljebrev(e.target.value)
+                            if (!följebrevLaddat) setFöljebrevLaddat(true)
+                          }}
                           style={{
                             flex: 1,
                             padding: '8px 12px',
@@ -1127,19 +1152,22 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                             color: 'var(--white)',
                             fontSize: 12,
                             lineHeight: 1.6,
-                            resize: 'none',
+                            resize: 'vertical',
                           }}
                         />
                         <button
                           onClick={() => {
-                            const el = document.getElementById('mail-foljebrev') as HTMLTextAreaElement
-                            navigator.clipboard.writeText(el.value)
+                            const text = följebrev ?? ''
+                            navigator.clipboard.writeText(text)
                           }}
                           style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0, alignSelf: 'flex-start' }}
                         >
                           Kopiera
                         </button>
                       </div>
+                      <p style={{ fontSize: 10, color: 'var(--slate)', marginTop: 4 }}>
+                        Redigera följebrevet fritt — det sparas automatiskt.
+                      </p>
                     </div>
 
                     {/* Export-knappar */}
@@ -1181,17 +1209,38 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                       <div style={{ marginTop: 12 }}>
                         <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
                           <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)' }}>
-                            Frågor till kund (kopiera och skicka separat)
+                            Frågor till kund
                           </label>
-                          <button
-                            onClick={() => {
-                              const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
-                              navigator.clipboard.writeText(text)
-                            }}
-                            style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
-                          >
-                            Kopiera
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                const text = '\n\n## Frågor vi behöver svar på\n\n' + (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n') + '\n\n*Vänligen återkom med svar på ovanstående så att vi kan ge ett exakt pris.*'
+                                if (utkast.includes('Frågor vi behöver svar på')) {
+                                  setUtkast(prev => prev.replace(/\n*## Frågor vi behöver svar på[\s\S]*?\*Vänligen återkom.*?\*/, text))
+                                } else {
+                                  setUtkast(prev => prev + text)
+                                }
+                              }}
+                              style={{
+                                fontSize: 11, fontWeight: 700,
+                                color: frågorInfogade ? 'var(--navy)' : 'var(--yellow)',
+                                background: frågorInfogade ? 'var(--green)' : 'var(--yellow-glow)',
+                                border: `1px solid ${frågorInfogade ? 'var(--green)' : 'rgba(245,196,0,0.3)'}`,
+                                borderRadius: 6, padding: '4px 12px', cursor: 'pointer',
+                              }}
+                            >
+                              {frågorInfogade ? '✅ Infogat' : 'Infoga i anbudet'}
+                            </button>
+                            <button
+                              onClick={() => {
+                                const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
+                                navigator.clipboard.writeText(text)
+                              }}
+                              style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
+                            >
+                              Kopiera
+                            </button>
+                          </div>
                         </div>
                         <div
                           style={{
