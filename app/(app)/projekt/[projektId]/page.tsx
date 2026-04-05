@@ -333,36 +333,19 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     alert('Kopierat till urklipp!')
   }
 
-  function byggRotHtml() {
-    if (rotData.rotBelopp <= 0) return ''
-    const mom = kalkylMoment ?? snabbMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
-    const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
-    const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
-    const totExkl = totArbete + totMaterial
-    const totInkl = totExkl + Math.round(totExkl * 0.25)
-    return `<h3>Skattereduktion</h3>
-<table><thead><tr><th>Post</th><th style="text-align:right">Belopp</th></tr></thead><tbody>
-<tr><td>Totalt inkl. moms</td><td style="text-align:right">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
-<tr><td>Skattereduktion</td><td style="text-align:right">-${rotData.rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
-<tr style="background:#0E1B2E;color:#fff"><td><strong>Ni betalar</strong></td><td style="text-align:right;font-size:16px"><strong>${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong></td></tr>
-</tbody></table>
-<p style="font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete.
-Kunden ansvarar för att de uppfyller Skatteverkets villkor för skattereduktion.</em></p>`
-  }
-
-  // Renderar utkast-HTML med ROT infogad efter kalkyl
+  // Renderar utkast-HTML med ROT-rader infogade i kalkyltabellen
   function renderAnbudHtml(md: string) {
     let html = mdTillHtml(md)
-    const rot = byggRotHtml()
-    if (rot) {
-      // Infoga ROT-sektionen efter "TOTALT INKL. MOMS" i den renderade HTML:en
-      const kalkylSlut = html.match(/TOTALT\s+INKL\.?\s*MOMS[^<]*<[^>]*>/i)
-      if (kalkylSlut && kalkylSlut.index !== undefined) {
-        const pos = kalkylSlut.index + kalkylSlut[0].length
-        html = html.slice(0, pos) + rot + html.slice(pos)
-      } else {
-        // Fallback — lägg till i slutet
-        html = html + rot
+    if (rotData.rotBelopp > 0) {
+      // Hitta "TOTALT INKL. MOMS"-raden och lägg till ROT-rader efter den
+      const totaltMatch = html.match(/(TOTALT\s+INKL\.?\s*MOMS[^<]*<[^>]*>)/i)
+      if (totaltMatch && totaltMatch.index !== undefined) {
+        const pos = totaltMatch.index + totaltMatch[0].length
+        const rotRader = `
+<p><strong>Skattereduktion:</strong> -${rotData.rotBelopp.toLocaleString('sv-SE')} kr</p>
+<h3>NI BETALAR: ${rotData.kundBetalar.toLocaleString('sv-SE')} kr</h3>
+<p style="font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.</em></p>`
+        html = html.slice(0, pos) + rotRader + html.slice(pos)
       }
     }
     return html
