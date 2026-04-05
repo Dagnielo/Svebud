@@ -338,8 +338,9 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     let html = mdTillHtml(md)
     if (rotData.rotBelopp > 0) {
       // Ersätt "TOTALT INKL. MOMS: XXX kr" med ROT-version
+      // Hanterar markdown-bold (**), HTML-bold (<strong>), mellanslag, punkter i belopp
       html = html.replace(
-        /TOTALT\s+INKL\.?\s*MOMS:?\s*[\d\s]*\s*kr/i,
+        /TOTALT\s+INKL\.?\s*MOMS:?\s*(<\/?(strong|b)>|\*\*)*\s*[\d\s.,]+\s*kr\s*(<\/?(strong|b)>|\*\*)*/i,
         `TOTALT INKL. MOMS: ${(rotData.kundBetalar + rotData.rotBelopp).toLocaleString('sv-SE')} kr
 <br><strong>Skattereduktion:</strong> -${rotData.rotBelopp.toLocaleString('sv-SE')} kr
 <br><strong style="font-size:1.2em">NI BETALAR: ${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong>
