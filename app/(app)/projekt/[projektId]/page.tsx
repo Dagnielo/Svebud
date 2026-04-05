@@ -41,6 +41,7 @@ type ProjektData = {
   deadline: string | null
   skickat_datum: string | null
   inskickningar: Inskickning[] | null
+  uppdaterad: string | null
 }
 
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
@@ -925,7 +926,14 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         <Button onClick={körGranskning} disabled={kvalitetLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
                           {kvalitetLaddar ? '⏳ Granskar...' : '🔍 Granska'}
                         </Button>
-                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>🔄 Generera om</Button>
+                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--yellow)', color: 'var(--yellow)' }}>
+                          🔄 Generera nytt anbud
+                        </Button>
+                        {projekt.uppdaterad && (
+                          <span style={{ fontSize: 10, color: 'var(--slate)', alignSelf: 'center' }}>
+                            Senast genererat: {new Date(projekt.uppdaterad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })} kl {new Date(projekt.uppdaterad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {förhandsgranskning ? (
