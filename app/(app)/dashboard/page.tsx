@@ -163,9 +163,9 @@ export default function DashboardPage() {
       color: 'var(--yellow)',
     },
     {
-      label: 'Win rate',
-      value: avslutade.length > 0 ? `${winRate}%` : '—',
-      sub: `${vunna.length} vunna av ${avslutade.length}`,
+      label: 'Vunna anbud',
+      value: vunna.length > 0 ? vunna.length.toString() : '—',
+      sub: avslutade.length > 0 ? `${vunna.length} av ${avslutade.length} avslutade` : 'Inga avslutade ännu',
       color: 'var(--green)',
     },
     {
@@ -233,6 +233,41 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
+              {/* Välkomstruta för nya användare */}
+              {projekt.length === 0 && (
+                <div
+                  style={{
+                    background: 'var(--yellow-glow)',
+                    border: '1px solid rgba(245,196,0,0.3)',
+                    borderRadius: 12,
+                    padding: '28px 32px',
+                    marginBottom: 24,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>⚡</div>
+                  <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Välkommen till SveBud!</h2>
+                  <p style={{ fontSize: 14, color: 'var(--muted-custom)', marginBottom: 16, maxWidth: 440, margin: '0 auto 16px' }}>
+                    Skapa ditt första projekt för att komma igång. Ladda upp ett förfrågningsunderlag eller skriv en kort beskrivning — AI:n gör resten.
+                  </p>
+                  <a
+                    href="/nytt-projekt"
+                    style={{
+                      display: 'inline-block',
+                      background: 'var(--yellow)',
+                      color: 'var(--navy)',
+                      padding: '10px 24px',
+                      borderRadius: 8,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    + Skapa ditt första projekt
+                  </a>
+                </div>
+              )}
+
               {/* KPI Strip */}
               <div className="grid grid-cols-4 gap-4" style={{ marginBottom: 28 }}>
                 {kpiData.map((kpi, i) => (
@@ -302,10 +337,10 @@ export default function DashboardPage() {
               {/* Pipeline grid */}
               <div className="grid grid-cols-4 gap-4">
                 {[
-                  { label: 'Inkorg', key: 'inkorg', color: 'var(--yellow)', items: inkorg },
-                  { label: 'Under arbete', key: 'under_arbete', color: 'var(--blue-accent)', items: underArbete },
-                  { label: 'Inskickat', key: 'inskickat', color: 'var(--green)', items: inskickat },
-                  { label: 'Tilldelning', key: 'tilldelning', color: 'var(--orange)', items: tilldelning },
+                  { label: 'Inkorg', key: 'inkorg', color: 'var(--yellow)', items: inkorg, emptyText: '📋 Skapa ditt första projekt →' },
+                  { label: 'Under arbete', key: 'under_arbete', color: 'var(--blue-accent)', items: underArbete, emptyText: 'Projekt som analyseras hamnar här' },
+                  { label: 'Inskickat', key: 'inskickat', color: 'var(--green)', items: inskickat, emptyText: 'Skickade anbud visas här' },
+                  { label: 'Tilldelning', key: 'tilldelning', color: 'var(--orange)', items: tilldelning, emptyText: 'Vunna och förlorade anbud' },
                 ].map(col => (
                   <div
                     key={col.label}
@@ -347,7 +382,7 @@ export default function DashboardPage() {
                     >
                       {col.items.length === 0 ? (
                         <div className="flex items-center justify-center flex-1" style={{ fontSize: 12, color: dragOverKolumn === col.key ? col.color : 'var(--slate)' }}>
-                          {dragOverKolumn === col.key ? 'Släpp här' : 'Inga projekt'}
+                          {dragOverKolumn === col.key ? 'Släpp här' : col.emptyText}
                         </div>
                       ) : (
                         col.items.map(p => (

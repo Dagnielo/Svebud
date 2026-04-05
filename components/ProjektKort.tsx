@@ -39,8 +39,8 @@ function getPipelineLabel(p: Projekt): string {
   }
   if (ps === 'inskickat') return 'Anbud inskickat'
   if (ps === 'under_arbete') return 'Under arbete'
-  if (p.analys_komplett !== null) return 'AI-analys klar'
-  return 'Väntar på analys'
+  if (p.analys_komplett !== null) return 'Analyserad ✓'
+  return 'Ladda upp dokument'
 }
 
 function getStatusDotColor(p: Projekt): string {

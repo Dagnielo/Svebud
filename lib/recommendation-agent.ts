@@ -134,7 +134,17 @@ Adress: ${profil.adress ?? ''}, ${profil.postnr ?? ''} ${profil.ort ?? ''}
 Telefon: ${profil.telefon ?? 'Ej angivet'}
 Timpris standard: ${profil.timpris_standard ?? 650} kr/tim
 Timpris jour: ${profil.timpris_jour ?? 950} kr/tim
-
+${projekt.rekommendation?.kontaktperson_anbud ? `
+Kontaktperson (signerar anbudet):
+Namn: ${projekt.rekommendation.kontaktperson_anbud.namn}
+Roll: ${projekt.rekommendation.kontaktperson_anbud.roll ?? ''}
+E-post: ${projekt.rekommendation.kontaktperson_anbud.epost ?? ''}
+Telefon: ${projekt.rekommendation.kontaktperson_anbud.telefon ?? ''}
+` : ''}
+${(profil.referensprojekt ?? []).length > 0 ? `
+Referensprojekt:
+${(profil.referensprojekt as Array<Record<string, unknown>>).map((r: Record<string, unknown>) => `- ${r.projektnamn} (${r.typ ?? 'Övrigt'}, ${r.datum ?? 'datum okänt'}) — ${r.beställare ?? ''}`).join('\n')}
+` : ''}
 ANALYSRESULTAT (från AI-scanning av förfrågningsunderlaget):
 ${JSON.stringify(kravmatchning, null, 2).slice(0, 15000)}
 ${projekt.rekommendation?.kalkyl ? `

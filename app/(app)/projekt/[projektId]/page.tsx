@@ -64,6 +64,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [analysLaddar, setAnalysLaddar] = useState(false)
   const [anbudLaddar, setAnbudLaddar] = useState(false)
   const [utkast, setUtkast] = useState('')
+  const [kontaktpersoner, setKontaktpersoner] = useState<Array<{ namn: string; roll: string; epost: string; telefon: string }>>([])
+  const [valdKontakt, setValdKontakt] = useState<number>(0)
   const [utkastLaddat, setUtkastLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
@@ -99,6 +101,14 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     if (anbudIds.length > 0) {
       const { data: l } = await supabase.from('extraktion_log').select('*').in('anbud_id', anbudIds).order('skapad', { ascending: false }).limit(10)
       if (l) setLogg(l as unknown as LoggRad[])
+    }
+    // Hämta kontaktpersoner från profilen
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (authUser) {
+      const { data: profil } = await supabase.from('profiler').select('kontaktpersoner').eq('id', authUser.id).single()
+      if (profil) {
+        setKontaktpersoner((profil as Record<string, unknown>).kontaktpersoner as typeof kontaktpersoner ?? [])
+      }
     }
     setLoading(false)
   }
@@ -169,6 +179,16 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
             moms: Math.round(total * 0.25),
             totalt_inkl_moms: total + Math.round(total * 0.25),
           },
+        },
+      }).eq('id', projektId)
+    }
+    // Spara vald kontaktperson på projektet
+    if (kontaktpersoner.length > 0) {
+      const kp = kontaktpersoner[valdKontakt]
+      await supabase.from('projekt').update({
+        rekommendation: {
+          ...(projekt?.rekommendation as Record<string, unknown> ?? {}),
+          kontaktperson_anbud: kp,
         },
       }).eq('id', projektId)
     }
@@ -545,34 +565,88 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               ) : (
                 <GranskningSida projektId={projektId} externtScanning={analysLaddar} />
               )}
-              {projekt.jämförelse_status === 'klar' && !utkast && (
-                <div style={{ marginTop: 16, textAlign: 'center' }}>
-                  <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, padding: '12px 32px' }}>
-                    {anbudLaddar ? '⏳ Genererar anbud...' : '📋 Generera anbudsutkast →'}
-                  </Button>
-                  {analysTyp && (
-                    <button
-                      onClick={() => {
-                        const nyttTyp = analysTyp === 'snabb' ? 'formell' : 'snabb'
-                        setAnalysLaddar(true)
-                        fetch('/api/anbud/extrahera', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ projektId, tvingaTyp: nyttTyp }),
-                        }).then(() => hämta()).finally(() => setAnalysLaddar(false))
-                      }}
+              {projekt.jämförelse_status === 'klar' && (
+                <div style={{ marginTop: 16 }}>
+                  {anbudLaddar ? (
+                    <div
                       style={{
-                        marginTop: 8,
-                        fontSize: 11,
-                        color: 'var(--muted-custom)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
+                        background: 'var(--navy-mid)',
+                        border: '1px solid var(--navy-border)',
+                        borderRadius: 12,
+                        padding: '32px 24px',
+                        textAlign: 'center',
                       }}
                     >
-                      {analysTyp === 'snabb' ? 'Byt till formell kravanalys →' : 'Byt till snabboffert →'}
-                    </button>
+                      <div className="animate-pulse" style={{ marginBottom: 16 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--yellow-glow)', border: '3px solid var(--yellow)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
+                          ⚡
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>AI genererar ditt anbud...</div>
+                      <div style={{ fontSize: 13, color: 'var(--muted-custom)', maxWidth: 400, margin: '0 auto', lineHeight: 1.6 }}>
+                        SveBud analyserar förfrågningsunderlaget, matchar mot er profil och skapar ett komplett anbudsutkast med kalkyl, villkor och förbehåll.
+                      </div>
+                      <div style={{ marginTop: 16, fontSize: 12, color: 'var(--slate)' }}>
+                        Detta tar vanligtvis 15–30 sekunder
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        background: 'var(--navy-mid)',
+                        border: '1px solid var(--navy-border)',
+                        borderRadius: 12,
+                        padding: '28px 24px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>{utkast ? '🔄' : '📋'}</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
+                        {utkast ? 'Generera nytt anbud' : 'Redo att generera anbud'}
+                      </div>
+                      <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 16, maxWidth: 440, margin: '0 auto 16px' }}>
+                        {utkast
+                          ? 'Om du justerat priser eller lagt till moment kan du generera ett nytt anbudsutkast. Det ersätter det nuvarande.'
+                          : 'AI:n skapar ett komplett anbudsutkast baserat på analysen och er företagsprofil. Du kan redigera utkastet innan du skickar.'}
+                      </p>
+
+                      {/* Kontaktperson-val */}
+                      {kontaktpersoner.length > 0 && (
+                        <div style={{ marginBottom: 16, maxWidth: 360, margin: '0 auto 16px', textAlign: 'left' }}>
+                          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                            Kontaktperson som signerar anbudet
+                          </label>
+                          <select
+                            value={valdKontakt}
+                            onChange={e => setValdKontakt(Number(e.target.value))}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: 8,
+                              background: 'var(--navy)',
+                              border: '1px solid var(--navy-border)',
+                              color: 'var(--white)',
+                              fontSize: 13,
+                            }}
+                          >
+                            {kontaktpersoner.map((kp, i) => (
+                              <option key={i} value={i}>
+                                {kp.namn} — {kp.roll}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                      {kontaktpersoner.length === 0 && (
+                        <p style={{ fontSize: 11, color: 'var(--orange)', marginBottom: 12 }}>
+                          Ingen kontaktperson tillagd. <a href="/profil" style={{ color: 'var(--yellow)', textDecoration: 'underline' }}>Lägg till i Företagsprofil →</a>
+                        </p>
+                      )}
+
+                      <Button onClick={körAnbudsGenerering} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, fontWeight: 700, padding: '12px 32px' }}>
+                        {utkast ? '🔄 Generera nytt anbud →' : 'Generera anbudsutkast →'}
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}
@@ -581,13 +655,38 @@ hr{border:none;border-top:1pt solid #e0e0e0}
             {/* TAB 3: Anbud & Skicka */}
             <TabsContent value="anbud">
               {!utkast ? (
-                <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px 18px', textAlign: 'center' }}>
-                  <p style={{ fontSize: 14, color: 'var(--muted-custom)', marginBottom: 16 }}>
-                    Analysera förfrågan först, sedan kan AI:n generera ett anbudsutkast.
-                  </p>
-                  <Button onClick={körAnbudsGenerering} disabled={anbudLaddar || projekt.jämförelse_status !== 'klar'} style={{ background: 'var(--yellow)', color: 'var(--navy)' }}>
-                    {anbudLaddar ? 'Genererar...' : '📋 Generera anbudsutkast'}
-                  </Button>
+                <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px 24px', textAlign: 'center' }}>
+                  {anbudLaddar ? (
+                    <>
+                      <div className="animate-pulse" style={{ marginBottom: 16 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--yellow-glow)', border: '3px solid var(--yellow)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
+                          ⚡
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>AI genererar ditt anbud...</div>
+                      <p style={{ fontSize: 13, color: 'var(--muted-custom)', maxWidth: 400, margin: '0 auto', lineHeight: 1.6 }}>
+                        Skapar kalkyl, anbudstext, villkor och förbehåll baserat på analysen.
+                      </p>
+                      <div style={{ marginTop: 12, fontSize: 12, color: 'var(--slate)' }}>15–30 sekunder</div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>📋</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
+                        {projekt.jämförelse_status === 'klar' ? 'Redo att generera anbud' : 'Analysera förfrågan först'}
+                      </div>
+                      <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                        {projekt.jämförelse_status === 'klar'
+                          ? 'AI:n skapar ett komplett anbudsutkast. Du kan redigera innan du skickar.'
+                          : 'Gå till steg 1 (Dokument), ladda upp filer och tryck "Analysera förfrågan".'}
+                      </p>
+                      {projekt.jämförelse_status === 'klar' && (
+                        <Button onClick={körAnbudsGenerering} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, fontWeight: 700, padding: '12px 32px' }}>
+                          Generera anbudsutkast →
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -618,6 +717,30 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       projektId={projektId}
                       onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
                     />
+                  )}
+
+                  {/* Info-text om kalkyl-justering */}
+                  {analysTyp === 'snabb' && (
+                    <div
+                      className="flex items-center gap-2"
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: 8,
+                        background: 'var(--navy-mid)',
+                        border: '1px solid var(--navy-border)',
+                        fontSize: 12,
+                        color: 'var(--muted-custom)',
+                      }}
+                    >
+                      <span>💡</span>
+                      <span>
+                        Vill du justera priser eller moment? Gå tillbaka till{' '}
+                        <button onClick={() => setAktivTab('analys')} style={{ color: 'var(--yellow)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontSize: 12 }}>
+                          Analys & Bedömning
+                        </button>
+                        {' '}och generera ett nytt anbud.
+                      </span>
+                    </div>
                   )}
 
                   {/* Redigerbart utkast */}

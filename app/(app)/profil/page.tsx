@@ -13,6 +13,25 @@ type UserProfil = {
   initialer: string
 }
 
+type Kontaktperson = {
+  namn: string
+  roll: string
+  epost: string
+  telefon: string
+}
+
+type Referensprojekt = {
+  projektnamn: string
+  beställare: string
+  kontaktperson: string
+  kontakt_epost: string
+  kontakt_telefon: string
+  beskrivning: string
+  typ: string
+  datum: string
+  värde: string
+}
+
 export default function ProfilPage() {
   const [loading, setLoading] = useState(true)
   const [sparar, setSparar] = useState(false)
@@ -35,6 +54,12 @@ export default function ProfilPage() {
   const [timprisStandard, setTimprisStandard] = useState('')
   const [timprisJour, setTimprisJour] = useState('')
   const [timprisOb, setTimprisOb] = useState('')
+  const [referensprojekt, setReferensprojekt] = useState<Referensprojekt[]>([])
+  const [visaRefForm, setVisaRefForm] = useState(false)
+  const [nyttRef, setNyttRef] = useState<Referensprojekt>({ projektnamn: '', beställare: '', kontaktperson: '', kontakt_epost: '', kontakt_telefon: '', beskrivning: '', typ: '', datum: '', värde: '' })
+  const [kontaktpersoner, setKontaktpersoner] = useState<Kontaktperson[]>([])
+  const [visaKontaktForm, setVisaKontaktForm] = useState(false)
+  const [nyKontakt, setNyKontakt] = useState<Kontaktperson>({ namn: '', roll: '', epost: '', telefon: '' })
 
   useEffect(() => {
     async function hämta() {
@@ -72,6 +97,8 @@ export default function ProfilPage() {
         setTimprisStandard((p.timpris_standard as number)?.toString() ?? '')
         setTimprisJour((p.timpris_jour as number)?.toString() ?? '')
         setTimprisOb((p.timpris_ob as number)?.toString() ?? '')
+        setReferensprojekt((p.referensprojekt as Referensprojekt[]) ?? [])
+        setKontaktpersoner((p.kontaktpersoner as Kontaktperson[]) ?? [])
       }
       setLoading(false)
     }
@@ -100,6 +127,8 @@ export default function ProfilPage() {
         timpris_standard: timprisStandard ? parseInt(timprisStandard) : null,
         timpris_jour: timprisJour ? parseInt(timprisJour) : null,
         timpris_ob: timprisOb ? parseInt(timprisOb) : null,
+        referensprojekt,
+        kontaktpersoner,
       })
       .eq('id', authUser.id)
 
@@ -179,6 +208,106 @@ export default function ProfilPage() {
                 </div>
               </SectionCard>
 
+              {/* Kontaktpersoner / Anbudsansvariga */}
+              <SectionCard title="Kontaktpersoner">
+                <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                  Lägg till personer som kan signera anbud. Vid generering av anbud väljer du vem som ska stå som kontaktperson.
+                </p>
+
+                {kontaktpersoner.map((kp, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between"
+                    style={{
+                      padding: '10px 14px',
+                      marginBottom: 6,
+                      borderRadius: 8,
+                      background: 'var(--navy)',
+                      border: '1px solid var(--navy-border)',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{kp.namn}</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                        {kp.roll}{kp.epost ? ` · ${kp.epost}` : ''}{kp.telefon ? ` · ${kp.telefon}` : ''}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setKontaktpersoner(prev => prev.filter((_, j) => j !== i))}
+                      style={{ fontSize: 11, color: 'var(--red)', background: 'var(--red-bg)', border: '1px solid rgba(255,77,77,0.3)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}
+                    >
+                      Ta bort
+                    </button>
+                  </div>
+                ))}
+
+                {visaKontaktForm ? (
+                  <div
+                    style={{
+                      background: 'var(--navy)',
+                      border: '1px dashed var(--yellow)',
+                      borderRadius: 8,
+                      padding: '14px 16px',
+                      marginTop: 8,
+                    }}
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label style={labelStyle}>Namn *</label>
+                        <input style={inputStyle} value={nyKontakt.namn} onChange={e => setNyKontakt(prev => ({ ...prev, namn: e.target.value }))} placeholder="Anna Andersson" />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Roll / titel</label>
+                        <input style={inputStyle} value={nyKontakt.roll} onChange={e => setNyKontakt(prev => ({ ...prev, roll: e.target.value }))} placeholder="VD, Projektledare, Montör..." />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>E-post</label>
+                        <input style={inputStyle} value={nyKontakt.epost} onChange={e => setNyKontakt(prev => ({ ...prev, epost: e.target.value }))} placeholder="anna@elfirma.se" />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Telefon</label>
+                        <input style={inputStyle} value={nyKontakt.telefon} onChange={e => setNyKontakt(prev => ({ ...prev, telefon: e.target.value }))} placeholder="070-xxx xx xx" />
+                      </div>
+                    </div>
+                    <div className="flex gap-3" style={{ marginTop: 10 }}>
+                      <Button
+                        onClick={() => {
+                          if (!nyKontakt.namn.trim()) return
+                          setKontaktpersoner(prev => [...prev, nyKontakt])
+                          setNyKontakt({ namn: '', roll: '', epost: '', telefon: '' })
+                          setVisaKontaktForm(false)
+                        }}
+                        disabled={!nyKontakt.namn.trim()}
+                        style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700, fontSize: 12 }}
+                      >
+                        Lägg till
+                      </Button>
+                      <Button onClick={() => setVisaKontaktForm(false)} variant="outline" style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)', fontSize: 12 }}>
+                        Avbryt
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setVisaKontaktForm(true)}
+                    style={{
+                      width: '100%',
+                      marginTop: 8,
+                      padding: '10px',
+                      borderRadius: 8,
+                      border: '1px dashed var(--navy-border)',
+                      background: 'transparent',
+                      color: 'var(--yellow)',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    + Lägg till kontaktperson
+                  </button>
+                )}
+              </SectionCard>
+
               {/* Företagsuppgifter */}
               <SectionCard title="Företagsuppgifter">
                 <div className="grid grid-cols-2 gap-4">
@@ -240,6 +369,173 @@ export default function ProfilPage() {
                 <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 8 }}>
                   Dessa priser används som förslag i kalkylen. Du kan alltid justera per projekt.
                 </p>
+              </SectionCard>
+
+              {/* Referensprojekt */}
+              <SectionCard title="Referensprojekt">
+                <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                  Referensprojekt matchas automatiskt mot krav som "minst X referensuppdrag av liknande art".
+                </p>
+
+                {referensprojekt.length === 0 && !visaRefForm && (
+                  <p style={{ fontSize: 13, color: 'var(--slate)', fontStyle: 'italic', marginBottom: 12 }}>
+                    Inga referensprojekt tillagda ännu.
+                  </p>
+                )}
+
+                {/* Lista befintliga */}
+                {referensprojekt.map((ref, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: 'var(--navy)',
+                      border: '1px solid var(--navy-border)',
+                      borderRadius: 10,
+                      padding: '14px 18px',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{ref.projektnamn}</div>
+                        <div style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
+                          {ref.beställare}{ref.datum ? ` · ${ref.datum}` : ''}{ref.typ ? ` · ${ref.typ}` : ''}{ref.värde ? ` · ${ref.värde} kr` : ''}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setReferensprojekt(prev => prev.filter((_, j) => j !== i))}
+                        style={{ fontSize: 11, color: 'var(--red)', background: 'var(--red-bg)', border: '1px solid rgba(255,77,77,0.3)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}
+                      >
+                        Ta bort
+                      </button>
+                    </div>
+                    {ref.beskrivning && (
+                      <p style={{ fontSize: 12, color: 'var(--soft)', marginTop: 6, lineHeight: 1.5 }}>
+                        {ref.beskrivning}
+                      </p>
+                    )}
+                    {ref.kontaktperson && (
+                      <div style={{ fontSize: 11, color: 'var(--slate)', marginTop: 6 }}>
+                        Kontakt: {ref.kontaktperson}
+                        {ref.kontakt_telefon ? ` · ${ref.kontakt_telefon}` : ''}
+                        {ref.kontakt_epost ? ` · ${ref.kontakt_epost}` : ''}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Formulär för nytt referensprojekt */}
+                {visaRefForm ? (
+                  <div
+                    style={{
+                      background: 'var(--navy)',
+                      border: '1px dashed var(--yellow)',
+                      borderRadius: 10,
+                      padding: '16px 18px',
+                      marginTop: 8,
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)', marginBottom: 12 }}>Nytt referensprojekt</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
+                        <label style={labelStyle}>Projektnamn *</label>
+                        <input style={inputStyle} value={nyttRef.projektnamn} onChange={e => setNyttRef(prev => ({ ...prev, projektnamn: e.target.value }))} placeholder="T.ex. BRF Solbacken — elrenovering" />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Beställare / kund</label>
+                        <input style={inputStyle} value={nyttRef.beställare} onChange={e => setNyttRef(prev => ({ ...prev, beställare: e.target.value }))} placeholder="BRF Solbacken" />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Typ av uppdrag</label>
+                        <select
+                          value={nyttRef.typ}
+                          onChange={e => setNyttRef(prev => ({ ...prev, typ: e.target.value }))}
+                          style={{ ...inputStyle, cursor: 'pointer' }}
+                        >
+                          <option value="">Välj typ...</option>
+                          <option value="Elcentralsbyte">Elcentralsbyte</option>
+                          <option value="Stamrenovering">Stamrenovering</option>
+                          <option value="Laddinfrastruktur">Laddinfrastruktur</option>
+                          <option value="Solceller">Solceller</option>
+                          <option value="Belysning">Belysning</option>
+                          <option value="Nyinstallation">Nyinstallation</option>
+                          <option value="Brandlarm">Brandlarm</option>
+                          <option value="Service/underhåll">Service/underhåll</option>
+                          <option value="Övrigt">Övrigt</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Datum utfört</label>
+                        <input style={inputStyle} type="month" value={nyttRef.datum} onChange={e => setNyttRef(prev => ({ ...prev, datum: e.target.value }))} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Värde (kr, valfritt)</label>
+                        <input style={inputStyle} type="number" value={nyttRef.värde} onChange={e => setNyttRef(prev => ({ ...prev, värde: e.target.value }))} placeholder="500000" />
+                      </div>
+                      <div className="col-span-2">
+                        <label style={labelStyle}>Beskrivning</label>
+                        <textarea
+                          value={nyttRef.beskrivning}
+                          onChange={e => setNyttRef(prev => ({ ...prev, beskrivning: e.target.value }))}
+                          rows={2}
+                          placeholder="Kort beskrivning av uppdraget..."
+                          style={{ ...inputStyle, resize: 'none' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Kontaktperson</label>
+                        <input style={inputStyle} value={nyttRef.kontaktperson} onChange={e => setNyttRef(prev => ({ ...prev, kontaktperson: e.target.value }))} placeholder="Namn" />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Telefon</label>
+                        <input style={inputStyle} value={nyttRef.kontakt_telefon} onChange={e => setNyttRef(prev => ({ ...prev, kontakt_telefon: e.target.value }))} placeholder="070-xxx xx xx" />
+                      </div>
+                      <div className="col-span-2">
+                        <label style={labelStyle}>E-post</label>
+                        <input style={inputStyle} value={nyttRef.kontakt_epost} onChange={e => setNyttRef(prev => ({ ...prev, kontakt_epost: e.target.value }))} placeholder="kontakt@example.se" />
+                      </div>
+                    </div>
+                    <div className="flex gap-3" style={{ marginTop: 12 }}>
+                      <Button
+                        onClick={() => {
+                          if (!nyttRef.projektnamn.trim()) return
+                          setReferensprojekt(prev => [...prev, nyttRef])
+                          setNyttRef({ projektnamn: '', beställare: '', kontaktperson: '', kontakt_epost: '', kontakt_telefon: '', beskrivning: '', typ: '', datum: '', värde: '' })
+                          setVisaRefForm(false)
+                        }}
+                        disabled={!nyttRef.projektnamn.trim()}
+                        style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700 }}
+                      >
+                        Lägg till
+                      </Button>
+                      <Button
+                        onClick={() => setVisaRefForm(false)}
+                        variant="outline"
+                        style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
+                      >
+                        Avbryt
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setVisaRefForm(true)}
+                    style={{
+                      width: '100%',
+                      marginTop: 8,
+                      padding: '10px',
+                      borderRadius: 8,
+                      border: '1px dashed var(--navy-border)',
+                      background: 'transparent',
+                      color: 'var(--yellow)',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    + Lägg till referensprojekt
+                  </button>
+                )}
               </SectionCard>
 
               {/* Spara */}

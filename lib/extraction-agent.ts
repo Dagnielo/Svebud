@@ -55,9 +55,15 @@ ELFIRMANS PROFIL:
 ${JSON.stringify(profil, null, 2)}
 
 MATCHNINGSREGLER:
-- "uppfyllt" = Kravet matchar tydligt mot något i profilen (certifikat, erfarenhet, kapacitet)
+- "uppfyllt" = Kravet matchar tydligt mot något i profilen (certifikat, erfarenhet, kapacitet, referensprojekt)
 - "kräver_bekräftelse" = Kravet KAN uppfyllas men profilen är inte tydlig nog (t.ex. omsättning, riskklass, specifika referensuppdrag)
 - "ej_uppfyllt" = Kravet kan definitivt INTE uppfyllas (t.ex. kräver 50 montörer men firman har 5)
+
+REFERENSPROJEKT:
+- Om FU kräver referensuppdrag, matcha mot elfirmans referensprojekt i profilen
+- Matcha på typ (t.ex. "stamrenovering" mot referensprojekt av typ "Stamrenovering")
+- Om elfirman har referensprojekt av liknande typ → "uppfyllt"
+- Om inga referensprojekt finns alls → "kräver_bekräftelse"
 
 ANBUDSLÄGE (4-gradig bedömning):
 - STARKT_LÄGE: Inga "ej_uppfyllt" ska-krav, max 2 "kräver_bekräftelse"
@@ -151,6 +157,13 @@ export async function analyseraOchMatcha(projektId: string): Promise<AnalysResul
     certifikat: profil.certifikat ?? [],
     erfarenhet: profil.erfarenhet ?? [],
     timpris_standard: profil.timpris_standard,
+    referensprojekt: (profil.referensprojekt ?? []).map((r: Record<string, unknown>) => ({
+      projektnamn: r.projektnamn,
+      beställare: r.beställare,
+      typ: r.typ,
+      datum: r.datum,
+      beskrivning: r.beskrivning,
+    })),
   } : {}
 
   const startTid = Date.now()

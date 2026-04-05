@@ -15,7 +15,6 @@ const CERTIFIKAT_LISTA = [
   ]},
   { kategori: 'SSG-kurser', items: [
     { namn: 'SSG Entre', key: 'ssg_entre' },
-    { namn: 'SSG Heta Arbeten', key: 'ssg_heta' },
     { namn: 'SSG Online', key: 'ssg_online' },
   ]},
   { kategori: 'Arbetsmiljö', items: [

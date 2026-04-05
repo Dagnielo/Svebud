@@ -51,7 +51,7 @@ export default function KalkylVy({ kalkyl, onChange }: { kalkyl?: Record<string,
   const moms = Math.round(totalExklMoms * 0.25)
   const totalInklMoms = totalExklMoms + moms
 
-  const inputStyle = { background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 6, color: 'var(--white)', fontFamily: 'var(--font-mono), monospace', fontSize: 13, padding: '4px 8px', width: 70, textAlign: 'right' as const }
+  const inputStyle = { background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 4, color: 'var(--white)', fontFamily: 'var(--font-mono), monospace', fontSize: 11, padding: '4px 6px', width: 70, textAlign: 'right' as const }
 
   return (
     <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
@@ -61,35 +61,43 @@ export default function KalkylVy({ kalkyl, onChange }: { kalkyl?: Record<string,
           + Lägg till moment
         </button>
       </div>
-      <div style={{ padding: '0 18px 18px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div style={{ padding: '0 16px 16px', overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '40%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '8%' }} />
+          </colgroup>
           <thead>
             <tr>
               {['Moment', 'Timmar', 'Timpris', 'Material', 'Belopp', ''].map(h => (
-                <th key={h} style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted-custom)', padding: '8px 6px', borderBottom: '1px solid var(--navy-border)', textAlign: h === 'Moment' || h === '' ? 'left' : 'right' }}>{h}</th>
+                <th key={h} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--muted-custom)', padding: '8px 4px', borderBottom: '1px solid var(--navy-border)', textAlign: h === 'Moment' || h === '' ? 'left' : 'right' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {moment.map((m, i) => (
               <tr key={i}>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input value={m.beskrivning} onChange={e => uppdatera(i, 'beskrivning', e.target.value)} style={{ ...inputStyle, width: '100%', textAlign: 'left' }} />
+                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input value={m.beskrivning} onChange={e => uppdatera(i, 'beskrivning', e.target.value)} style={{ ...inputStyle, width: '100%', textAlign: 'left', fontSize: 11 }} title={m.beskrivning} />
                 </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input type="number" value={m.timmar} onChange={e => uppdatera(i, 'timmar', e.target.value)} style={inputStyle} />
+                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input type="number" value={m.timmar} onChange={e => uppdatera(i, 'timmar', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                 </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input type="number" value={m.timpris} onChange={e => uppdatera(i, 'timpris', e.target.value)} style={inputStyle} />
+                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input type="number" value={m.timpris} onChange={e => uppdatera(i, 'timpris', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                 </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input type="number" value={m.materialkostnad} onChange={e => uppdatera(i, 'materialkostnad', e.target.value)} style={inputStyle} />
+                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <input type="number" value={m.materialkostnad} onChange={e => uppdatera(i, 'materialkostnad', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                 </td>
-                <td className="font-mono" style={{ padding: '6px', fontSize: 13, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)', color: 'var(--white)' }}>
+                <td className="font-mono" style={{ padding: '4px', fontSize: 11, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)', color: 'var(--white)' }}>
                   {m.belopp.toLocaleString('sv-SE')} kr
                 </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <button onClick={() => taBortMoment(i)} style={{ fontSize: 12, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)', textAlign: 'center' }}>
+                  <button onClick={() => taBortMoment(i)} style={{ fontSize: 11, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
                 </td>
               </tr>
             ))}
