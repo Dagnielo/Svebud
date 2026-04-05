@@ -68,6 +68,9 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [valdKontakt, setValdKontakt] = useState<number>(0)
   const [företagsNamn, setFöretagsNamn] = useState('')
   const [utkastLaddat, setUtkastLaddat] = useState(false)
+  const [genSteg, setGenSteg] = useState(0)
+  const [kundFrågor, setKundFrågor] = useState<string[] | null>(null)
+  const [nyFråga, setNyFråga] = useState('')
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
   const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number }>({ rotBelopp: 0, kundBetalar: 0 })
@@ -95,6 +98,11 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       const jr = (p as Record<string, unknown>).jämförelse_resultat as Record<string, unknown> | null
       if (jr?.analystyp === 'snabb') setAnalysTyp('snabb')
       else if (jr && !jr.analystyp) setAnalysTyp('formell')
+      // Initiera kundfrågor från analys
+      const km = (p as Record<string, unknown>).kravmatchning as Record<string, unknown> | null
+      if (km?.frågor_till_kund && kundFrågor === null) {
+        setKundFrågor(km.frågor_till_kund as string[])
+      }
     }
     const { data: a } = await supabase.from('anbud').select('*').eq('projekt_id', projektId).order('skapad', { ascending: false })
     if (a) setAnbud(a as unknown as AnbudRad[])
@@ -132,6 +140,32 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     }
   }, [projekt, aktivTab])
 
+  // Auto-save kalkylmoment med debounce
+  useEffect(() => {
+    if (!snabbMoment || snabbMoment.length === 0) return
+    const t = setTimeout(async () => {
+      const totArbete = snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)
+      const totMaterial = snabbMoment.reduce((s, m) => s + m.materialkostnad, 0)
+      const total = totArbete + totMaterial
+      const { data: p } = await supabase.from('projekt').select('rekommendation').eq('id', projektId).single()
+      const befintlig = (p as Record<string, unknown>)?.rekommendation as Record<string, unknown> ?? {}
+      await supabase.from('projekt').update({
+        rekommendation: {
+          ...befintlig,
+          kalkyl: {
+            moment: snabbMoment,
+            totalt_arbete: totArbete,
+            totalt_material: totMaterial,
+            totalbelopp: total,
+            moms: Math.round(total * 0.25),
+            totalt_inkl_moms: total + Math.round(total * 0.25),
+          },
+        },
+      }).eq('id', projektId)
+    }, 2000)
+    return () => clearTimeout(t)
+  }, [snabbMoment])
+
   async function körAnalys() {
     setAktivTab('analys')
     setAnalysLaddar(true)
@@ -166,6 +200,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
 
   async function körAnbudsGenerering() {
     setAnbudLaddar(true)
+    setGenSteg(1)
     // Om snabboffert: spara justerade moment som kalkyl-data på projektet
     if (analysTyp === 'snabb' && snabbMoment) {
       const totArbete = snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)
@@ -195,11 +230,18 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
         },
       }).eq('id', projektId)
     }
+    setGenSteg(2)
+    // Simulera steg-progression medan API:t arbetar
+    const stegTimer = setInterval(() => {
+      setGenSteg(prev => prev < 5 ? prev + 1 : prev)
+    }, 4000)
     await fetch(`/api/projekt/${projektId}/rekommendation`, { method: 'POST' })
+    clearInterval(stegTimer)
+    setGenSteg(6)
     await hämta()
     setAnbudLaddar(false)
+    setGenSteg(0)
     setAktivTab('anbud')
-    // Auto-granska
     körGranskning()
   }
 
@@ -366,7 +408,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
       {/* Header */}
       <div className="flex items-center gap-4" style={{ background: 'var(--navy-mid)', borderBottom: '1px solid var(--navy-border)', padding: '20px 32px' }}>
-        <button onClick={() => router.push('/dashboard')} style={{ fontSize: 13, color: 'var(--muted-custom)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>← Tillbaka</button>
+        <button onClick={() => router.push('/dashboard')} style={{ fontSize: 13, color: 'var(--muted-custom)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>← Pipeline</button>
         <div className="flex-1">
           <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{projekt.namn}</h1>
           <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 1 }}>{projekt.beskrivning ?? ''}</p>
@@ -448,28 +490,77 @@ hr{border:none;border-top:1pt solid #e0e0e0}
           })}
         </div>
 
-        {/* Instruktionsruta */}
-        <div style={{ marginTop: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 18 }}>{aktivtSteg === 1 ? '📎' : aktivtSteg === 2 ? '📊' : '📋'}</span>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
-              {aktivtSteg === 1 && 'Steg 1: Ladda upp alla dokument i förfrågningsunderlaget'}
-              {aktivtSteg === 2 && 'Steg 2: Granska analys och bekräfta osäkra krav'}
-              {aktivtSteg >= 3 && 'Steg 3: Granska anbudsutkast, justera och skicka'}
+        {/* Instruktionsruta — baseras på vilken flik man tittar på */}
+        <div style={{ marginTop: 16, padding: '14px 18px', borderRadius: 10, background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)' }}>
+          <div className="flex items-center gap-3">
+            <span style={{ fontSize: 18 }}>{aktivTab === 'dokument' ? '📎' : aktivTab === 'analys' ? '📊' : '📋'}</span>
+            <div className="flex-1">
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
+                {aktivTab === 'dokument' && 'Steg 1: Ladda upp förfrågningsunderlaget'}
+                {aktivTab === 'analys' && 'Steg 2: Analys, kalkyl och bedömning'}
+                {aktivTab === 'anbud' && 'Steg 3: Granska anbudsutkast, justera och skicka'}
+              </div>
             </div>
-            <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 2 }}>
-              {aktivtSteg === 1 && anbud.length === 0 && 'Ladda upp PDF, Word, Excel eller klistra in mailtext.'}
-              {aktivtSteg === 1 && anbud.length > 0 && (
-                <span className="flex items-center gap-3" style={{ marginTop: 4 }}>
-                  <span>{anbud.length} dokument uppladdade.</span>
-                  <Button onClick={körAnalys} disabled={analysLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px' }}>
-                    {analysLaddar ? '⏳ Analyserar...' : '🔍 Analysera förfrågan →'}
-                  </Button>
-                </span>
-              )}
-              {aktivtSteg === 2 && 'Bekräfta osäkra krav om det behövs, och generera sedan anbud.'}
-              {aktivtSteg >= 3 && 'Redigera utkastet, exportera och markera som skickat.'}
-            </div>
+            {aktivTab === 'dokument' && anbud.length > 0 && (
+              <Button onClick={körAnalys} disabled={analysLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
+                {analysLaddar ? '⏳ Analyserar...' : '🔍 Analysera förfrågan →'}
+              </Button>
+            )}
+          </div>
+
+          {/* Checklista — vad kan man göra i detta steg */}
+          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(245,196,0,0.15)' }}>
+            {aktivTab === 'dokument' && (
+              <div className="grid grid-cols-2 gap-x-8 gap-y-1" style={{ fontSize: 12 }}>
+                <div style={{ color: anbud.length > 0 ? 'var(--green)' : 'var(--muted-custom)' }}>
+                  {anbud.length > 0 ? '✅' : '○'} Ladda upp dokument (PDF, Word, Excel)
+                </div>
+                <div style={{ color: 'var(--muted-custom)' }}>
+                  ○ Eller klistra in text/mail
+                </div>
+                <div style={{ color: projekt.jämförelse_status === 'klar' ? 'var(--green)' : 'var(--muted-custom)' }}>
+                  {projekt.jämförelse_status === 'klar' ? '✅' : '○'} Analysera förfrågan
+                </div>
+                <div style={{ color: 'var(--slate)', fontSize: 11 }}>
+                  AI läser dokumenten och matchar mot er profil
+                </div>
+              </div>
+            )}
+            {aktivTab === 'analys' && (
+              <div className="grid grid-cols-2 gap-x-8 gap-y-1" style={{ fontSize: 12 }}>
+                <div style={{ color: 'var(--green)' }}>
+                  ✅ Granska AI:ns analys och bedömning
+                </div>
+                <div style={{ color: 'var(--muted-custom)' }}>
+                  ○ Justera moment, timmar och materialpriser
+                </div>
+                <div style={{ color: 'var(--muted-custom)' }}>
+                  ○ Aktivera ROT/Grön teknik om tillämpligt
+                </div>
+                <div style={{ color: 'var(--muted-custom)' }}>
+                  ○ Välj kontaktperson och generera anbud
+                </div>
+              </div>
+            )}
+            {aktivTab === 'anbud' && (
+              <div className="grid grid-cols-2 gap-x-8 gap-y-1" style={{ fontSize: 12 }}>
+                <div style={{ color: utkast ? 'var(--green)' : 'var(--muted-custom)' }}>
+                  {utkast ? '✅' : '○'} Granska och redigera anbudsutkastet
+                </div>
+                <div style={{ color: 'var(--muted-custom)' }}>
+                  ○ Förhandsgranska det färdiga dokumentet
+                </div>
+                <div style={{ color: 'var(--muted-custom)' }}>
+                  ○ Infoga kontaktperson
+                </div>
+                <div style={{ color: 'var(--muted-custom)' }}>
+                  ○ Förbered mail, ladda ner PDF och skicka
+                </div>
+                <div style={{ color: (projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') ? 'var(--green)' : 'var(--muted-custom)' }}>
+                  {(projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') ? '✅' : '○'} Markera som skickat
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -575,38 +666,101 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     />
                   )}
 
-                  {/* Frågor till kund — efter ROT-kalkyl */}
-                  {(() => {
-                    const kravmatch = projekt?.kravmatchning as Record<string, unknown> | null
-                    const frågor = (kravmatch?.frågor_till_kund as string[]) ?? []
-                    if (frågor.length === 0) return null
-                    return (
-                      <div
-                        style={{
-                          background: 'var(--navy-mid)',
-                          border: '1px solid rgba(245,196,0,0.3)',
-                          borderRadius: 12,
-                          padding: '16px 24px',
-                          marginTop: 16,
-                        }}
-                      >
-                        <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
+                  {/* Frågor till kund — redigerbara */}
+                  {(kundFrågor ?? []).length > 0 && (
+                    <div
+                      style={{
+                        background: 'var(--navy-mid)',
+                        border: '1px solid rgba(245,196,0,0.3)',
+                        borderRadius: 12,
+                        padding: '16px 24px',
+                        marginTop: 16,
+                      }}
+                    >
+                      <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
+                        <div className="flex items-center gap-2">
                           <span style={{ fontSize: 16 }}>❓</span>
                           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
                             Frågor att ställa till kunden
                           </span>
                         </div>
-                        <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--soft)' }}>
-                          {frågor.map((fråga, i) => (
-                            <li key={i} style={{ marginBottom: 4, lineHeight: 1.5 }}>{fråga}</li>
-                          ))}
-                        </ul>
-                        <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10 }}>
-                          Klargör dessa innan du skickar offerten för att kunna ge exakt pris.
-                        </p>
+                        <button
+                          onClick={() => {
+                            const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
+                            navigator.clipboard.writeText(text)
+                          }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
+                        >
+                          📋 Kopiera alla
+                        </button>
                       </div>
-                    )
-                  })()}
+
+                      {(kundFrågor ?? []).map((fråga, i) => (
+                        <div key={i} className="flex items-start gap-2" style={{ marginBottom: 4 }}>
+                          <span style={{ fontSize: 11, color: 'var(--slate)', marginTop: 6, flexShrink: 0 }}>{i + 1}.</span>
+                          <input
+                            value={fråga}
+                            onChange={e => setKundFrågor(prev => (prev ?? []).map((f, j) => j === i ? e.target.value : f))}
+                            style={{
+                              flex: 1,
+                              padding: '4px 8px',
+                              borderRadius: 6,
+                              background: 'var(--navy)',
+                              border: '1px solid var(--navy-border)',
+                              color: 'var(--soft)',
+                              fontSize: 12,
+                              lineHeight: 1.5,
+                            }}
+                          />
+                          <button
+                            onClick={() => setKundFrågor(prev => (prev ?? []).filter((_, j) => j !== i))}
+                            style={{ fontSize: 11, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, flexShrink: 0 }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Lägg till ny fråga */}
+                      <div className="flex gap-2" style={{ marginTop: 8 }}>
+                        <input
+                          value={nyFråga}
+                          onChange={e => setNyFråga(e.target.value)}
+                          placeholder="Lägg till egen fråga..."
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && nyFråga.trim()) {
+                              setKundFrågor(prev => [...(prev ?? []), nyFråga.trim()])
+                              setNyFråga('')
+                            }
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '4px 8px',
+                            borderRadius: 6,
+                            background: 'var(--navy)',
+                            border: '1px dashed var(--navy-border)',
+                            color: 'var(--white)',
+                            fontSize: 12,
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            if (nyFråga.trim()) {
+                              setKundFrågor(prev => [...(prev ?? []), nyFråga.trim()])
+                              setNyFråga('')
+                            }
+                          }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
+                        >
+                          + Lägg till
+                        </button>
+                      </div>
+
+                      <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10 }}>
+                        Redigera, ta bort eller lägg till frågor. Kopiera och skicka till kunden innan du färdigställer offerten.
+                      </p>
+                    </div>
+                  )}
                 </>
               ) : (
                 <GranskningSida projektId={projektId} externtScanning={analysLaddar} />
@@ -614,28 +768,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               {projekt.jämförelse_status === 'klar' && (
                 <div style={{ marginTop: 16 }}>
                   {anbudLaddar ? (
-                    <div
-                      style={{
-                        background: 'var(--navy-mid)',
-                        border: '1px solid var(--navy-border)',
-                        borderRadius: 12,
-                        padding: '32px 24px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div className="animate-pulse" style={{ marginBottom: 16 }}>
-                        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--yellow-glow)', border: '3px solid var(--yellow)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
-                          ⚡
-                        </div>
-                      </div>
-                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>AI genererar ditt anbud...</div>
-                      <div style={{ fontSize: 13, color: 'var(--muted-custom)', maxWidth: 400, margin: '0 auto', lineHeight: 1.6 }}>
-                        SveBud analyserar förfrågningsunderlaget, matchar mot er profil och skapar ett komplett anbudsutkast med kalkyl, villkor och förbehåll.
-                      </div>
-                      <div style={{ marginTop: 16, fontSize: 12, color: 'var(--slate)' }}>
-                        Detta tar vanligtvis 15–30 sekunder
-                      </div>
-                    </div>
+                    <GenererarVy steg={genSteg} />
                   ) : (
                     <div
                       style={{
@@ -702,47 +835,15 @@ hr{border:none;border-top:1pt solid #e0e0e0}
             <TabsContent value="anbud">
               {/* Laddningsvy — visas alltid under generering */}
               {anbudLaddar && utkast && (
-                <div
-                  style={{
-                    background: 'var(--navy-mid)',
-                    border: '2px solid var(--yellow)',
-                    borderRadius: 12,
-                    padding: '24px',
-                    marginBottom: 16,
-                    textAlign: 'center',
-                  }}
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="animate-pulse">
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--yellow-glow)', border: '2px solid var(--yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                        ⚡
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontSize: 14, fontWeight: 700 }}>Genererar nytt anbud...</div>
-                      <div style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
-                        Nytt utkast skapas baserat på justerade moment. 15–30 sekunder.
-                      </div>
-                    </div>
-                  </div>
+                <div style={{ marginBottom: 16 }}>
+                  <GenererarVy steg={genSteg} />
                 </div>
               )}
 
               {!utkast ? (
                 <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px 24px', textAlign: 'center' }}>
                   {anbudLaddar ? (
-                    <>
-                      <div className="animate-pulse" style={{ marginBottom: 16 }}>
-                        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--yellow-glow)', border: '3px solid var(--yellow)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
-                          ⚡
-                        </div>
-                      </div>
-                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>AI genererar ditt anbud...</div>
-                      <p style={{ fontSize: 13, color: 'var(--muted-custom)', maxWidth: 400, margin: '0 auto', lineHeight: 1.6 }}>
-                        Skapar kalkyl, anbudstext, villkor och förbehåll baserat på analysen.
-                      </p>
-                      <div style={{ marginTop: 12, fontSize: 12, color: 'var(--slate)' }}>15–30 sekunder</div>
-                    </>
+                    <GenererarVy steg={genSteg} />
                   ) : (
                     <>
                       <div style={{ fontSize: 28, marginBottom: 8 }}>📋</div>
@@ -830,8 +931,6 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           {förhandsgranskning ? '✏️ Redigera' : '👁 Förhandsgranska'}
                         </Button>
                         <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📋 Kopiera text</Button>
-                        <Button onClick={exporteraSomPdf} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📄 PDF</Button>
-                        <Button onClick={exporteraSomWord} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📝 Word</Button>
                         <Button onClick={körGranskning} disabled={kvalitetLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
                           {kvalitetLaddar ? '⏳ Granskar...' : '🔍 Granska'}
                         </Button>
@@ -1058,7 +1157,7 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                           cursor: 'pointer',
                         }}
                       >
-                        📄 Ladda ner PDF att bifoga
+                        📄 Ladda ner anbudsutkast som PDF
                       </button>
                       <button
                         onClick={exporteraSomWord}
@@ -1073,9 +1172,44 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                           cursor: 'pointer',
                         }}
                       >
-                        📝 Ladda ner Word att bifoga
+                        📝 Ladda ner anbudsutkast som Word
                       </button>
                     </div>
+
+                    {/* Frågor till kund — kopierbart */}
+                    {(kundFrågor ?? []).length > 0 && (
+                      <div style={{ marginTop: 12 }}>
+                        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)' }}>
+                            Frågor till kund (kopiera och skicka separat)
+                          </label>
+                          <button
+                            onClick={() => {
+                              const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
+                              navigator.clipboard.writeText(text)
+                            }}
+                            style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
+                          >
+                            Kopiera
+                          </button>
+                        </div>
+                        <div
+                          style={{
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            background: 'var(--navy)',
+                            border: '1px solid var(--navy-border)',
+                            fontSize: 12,
+                            color: 'var(--soft)',
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {(kundFrågor ?? []).map((f, i) => (
+                            <div key={i}>{i + 1}. {f}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Markera som skickat */}
@@ -1268,6 +1402,84 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
           </SidePanel>
 
         </div>
+      </div>
+    </div>
+  )
+}
+
+const GEN_STEG = [
+  { label: 'Förbereder data...', ikon: '📋' },
+  { label: 'Analyserar förfrågan...', ikon: '🔍' },
+  { label: 'Matchar mot er profil...', ikon: '🏢' },
+  { label: 'Bygger kalkyl...', ikon: '🧮' },
+  { label: 'Skriver anbudstext...', ikon: '✍️' },
+  { label: 'Lägger till villkor och förbehåll...', ikon: '📑' },
+  { label: 'Klart!', ikon: '✅' },
+]
+
+function GenererarVy({ steg }: { steg: number }) {
+  return (
+    <div
+      style={{
+        background: 'var(--navy-mid)',
+        border: '2px solid var(--yellow)',
+        borderRadius: 12,
+        padding: '32px 24px',
+      }}
+    >
+      {/* Spinner */}
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            border: '3px solid var(--navy-border)',
+            borderTopColor: 'var(--yellow)',
+            margin: '0 auto',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+
+      <div style={{ textAlign: 'center', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>
+        AI genererar ditt anbud
+      </div>
+
+      {/* Levande steg-lista */}
+      <div style={{ maxWidth: 340, margin: '0 auto' }}>
+        {GEN_STEG.slice(0, -1).map((s, i) => {
+          const klar = i < steg
+          const aktiv = i === steg - 1 || (i === steg && steg > 0)
+          return (
+            <div
+              key={i}
+              className="flex items-center gap-3"
+              style={{
+                padding: '6px 0',
+                opacity: klar || aktiv ? 1 : 0.3,
+                transition: 'opacity 0.5s',
+              }}
+            >
+              <span style={{ fontSize: 14, width: 24, textAlign: 'center' }}>
+                {klar ? '✅' : aktiv ? s.ikon : '○'}
+              </span>
+              <span style={{
+                fontSize: 13,
+                fontWeight: aktiv ? 700 : 400,
+                color: klar ? 'var(--green)' : aktiv ? 'var(--white)' : 'var(--slate)',
+              }}>
+                {s.label}
+              </span>
+              {aktiv && !klar && (
+                <span className="animate-pulse" style={{ fontSize: 10, color: 'var(--yellow)', marginLeft: 'auto' }}>
+                  pågår...
+                </span>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
