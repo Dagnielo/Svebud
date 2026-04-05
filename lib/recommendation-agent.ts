@@ -147,6 +147,15 @@ ${(profil.referensprojekt ?? []).length > 0 ? `
 Referensprojekt:
 ${(profil.referensprojekt as Array<Record<string, unknown>>).map((r: Record<string, unknown>) => `- ${r.projektnamn} (${r.typ ?? 'Övrigt'}, ${r.datum ?? 'datum okänt'}) — ${r.beställare ?? ''}`).join('\n')}
 ` : ''}
+${projekt.rot_aktiverat ? `
+ROT/GRÖN TEKNIK (aktiverat av elfirman):
+Typ: ${projekt.rot_typ}
+Fastighetstyp: ${projekt.rot_fastighetstyp}
+Antal ägare: ${projekt.rot_antal_agare}
+ROT-belopp: ${projekt.rot_belopp} kr
+Kund betalar: ${projekt.rot_kund_betalar} kr
+VIKTIGT: Inkludera ROT/Grön teknik-information i anbudet med korrekt avdragsbelopp och disclaimer.
+` : ''}
 ANALYSRESULTAT (från AI-scanning av förfrågningsunderlaget):
 ${JSON.stringify(kravmatchning, null, 2).slice(0, 15000)}
 ${projekt.rekommendation?.kalkyl ? `

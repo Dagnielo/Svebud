@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { beräknaROT, ROT_TYPER, ROT_REGLER } from '@/lib/rot-regler'
 import type { RotTyp, FastighetsTyp, RotKalkylInput } from '@/lib/rot-regler'
+import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   arbeteExMoms: number
@@ -23,6 +24,25 @@ export default function RotKalkyl({
   const [tidligareUtnyttjat, setTidligareUtnyttjat] = useState(0)
   const [fastighetstyp, setFastighetstyp] = useState<FastighetsTyp>('villa')
   const [sparar, setSparar] = useState(false)
+  const [laddat, setLaddat] = useState(false)
+  const supabase = createClient()
+
+  // Ladda sparade ROT-inställningar vid mount
+  useEffect(() => {
+    async function laddaRot() {
+      const { data: p } = await supabase.from('projekt').select('*').eq('id', projektId).single()
+      if (p) {
+        const proj = p as Record<string, unknown>
+        if (proj.rot_aktiverat) setAktiverat(true)
+        if (proj.rot_typ) setTyp(proj.rot_typ as RotTyp)
+        if (proj.rot_antal_agare) setAntalAgare(proj.rot_antal_agare as number)
+        if (proj.rot_tidigare_utnyttjat) setTidligareUtnyttjat(proj.rot_tidigare_utnyttjat as number)
+        if (proj.rot_fastighetstyp) setFastighetstyp(proj.rot_fastighetstyp as FastighetsTyp)
+      }
+      setLaddat(true)
+    }
+    laddaRot()
+  }, [projektId])
 
   const input: RotKalkylInput = {
     aktiverat,
@@ -42,8 +62,9 @@ export default function RotKalkyl({
   }, [res.rotBelopp, res.kundBetalar])
 
   // Spara till Supabase
-  // Spara ROT-data med debounce — inline för att undvika stale closure
+  // Spara ROT-data med debounce — bara efter initial laddning
   useEffect(() => {
+    if (!laddat) return
     const t = setTimeout(async () => {
       setSparar(true)
       try {
