@@ -1118,6 +1118,35 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     </div>
                   )}
 
+                  {/* Ladda ner anbudsutkast */}
+                  <div
+                    style={{
+                      background: 'var(--navy-mid)',
+                      border: '1px solid var(--navy-border)',
+                      borderRadius: 12,
+                      padding: '16px 20px',
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>📄 Ladda ner anbudsutkast</div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={exporteraSomPdf}
+                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--soft)', background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer' }}
+                      >
+                        📄 PDF
+                      </button>
+                      <button
+                        onClick={exporteraSomWord}
+                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--soft)', background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer' }}
+                      >
+                        📝 Word
+                      </button>
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 8 }}>
+                      Ladda ner för att bifoga i mail eller skriva ut.
+                    </p>
+                  </div>
+
                   {/* Förbered mail till kund */}
                   <div
                     style={{
@@ -1222,39 +1251,6 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                       </p>
                     </div>
 
-                    {/* Export-knappar */}
-                    <div className="flex gap-2" style={{ marginTop: 12 }}>
-                      <button
-                        onClick={exporteraSomPdf}
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: 'var(--soft)',
-                          background: 'var(--navy)',
-                          border: '1px solid var(--navy-border)',
-                          borderRadius: 8,
-                          padding: '8px 16px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        📄 Ladda ner anbudsutkast som PDF
-                      </button>
-                      <button
-                        onClick={exporteraSomWord}
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: 'var(--soft)',
-                          background: 'var(--navy)',
-                          border: '1px solid var(--navy-border)',
-                          borderRadius: 8,
-                          padding: '8px 16px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        📝 Ladda ner anbudsutkast som Word
-                      </button>
-                    </div>
 
                   </div>
 
