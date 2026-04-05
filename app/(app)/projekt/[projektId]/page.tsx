@@ -335,21 +335,37 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
 
   function byggRotHtml() {
     if (rotData.rotBelopp <= 0) return ''
-    // Kolla om ROT redan finns i utkastet (programmatiskt tillagd av recommendation-agent)
-    if (utkast && /prissammanfattning med skattereduktion/i.test(utkast)) return ''
     const mom = kalkylMoment ?? snabbMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
     const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
     const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
     const totExkl = totArbete + totMaterial
     const totInkl = totExkl + Math.round(totExkl * 0.25)
-    return `<h2>Prissammanfattning med skattereduktion</h2>
+    return `<h3>Skattereduktion</h3>
 <table><thead><tr><th>Post</th><th style="text-align:right">Belopp</th></tr></thead><tbody>
 <tr><td>Totalt inkl. moms</td><td style="text-align:right">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
 <tr><td>Skattereduktion</td><td style="text-align:right">-${rotData.rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
-<tr><td><strong>Kunden betalar</strong></td><td style="text-align:right"><strong>${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong></td></tr>
+<tr style="background:#0E1B2E;color:#fff"><td><strong>Ni betalar</strong></td><td style="text-align:right;font-size:16px"><strong>${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong></td></tr>
 </tbody></table>
 <p style="font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete.
 Kunden ansvarar för att de uppfyller Skatteverkets villkor för skattereduktion.</em></p>`
+  }
+
+  // Renderar utkast-HTML med ROT infogad efter kalkyl
+  function renderAnbudHtml(md: string) {
+    let html = mdTillHtml(md)
+    const rot = byggRotHtml()
+    if (rot) {
+      // Infoga ROT-sektionen efter "TOTALT INKL. MOMS" i den renderade HTML:en
+      const kalkylSlut = html.match(/TOTALT\s+INKL\.?\s*MOMS[^<]*<[^>]*>/i)
+      if (kalkylSlut && kalkylSlut.index !== undefined) {
+        const pos = kalkylSlut.index + kalkylSlut[0].length
+        html = html.slice(0, pos) + rot + html.slice(pos)
+      } else {
+        // Fallback — lägg till i slutet
+        html = html + rot
+      }
+    }
+    return html
   }
 
   function byggKalkylHtml() {
@@ -388,9 +404,8 @@ ${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.ti
     const win = window.open('', '_blank')
     if (!win) return
     win.document.write(EXPORT_HTML_HEAD.replace('<title>Anbud</title>', `<title>Anbud - ${projekt?.namn}</title>`))
-    win.document.write(mdTillHtml(utkast))
+    win.document.write(renderAnbudHtml(utkast))
     win.document.write(byggKalkylHtml())
-    win.document.write(byggRotHtml())
     win.document.write(EXPORT_HTML_FOOT)
     win.document.close()
     setTimeout(() => win.print(), 500)
@@ -410,7 +425,7 @@ tr:nth-child(even){background:#f8f9fb}
 strong{font-weight:700;color:#0E1B2E}
 hr{border:none;border-top:1pt solid #e0e0e0}
 </style></head>
-<body>${mdTillHtml(utkast)}${byggKalkylHtml()}${byggRotHtml()}</body></html>`
+<body>${renderAnbudHtml(utkast)}${byggKalkylHtml()}</body></html>`
 
     const blob = new Blob([html], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
@@ -959,9 +974,8 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         dangerouslySetInnerHTML={{
                           __html: `<style>${DOKUMENT_CSS}</style>
                           <div class="dokument">
-                            ${mdTillHtml(utkast)}
+                            ${renderAnbudHtml(utkast)}
                             ${byggKalkylHtml()}
-                            ${byggRotHtml()}
                           </div>`
                         }}
                       />
