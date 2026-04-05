@@ -71,7 +71,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [genSteg, setGenSteg] = useState(0)
   const [kundFrågor, setKundFrågor] = useState<string[] | null>(null)
   const [nyFråga, setNyFråga] = useState('')
-  const kontaktInfogad = utkast.includes('Med vänliga hälsningar')
+  const KONTAKT_MARKÖR = '<!-- SVEBUD_KONTAKT -->'
+  const kontaktInfogad = utkast.includes(KONTAKT_MARKÖR)
   const [följebrev, setFöljebrev] = useState<string | null>(null)
   const [följebrevLaddat, setFöljebrevLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
@@ -996,10 +997,10 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           onClick={() => {
                             if (kontaktInfogad) {
                               // Ta bort kontaktperson från utkastet
-                              setUtkast(prev => prev.replace(/\n*---\n*\nMed vänliga hälsningar[\s\S]*$/, ''))
+                              setUtkast(prev => prev.replace(new RegExp(`\\n*${KONTAKT_MARKÖR}[\\s\\S]*$`), ''))
                             } else {
                               const kp = kontaktpersoner[valdKontakt]
-                              const kontaktText = `\n\n---\n\nMed vänliga hälsningar,\n\n**${kp.namn}**\n${kp.roll ? `${kp.roll}\n` : ''}${kp.epost ? `${kp.epost}\n` : ''}${kp.telefon ? `${kp.telefon}\n` : ''}`
+                              const kontaktText = `\n\n${KONTAKT_MARKÖR}\n---\n\nMed vänliga hälsningar,\n\n**${kp.namn}**\n${kp.roll ? `${kp.roll}\n` : ''}${kp.epost ? `${kp.epost}\n` : ''}${kp.telefon ? `${kp.telefon}\n` : ''}`
                               setUtkast(prev => prev + kontaktText)
                             }
                           }}
