@@ -81,9 +81,12 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
   useEffect(() => {
     hämta()
-    const interval = setInterval(hämta, 8000)
-    return () => clearInterval(interval)
-  }, [projektId])
+    // Polla bara om vi väntar på analys — sluta när data finns
+    if (!data) {
+      const interval = setInterval(hämta, 8000)
+      return () => clearInterval(interval)
+    }
+  }, [projektId, !data]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return <div className="animate-pulse h-40 rounded-lg" style={{ background: 'var(--navy-mid)' }} />
 

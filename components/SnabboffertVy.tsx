@@ -85,9 +85,10 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
     hämta()
   }, [projektId])
 
-  // Initiera moment från data
+  // Initiera moment från data — kör bara en gång när data laddats
+  const momentInitierat = moment.length > 0
   useEffect(() => {
-    if (data && moment.length === 0) {
+    if (data && !momentInitierat) {
       const init = data.föreslagna_moment.map(m => ({
         ...m,
         belopp: m.timmar * m.timpris + m.materialkostnad,
@@ -95,7 +96,7 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
       setMoment(init)
       onMomentChange?.(init)
     }
-  }, [data])
+  }, [data, momentInitierat, onMomentChange])
 
   if (loading) {
     return (

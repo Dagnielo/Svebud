@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/Sidebar'
 import ProjektKort, { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 
 type UserProfil = {
   fullnamn: string | null
@@ -33,10 +31,6 @@ export default function DashboardPage() {
   const [anbudData, setAnbudData] = useState<Anbud[]>([])
   const [user, setUser] = useState<UserProfil | null>(null)
   const [loading, setLoading] = useState(true)
-  const [nyttNamn, setNyttNamn] = useState('')
-  const [nyttBeskrivning, setNyttBeskrivning] = useState('')
-  const [skapar, setSkapar] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
   const router = useRouter()
   const [dragProjektId, setDragProjektId] = useState<string | null>(null)
   const [dragOverKolumn, setDragOverKolumn] = useState<string | null>(null)
@@ -54,8 +48,13 @@ export default function DashboardPage() {
   }
 
   async function raderaProjekt(projektId: string) {
+    const tidigare = projekt
     setProjekt(prev => prev.filter(p => p.id !== projektId))
-    await fetch(`/api/projekt/${projektId}/radera`, { method: 'DELETE' })
+    const res = await fetch(`/api/projekt/${projektId}/radera`, { method: 'DELETE' })
+    if (!res.ok) {
+      setProjekt(tidigare) // Rollback
+      alert('Kunde inte radera projektet. Försök igen.')
+    }
   }
 
   async function uppdateraDeadline(projektId: string, datum: string | null) {
@@ -99,55 +98,32 @@ export default function DashboardPage() {
       setProjekt(projektData as unknown as Projekt[])
     }
 
-    // Uppföljningar for win rate
-    const { data: uppData } = await supabase
-      .from('uppföljning')
-      .select('projekt_id, utfall, state')
+    // Uppföljningar for win rate — filtrera på användarens projekt
+    const projektIds = (projektData ?? []).map((p: Record<string, unknown>) => p.id as string)
+    const { data: uppData } = projektIds.length > 0
+      ? await supabase.from('uppföljning').select('projekt_id, utfall, state').in('projekt_id', projektIds)
+      : { data: [] }
 
     if (uppData) setUppföljningar(uppData as unknown as Uppföljning[])
 
-    // Anbud for pipeline value
-    const { data: aData } = await supabase
-      .from('anbud')
-      .select('projekt_id, extraherad_data')
+    // Anbud for pipeline value — filtrera på användarens projekt
+    const { data: aData } = projektIds.length > 0
+      ? await supabase.from('anbud').select('projekt_id, extraherad_data').in('projekt_id', projektIds)
+      : { data: [] }
 
     if (aData) setAnbudData(aData as unknown as Anbud[])
 
     setLoading(false)
-  }, [user])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initial load + polling every 30s
   useEffect(() => {
     hämtaData()
     const interval = setInterval(hämtaData, 30000)
     return () => clearInterval(interval)
-  }, [hämtaData])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function skapaProjekt() {
-    if (!nyttNamn.trim()) return
-    setSkapar(true)
 
-    const { data: { user: authUser } } = await supabase.auth.getUser()
-    if (!authUser) return
-
-    const { data, error } = await supabase
-      .from('projekt')
-      .insert({
-        namn: nyttNamn.trim(),
-        beskrivning: nyttBeskrivning.trim() || null,
-        användar_id: authUser.id,
-      })
-      .select('id')
-      .single()
-
-    if (data && !error) {
-      setDialogOpen(false)
-      setNyttNamn('')
-      setNyttBeskrivning('')
-      router.push(`/projekt/${data.id}`)
-    }
-    setSkapar(false)
-  }
 
   // Pipeline columns
   const inkorg = projekt.filter(p => getPipelineKolumn(p) === 'inkorg')
@@ -224,74 +200,24 @@ export default function DashboardPage() {
         >
           <span style={{ fontSize: 16, fontWeight: 700 }}>Pipeline</span>
           <div className="ml-auto flex items-center gap-3">
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger>
-                <span
-                  style={{
-                    background: 'var(--yellow)',
-                    color: 'var(--navy)',
-                    padding: '8px 16px',
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                >
-                  ➕ Nytt projekt
-                </span>
-              </DialogTrigger>
-              <DialogContent style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
-                <DialogHeader>
-                  <DialogTitle>Skapa nytt projekt</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  <div>
-                    <label className="text-sm block mb-1" style={{ color: 'var(--muted-custom)' }}>
-                      Projektnamn *
-                    </label>
-                    <input
-                      value={nyttNamn}
-                      onChange={e => setNyttNamn(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md"
-                      style={{
-                        background: 'var(--navy)',
-                        border: '1px solid var(--navy-border)',
-                        color: 'var(--white)',
-                      }}
-                      placeholder="T.ex. BRF Solstrålen – elinstallation"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm block mb-1" style={{ color: 'var(--muted-custom)' }}>
-                      Beskrivning
-                    </label>
-                    <textarea
-                      value={nyttBeskrivning}
-                      onChange={e => setNyttBeskrivning(e.target.value)}
-                      rows={3}
-                      className="w-full px-3 py-2 rounded-md resize-none"
-                      style={{
-                        background: 'var(--navy)',
-                        border: '1px solid var(--navy-border)',
-                        color: 'var(--white)',
-                      }}
-                      placeholder="Valfri beskrivning..."
-                    />
-                  </div>
-                  <Button
-                    onClick={skapaProjekt}
-                    disabled={skapar || !nyttNamn.trim()}
-                    className="w-full font-semibold"
-                    style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
-                  >
-                    {skapar ? 'Skapar...' : 'Skapa projekt'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <a
+              href="/nytt-projekt"
+              style={{
+                background: 'var(--yellow)',
+                color: 'var(--navy)',
+                padding: '8px 16px',
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                textDecoration: 'none',
+              }}
+            >
+              ➕ Nytt projekt
+            </a>
           </div>
         </div>
 

@@ -122,11 +122,11 @@ export default function AllaProjektPage() {
     }
 
     setLoading(false)
-  }, [user])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     hämtaData()
-  }, [hämtaData])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtrerade = projekt.filter(p => {
     const kolumn = getPipelineKolumn(p)

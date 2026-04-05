@@ -8,9 +8,13 @@ import GranskningSida from '@/components/GranskningSida'
 import SnabboffertVy, { type SnabbMoment } from '@/components/SnabboffertVy'
 import RotKalkyl from '@/components/RotKalkyl'
 import ForanmalanTracker from '@/components/ForanmalanTracker'
+import KvalitetsPanel from '@/components/KvalitetsPanel'
+import KalkylVy, { type KalkylMoment } from '@/components/KalkylVy'
+import type { KvalitetsResultat } from '@/lib/kvalitetsagent'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument-style'
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 
@@ -60,6 +64,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [analysLaddar, setAnalysLaddar] = useState(false)
   const [anbudLaddar, setAnbudLaddar] = useState(false)
   const [utkast, setUtkast] = useState('')
+  const [utkastLaddat, setUtkastLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
   const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number }>({ rotBelopp: 0, kundBetalar: 0 })
@@ -68,6 +73,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [expanderadDok, setExpanderadDok] = useState<string | null>(null)
   const [visaHistorik, setVisaHistorik] = useState(false)
   const [skickaKommentar, setSkickaKommentar] = useState('')
+  const [kvalitet, setKvalitet] = useState<KvalitetsResultat | null>(null)
+  const [kvalitetLaddar, setKvalitetLaddar] = useState(false)
   const [expanderadVersion, setExpanderadVersion] = useState<number | null>(null)
   const [förhandsgranskning, setFörhandsgranskning] = useState(false)
   const [aktivTab, setAktivTab] = useState<string | null>(null)
@@ -80,6 +87,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       const pd = p as unknown as ProjektData
       setProjekt(pd)
       setUtkast(pd.anbudsutkast_redigerat ?? pd.anbudsutkast ?? '')
+      setUtkastLaddat(true)
       // Detektera analystyp
       const jr = (p as Record<string, unknown>).jämförelse_resultat as Record<string, unknown> | null
       if (jr?.analystyp === 'snabb') setAnalysTyp('snabb')
@@ -101,6 +109,16 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     return () => clearInterval(interval)
   }, [projektId])
 
+  // Sätt rätt tab automatiskt baserat på steg (måste vara före early returns)
+  useEffect(() => {
+    if (aktivTab === null && projekt) {
+      const steg = getAktivtSteg(projekt)
+      if (steg >= 3) setAktivTab('anbud')
+      else if (steg === 2) setAktivTab('analys')
+      else setAktivTab('dokument')
+    }
+  }, [projekt, aktivTab])
+
   async function körAnalys() {
     setAktivTab('analys')
     setAnalysLaddar(true)
@@ -119,6 +137,18 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     }
     await hämta()
     setAnalysLaddar(false)
+  }
+
+  async function körGranskning() {
+    setKvalitetLaddar(true)
+    try {
+      const res = await fetch(`/api/projekt/${projektId}/granska`, { method: 'POST' })
+      if (res.ok) {
+        const { resultat } = await res.json()
+        setKvalitet(resultat)
+      }
+    } catch { /* tyst */ }
+    setKvalitetLaddar(false)
   }
 
   async function körAnbudsGenerering() {
@@ -146,19 +176,20 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     await hämta()
     setAnbudLaddar(false)
     setAktivTab('anbud')
+    // Auto-granska
+    körGranskning()
   }
 
-  // Auto-save utkast med debounce
+  // Auto-save utkast med debounce — bara efter initial laddning
   useEffect(() => {
-    if (!utkast) return
-    setSparar(false)
+    if (!utkastLaddat || !utkast) return
     const t = setTimeout(async () => {
       setSparar(true)
       await supabase.from('projekt').update({ anbudsutkast_redigerat: utkast }).eq('id', projektId)
       setSparar(false)
     }, 1500)
     return () => clearTimeout(t)
-  }, [utkast])
+  }, [utkast, utkastLaddat])
 
   async function markeraSomSkickat(kommentar?: string) {
     const nu = new Date().toISOString()
@@ -243,7 +274,8 @@ ${rotSektion}`
   }
 
   function mdTillHtml(md: string) {
-    return marked.parse(md, { async: false }) as string
+    const raw = marked.parse(md, { async: false }) as string
+    return DOMPurify.sanitize(raw)
   }
 
   function exporteraSomPdf() {
@@ -278,7 +310,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
     const a = document.createElement('a')
     a.href = url
     a.download = `anbud_${projekt?.namn?.replace(/[^a-z0-9åäö]/gi, '_') ?? 'utkast'}.doc`
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
 
@@ -299,13 +333,6 @@ hr{border:none;border-top:1pt solid #e0e0e0}
   }
 
   const aktivtSteg = getAktivtSteg(projekt)
-
-  // Sätt rätt tab automatiskt baserat på steg
-  if (aktivTab === null) {
-    if (aktivtSteg >= 3) setAktivTab('anbud')
-    else if (aktivtSteg === 2) setAktivTab('analys')
-    else setAktivTab('dokument')
-  }
 
   const kravmatch = projekt.kravmatchning as Record<string, unknown> | null
   const anbudsläge = hämtaAnbudsläge(kravmatch)
@@ -616,6 +643,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📋 Kopiera text</Button>
                         <Button onClick={exporteraSomPdf} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📄 PDF</Button>
                         <Button onClick={exporteraSomWord} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📝 Word</Button>
+                        <Button onClick={körGranskning} disabled={kvalitetLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
+                          {kvalitetLaddar ? '⏳ Granskar...' : '🔍 Granska'}
+                        </Button>
                         <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--yellow)' }}>🔄 Generera om</Button>
                       </div>
                     </div>
@@ -638,6 +668,14 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       />
                     )}
                   </div>
+
+                  {/* Kvalitetsgranskning */}
+                  <KvalitetsPanel
+                    projektId={projektId}
+                    resultat={kvalitet}
+                    onGranska={körGranskning}
+                    laddar={kvalitetLaddar}
+                  />
 
                   {/* Markera som skickat */}
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '20px 24px' }}>
@@ -828,124 +866,6 @@ hr{border:none;border-top:1pt solid #e0e0e0}
             ))}
           </SidePanel>
 
-        </div>
-      </div>
-    </div>
-  )
-}
-
-type KalkylMoment = { beskrivning: string; timmar: number; timpris: number; materialkostnad: number; belopp: number }
-
-function KalkylVy({ kalkyl, onChange }: { kalkyl?: Record<string, unknown>; onChange?: (moment: KalkylMoment[]) => void }) {
-  if (!kalkyl) return null
-
-  const initialMoment = (kalkyl.moment ?? []) as KalkylMoment[]
-  const [moment, setMoment] = useState<KalkylMoment[]>(initialMoment.map(m => ({
-    ...m,
-    timpris: m.timpris ?? 650,
-    belopp: m.belopp ?? (m.timmar * (m.timpris ?? 650) + (m.materialkostnad ?? 0)),
-  })))
-
-  function uppdatera(index: number, fält: keyof KalkylMoment, värde: string) {
-    setMoment(prev => {
-      const ny = [...prev]
-      if (fält === 'beskrivning') {
-        ny[index] = { ...ny[index], beskrivning: värde }
-      } else {
-        const num = parseFloat(värde) || 0
-        ny[index] = { ...ny[index], [fält]: num }
-        ny[index].belopp = ny[index].timmar * ny[index].timpris + ny[index].materialkostnad
-      }
-      onChange?.(ny)
-      return ny
-    })
-  }
-
-  function läggTillMoment() {
-    setMoment(prev => {
-      const ny = [...prev, { beskrivning: '', timmar: 0, timpris: 650, materialkostnad: 0, belopp: 0 }]
-      onChange?.(ny)
-      return ny
-    })
-  }
-
-  function taBortMoment(index: number) {
-    setMoment(prev => {
-      const ny = prev.filter((_, i) => i !== index)
-      onChange?.(ny)
-      return ny
-    })
-  }
-
-  const totaltArbete = moment.reduce((s, m) => s + m.timmar * m.timpris, 0)
-  const totaltMaterial = moment.reduce((s, m) => s + m.materialkostnad, 0)
-  const totalExklMoms = totaltArbete + totaltMaterial
-  const moms = Math.round(totalExklMoms * 0.25)
-  const totalInklMoms = totalExklMoms + moms
-
-  const inputStyle = { background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 6, color: 'var(--white)', fontFamily: 'var(--font-mono), monospace', fontSize: 13, padding: '4px 8px', width: 70, textAlign: 'right' as const }
-
-  return (
-    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
-      <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
-        <span style={{ fontSize: 14, fontWeight: 700 }}>🧮 Kalkyl (redigerbar)</span>
-        <button onClick={läggTillMoment} style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>
-          + Lägg till moment
-        </button>
-      </div>
-      <div style={{ padding: '0 18px 18px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              {['Moment', 'Timmar', 'Timpris', 'Material', 'Belopp', ''].map(h => (
-                <th key={h} style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--muted-custom)', padding: '8px 6px', borderBottom: '1px solid var(--navy-border)', textAlign: h === 'Moment' || h === '' ? 'left' : 'right' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {moment.map((m, i) => (
-              <tr key={i}>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input value={m.beskrivning} onChange={e => uppdatera(i, 'beskrivning', e.target.value)} style={{ ...inputStyle, width: '100%', textAlign: 'left' }} />
-                </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input type="number" value={m.timmar} onChange={e => uppdatera(i, 'timmar', e.target.value)} style={inputStyle} />
-                </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input type="number" value={m.timpris} onChange={e => uppdatera(i, 'timpris', e.target.value)} style={inputStyle} />
-                </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <input type="number" value={m.materialkostnad} onChange={e => uppdatera(i, 'materialkostnad', e.target.value)} style={inputStyle} />
-                </td>
-                <td className="font-mono" style={{ padding: '6px', fontSize: 13, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)', color: 'var(--white)' }}>
-                  {m.belopp.toLocaleString('sv-SE')} kr
-                </td>
-                <td style={{ padding: '6px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
-                  <button onClick={() => taBortMoment(i)} style={{ fontSize: 12, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Summering */}
-        <div style={{ background: 'var(--navy)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
-            <span>Arbete</span><span className="font-mono">{totaltArbete.toLocaleString('sv-SE')} kr</span>
-          </div>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
-            <span>Material</span><span className="font-mono">{totaltMaterial.toLocaleString('sv-SE')} kr</span>
-          </div>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
-            <span>Totalt exkl. moms</span><span className="font-mono">{totalExklMoms.toLocaleString('sv-SE')} kr</span>
-          </div>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 8 }}>
-            <span>Moms 25%</span><span className="font-mono">{moms.toLocaleString('sv-SE')} kr</span>
-          </div>
-          <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt inkl. moms</span>
-            <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--yellow)' }}>{totalInklMoms.toLocaleString('sv-SE')} kr</span>
-          </div>
         </div>
       </div>
     </div>
