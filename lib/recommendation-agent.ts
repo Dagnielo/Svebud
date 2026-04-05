@@ -99,6 +99,7 @@ export async function genereraAnbud(projektId: string): Promise<AnbudsResultat> 
     .single() as { data: any }
 
   if (!projekt) throw new Error('Projekt hittades inte')
+  console.log('[rekommendation] ROT-data:', { rot_aktiverat: projekt.rot_aktiverat, rot_typ: projekt.rot_typ, rot_belopp: projekt.rot_belopp, rot_kund_betalar: projekt.rot_kund_betalar })
 
   const kravmatchning = projekt.kravmatchning
   if (!kravmatchning) throw new Error('Kör analys först')

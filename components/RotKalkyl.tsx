@@ -62,28 +62,21 @@ export default function RotKalkyl({
   }, [res.rotBelopp, res.kundBetalar])
 
   // Spara till Supabase
-  // Spara ROT-data med debounce — bara efter initial laddning
+  // Spara ROT-data med debounce — direkt via Supabase
   useEffect(() => {
     if (!laddat) return
     const t = setTimeout(async () => {
       setSparar(true)
-      try {
-        await fetch(`/api/projekt/${projektId}/rot`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            rot_aktiverat: aktiverat,
-            rot_typ: typ,
-            rot_antal_agare: antalAgare,
-            rot_tidigare_utnyttjat: tidligareUtnyttjat,
-            rot_fastighetstyp: fastighetstyp,
-            rot_belopp: res.rotBelopp,
-            rot_kund_betalar: res.kundBetalar
-          })
-        })
-      } finally {
-        setSparar(false)
-      }
+      await supabase.from('projekt').update({
+        rot_aktiverat: aktiverat,
+        rot_typ: typ,
+        rot_antal_agare: antalAgare,
+        rot_tidigare_utnyttjat: tidligareUtnyttjat,
+        rot_fastighetstyp: fastighetstyp,
+        rot_belopp: res.rotBelopp,
+        rot_kund_betalar: res.kundBetalar,
+      }).eq('id', projektId)
+      setSparar(false)
     }, 800)
     return () => clearTimeout(t)
   }, [aktiverat, typ, antalAgare, tidligareUtnyttjat, fastighetstyp, res.rotBelopp, res.kundBetalar, projektId])

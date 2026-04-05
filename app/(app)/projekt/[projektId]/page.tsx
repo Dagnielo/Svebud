@@ -245,17 +245,13 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
         },
       }).eq('id', projektId)
     }
-    // Spara ROT-data synkront innan generering
+    // Spara ROT-data synkront innan generering (direkt via Supabase)
     if (rotData.rotBelopp > 0) {
-      await fetch(`/api/projekt/${projektId}/rot`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rot_aktiverat: true,
-          rot_belopp: rotData.rotBelopp,
-          rot_kund_betalar: rotData.kundBetalar,
-        })
-      })
+      await supabase.from('projekt').update({
+        rot_aktiverat: true,
+        rot_belopp: rotData.rotBelopp,
+        rot_kund_betalar: rotData.kundBetalar,
+      }).eq('id', projektId)
     }
 
     // Spara vald kontaktperson på projektet
