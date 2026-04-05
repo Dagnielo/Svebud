@@ -424,32 +424,6 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
         </div>
       </div>
 
-      {/* Frågor till kund */}
-      {data.frågor_till_kund.length > 0 && (
-        <div
-          style={{
-            background: 'var(--navy-mid)',
-            border: '1px solid rgba(245,196,0,0.3)',
-            borderRadius: 12,
-            padding: '16px 24px',
-          }}
-        >
-          <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
-            <span style={{ fontSize: 16 }}>❓</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
-              Frågor att ställa till kunden
-            </span>
-          </div>
-          <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--soft)' }}>
-            {data.frågor_till_kund.map((fråga, i) => (
-              <li key={i} style={{ marginBottom: 4, lineHeight: 1.5 }}>{fråga}</li>
-            ))}
-          </ul>
-          <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10 }}>
-            Klargör dessa innan du skickar offerten för att kunna ge exakt pris.
-          </p>
-        </div>
-      )}
     </div>
   )
 }

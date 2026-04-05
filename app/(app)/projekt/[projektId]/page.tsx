@@ -66,6 +66,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [utkast, setUtkast] = useState('')
   const [kontaktpersoner, setKontaktpersoner] = useState<Array<{ namn: string; roll: string; epost: string; telefon: string }>>([])
   const [valdKontakt, setValdKontakt] = useState<number>(0)
+  const [företagsNamn, setFöretagsNamn] = useState('')
   const [utkastLaddat, setUtkastLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
@@ -105,9 +106,11 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     // Hämta kontaktpersoner från profilen
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (authUser) {
-      const { data: profil } = await supabase.from('profiler').select('kontaktpersoner').eq('id', authUser.id).single()
-      if (profil) {
-        setKontaktpersoner((profil as Record<string, unknown>).kontaktpersoner as typeof kontaktpersoner ?? [])
+      const { data: profilData } = await supabase.from('profiler').select('*').eq('id', authUser.id).single()
+      if (profilData) {
+        const kp = (profilData as Record<string, unknown>).kontaktpersoner as typeof kontaktpersoner
+        if (kp && Array.isArray(kp)) setKontaktpersoner(kp)
+        setFöretagsNamn(((profilData as Record<string, unknown>).företag as string) ?? '')
       }
     }
     setLoading(false)
@@ -561,7 +564,50 @@ hr{border:none;border-top:1pt solid #e0e0e0}
             {/* TAB 2: Analys & GO/NO-GO eller Snabboffert */}
             <TabsContent value="analys">
               {analysTyp === 'snabb' ? (
-                <SnabboffertVy projektId={projektId} onMomentChange={setSnabbMoment} />
+                <>
+                  <SnabboffertVy projektId={projektId} onMomentChange={setSnabbMoment} />
+                  {snabbMoment && (
+                    <RotKalkyl
+                      arbeteExMoms={snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)}
+                      materialExMoms={snabbMoment.reduce((s, m) => s + m.materialkostnad, 0)}
+                      projektId={projektId}
+                      onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
+                    />
+                  )}
+
+                  {/* Frågor till kund — efter ROT-kalkyl */}
+                  {(() => {
+                    const kravmatch = projekt?.kravmatchning as Record<string, unknown> | null
+                    const frågor = (kravmatch?.frågor_till_kund as string[]) ?? []
+                    if (frågor.length === 0) return null
+                    return (
+                      <div
+                        style={{
+                          background: 'var(--navy-mid)',
+                          border: '1px solid rgba(245,196,0,0.3)',
+                          borderRadius: 12,
+                          padding: '16px 24px',
+                          marginTop: 16,
+                        }}
+                      >
+                        <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
+                          <span style={{ fontSize: 16 }}>❓</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
+                            Frågor att ställa till kunden
+                          </span>
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--soft)' }}>
+                          {frågor.map((fråga, i) => (
+                            <li key={i} style={{ marginBottom: 4, lineHeight: 1.5 }}>{fråga}</li>
+                          ))}
+                        </ul>
+                        <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10 }}>
+                          Klargör dessa innan du skickar offerten för att kunna ge exakt pris.
+                        </p>
+                      </div>
+                    )
+                  })()}
+                </>
               ) : (
                 <GranskningSida projektId={projektId} externtScanning={analysLaddar} />
               )}
@@ -654,6 +700,34 @@ hr{border:none;border-top:1pt solid #e0e0e0}
 
             {/* TAB 3: Anbud & Skicka */}
             <TabsContent value="anbud">
+              {/* Laddningsvy — visas alltid under generering */}
+              {anbudLaddar && utkast && (
+                <div
+                  style={{
+                    background: 'var(--navy-mid)',
+                    border: '2px solid var(--yellow)',
+                    borderRadius: 12,
+                    padding: '24px',
+                    marginBottom: 16,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="animate-pulse">
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--yellow-glow)', border: '2px solid var(--yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+                        ⚡
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>Genererar nytt anbud...</div>
+                      <div style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
+                        Nytt utkast skapas baserat på justerade moment. 15–30 sekunder.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {!utkast ? (
                 <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px 24px', textAlign: 'center' }}>
                   {anbudLaddar ? (
@@ -709,15 +783,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     </>
                   )}
 
-                  {/* ROT-kalkyl för snabboffert — använder moment från Tab 2 */}
-                  {analysTyp === 'snabb' && snabbMoment && (
-                    <RotKalkyl
-                      arbeteExMoms={snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)}
-                      materialExMoms={snabbMoment.reduce((s, m) => s + m.materialkostnad, 0)}
-                      projektId={projektId}
-                      onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
-                    />
-                  )}
+                  {/* ROT-kalkyl för snabboffert finns nu i Tab 2 (SnabboffertVy) */}
 
                   {/* Info-text om kalkyl-justering */}
                   {analysTyp === 'snabb' && (
@@ -792,6 +858,85 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     )}
                   </div>
 
+                  {/* Kontaktperson att infoga i anbudet */}
+                  {kontaktpersoner.length > 0 && (
+                    <div
+                      style={{
+                        background: 'var(--navy-mid)',
+                        border: '1px solid var(--navy-border)',
+                        borderRadius: 12,
+                        padding: '16px 20px',
+                      }}
+                    >
+                      <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>✍ Kontaktperson i anbudet</span>
+                        <button
+                          onClick={() => {
+                            const kp = kontaktpersoner[valdKontakt]
+                            const kontaktText = `\n\n---\n\nMed vänliga hälsningar,\n\n**${kp.namn}**\n${kp.roll ? `${kp.roll}\n` : ''}${kp.epost ? `${kp.epost}\n` : ''}${kp.telefon ? `${kp.telefon}\n` : ''}`
+                            // Kolla om kontaktinfo redan finns i utkastet
+                            if (utkast.includes('Med vänliga hälsningar')) {
+                              // Ersätt befintlig signatur
+                              setUtkast(prev => prev.replace(/\n*---\n*\nMed vänliga hälsningar[\s\S]*$/, kontaktText))
+                            } else {
+                              setUtkast(prev => prev + kontaktText)
+                            }
+                          }}
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: 'var(--yellow)',
+                            background: 'var(--yellow-glow)',
+                            border: '1px solid rgba(245,196,0,0.3)',
+                            borderRadius: 6,
+                            padding: '4px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Infoga i anbudet
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={valdKontakt}
+                          onChange={e => setValdKontakt(Number(e.target.value))}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            background: 'var(--navy)',
+                            border: '1px solid var(--navy-border)',
+                            color: 'var(--white)',
+                            fontSize: 12,
+                          }}
+                        >
+                          {kontaktpersoner.map((kp, i) => (
+                            <option key={i} value={i}>{kp.namn} — {kp.roll}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* Förhandsvisning */}
+                      <div
+                        style={{
+                          marginTop: 8,
+                          padding: '8px 12px',
+                          borderRadius: 6,
+                          background: 'var(--navy)',
+                          fontSize: 12,
+                          color: 'var(--soft)',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <strong>{kontaktpersoner[valdKontakt]?.namn}</strong>
+                        {kontaktpersoner[valdKontakt]?.roll && <span style={{ color: 'var(--muted-custom)' }}> · {kontaktpersoner[valdKontakt].roll}</span>}
+                        <br />
+                        {kontaktpersoner[valdKontakt]?.epost && <span>{kontaktpersoner[valdKontakt].epost}</span>}
+                        {kontaktpersoner[valdKontakt]?.epost && kontaktpersoner[valdKontakt]?.telefon && <span style={{ color: 'var(--slate)' }}> · </span>}
+                        {kontaktpersoner[valdKontakt]?.telefon && <span>{kontaktpersoner[valdKontakt].telefon}</span>}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Kvalitetsgranskning */}
                   <KvalitetsPanel
                     projektId={projektId}
@@ -799,6 +944,139 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     onGranska={körGranskning}
                     laddar={kvalitetLaddar}
                   />
+
+                  {/* Förbered mail till kund */}
+                  <div
+                    style={{
+                      background: 'var(--navy-mid)',
+                      border: '1px solid var(--navy-border)',
+                      borderRadius: 12,
+                      padding: '20px 24px',
+                    }}
+                  >
+                    <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>📧 Förbered mail till kund</div>
+                        <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>
+                          Kopiera ämnesrad och följebrev — klistra in i ditt eget mailprogram och bifoga PDF:en.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Ämnesrad */}
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                        Ämnesrad
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          id="mail-amne"
+                          readOnly
+                          value={`Anbud: ${projekt.namn} — ${företagsNamn ?? 'Elfirma'}`}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            background: 'var(--navy)',
+                            border: '1px solid var(--navy-border)',
+                            color: 'var(--white)',
+                            fontSize: 13,
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            const el = document.getElementById('mail-amne') as HTMLInputElement
+                            navigator.clipboard.writeText(el.value)
+                          }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0 }}
+                        >
+                          Kopiera
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Följebrev */}
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                        Följebrev
+                      </label>
+                      <div className="flex gap-2">
+                        <textarea
+                          id="mail-foljebrev"
+                          readOnly
+                          rows={5}
+                          value={(() => {
+                            const kp = kontaktpersoner[valdKontakt]
+                            const kravmatch = projekt.kravmatchning as Record<string, unknown> | null
+                            const beställare = kravmatch?.beställare as string ?? kravmatch?.kontaktperson as string ?? ''
+                            return `Hej${beställare ? ` ${beställare}` : ''},
+
+Tack för förfrågan! Bifogat finner ni vårt anbud avseende ${projekt.namn}.
+
+Anbudet är giltigt i 30 dagar. Tveka inte att höra av er om ni har frågor eller önskar förtydliganden.
+
+Med vänliga hälsningar,
+${kp?.namn ?? ''}${kp?.roll ? `\n${kp.roll}` : ''}
+${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? `\n${kp.epost}` : ''}`
+                          })()}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            background: 'var(--navy)',
+                            border: '1px solid var(--navy-border)',
+                            color: 'var(--white)',
+                            fontSize: 12,
+                            lineHeight: 1.6,
+                            resize: 'none',
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            const el = document.getElementById('mail-foljebrev') as HTMLTextAreaElement
+                            navigator.clipboard.writeText(el.value)
+                          }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0, alignSelf: 'flex-start' }}
+                        >
+                          Kopiera
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Export-knappar */}
+                    <div className="flex gap-2" style={{ marginTop: 12 }}>
+                      <button
+                        onClick={exporteraSomPdf}
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: 'var(--soft)',
+                          background: 'var(--navy)',
+                          border: '1px solid var(--navy-border)',
+                          borderRadius: 8,
+                          padding: '8px 16px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        📄 Ladda ner PDF att bifoga
+                      </button>
+                      <button
+                        onClick={exporteraSomWord}
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: 'var(--soft)',
+                          background: 'var(--navy)',
+                          border: '1px solid var(--navy-border)',
+                          borderRadius: 8,
+                          padding: '8px 16px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        📝 Ladda ner Word att bifoga
+                      </button>
+                    </div>
+                  </div>
 
                   {/* Markera som skickat */}
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '20px 24px' }}>

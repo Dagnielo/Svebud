@@ -86,20 +86,27 @@ export default function RotKalkyl({
       }}
     >
       {/* Header med toggle */}
-      <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700 }}>Husavdrag & skattereduktion</h3>
+      <div className="flex items-center justify-between" style={{ marginBottom: aktiverat ? 16 : 8 }}>
+        <div>
+          <h3 style={{ fontSize: 15, fontWeight: 700 }}>Husavdrag & skattereduktion</h3>
+          {!aktiverat && (
+            <p style={{ fontSize: 12, color: 'var(--yellow)', marginTop: 4 }}>
+              Aktivera för att beräkna ROT- eller Grön teknik-avdrag i offerten
+            </p>
+          )}
+        </div>
         <button
           onClick={() => setAktiverat(!aktiverat)}
           className="flex items-center gap-2"
           style={{
-            padding: '4px 12px',
+            padding: '6px 16px',
             borderRadius: 20,
-            fontSize: 12,
-            fontWeight: 600,
-            border: '1px solid',
-            borderColor: aktiverat ? 'var(--green)' : 'var(--navy-border)',
-            background: aktiverat ? 'var(--green-bg)' : 'transparent',
-            color: aktiverat ? 'var(--green)' : 'var(--muted-custom)',
+            fontSize: 13,
+            fontWeight: 700,
+            border: '2px solid',
+            borderColor: aktiverat ? 'var(--green)' : 'var(--yellow)',
+            background: aktiverat ? 'var(--green-bg)' : 'var(--yellow-glow)',
+            color: aktiverat ? 'var(--green)' : 'var(--yellow)',
             cursor: 'pointer',
           }}
         >
@@ -111,7 +118,7 @@ export default function RotKalkyl({
               background: aktiverat ? 'var(--green)' : 'var(--slate)',
             }}
           />
-          {aktiverat ? 'Aktivt' : 'Inaktivt'}
+          {aktiverat ? '● Aktiverat' : 'Aktivera'}
         </button>
       </div>
 
