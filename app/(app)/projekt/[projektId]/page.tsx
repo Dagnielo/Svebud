@@ -1128,6 +1128,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       </label>
                       <div className="flex gap-2">
                         <textarea
+                          id="följebrev-textarea"
                           rows={8}
                           value={följebrev ?? (() => {
                             const kp = kontaktpersoner[valdKontakt]
@@ -1162,8 +1163,8 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                         />
                         <button
                           onClick={() => {
-                            const text = följebrev ?? ''
-                            navigator.clipboard.writeText(text)
+                            const el = document.getElementById('följebrev-textarea') as HTMLTextAreaElement
+                            navigator.clipboard.writeText(el?.value ?? '')
                           }}
                           style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0, alignSelf: 'flex-start' }}
                         >
