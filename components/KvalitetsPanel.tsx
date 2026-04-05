@@ -220,6 +220,22 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar 
                     <p style={{ fontSize: 12, color: 'var(--soft)', lineHeight: 1.6, margin: 0 }}>
                       {punkt.beskrivning}
                     </p>
+                    {punkt.åtgärd && (
+                      <div
+                        style={{
+                          marginTop: 6,
+                          padding: '6px 10px',
+                          borderRadius: 6,
+                          background: 'var(--navy)',
+                          border: '1px solid var(--navy-border)',
+                          fontSize: 11,
+                          color: 'var(--yellow)',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        💡 <strong>Förslag:</strong> {punkt.åtgärd}
+                      </div>
+                    )}
                   </div>
                 </div>
               )

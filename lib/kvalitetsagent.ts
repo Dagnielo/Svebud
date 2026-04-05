@@ -13,6 +13,7 @@ export type GranskningsPunkt = {
   allvarlighet: 'bra' | 'tips' | 'varning' | 'fel'
   titel: string
   beskrivning: string
+  åtgärd: string | null
 }
 
 export type KvalitetsResultat = {
@@ -32,10 +33,12 @@ Du ska granska anbudsutkastet och ge ett kvalitetsbetyg 1-10 samt konkreta punkt
 
 VIKTIGT — FLAGGA INTE dessa saker (de hanteras automatiskt av systemet):
 - Momsberäkning — beräknas automatiskt av systemet, aldrig fel
-- Kalkylsummor — den separata kalkyltabellen styr, inte siffror i löptexten
+- Kalkylsummor och prisbelopp — den separata kalkyltabellen styr, INTE siffror i löptexten
+- Skillnader mellan kalkyl och löptext — kalkylen är separat och korrekt, texten är sekundär
+- Timmar, material och totalsummor — dessa hanteras av kalkyltabellen
 - Beställarens kontaktuppgifter — dessa läggs till separat av användaren
-- Elfirmans e-postadress — det är deras verkliga adress, inte ett "fel"
-- Kontaktpersonen — infogad av användaren separat, granska inte namn/format
+- Elfirmans e-postadress och kontaktperson — det är deras verkliga uppgifter, inte ett "fel"
+- ROT-avdrag — hanteras av en separat ROT-modul, inte i anbudstexten
 
 GRANSKA FÖLJANDE OMRÅDEN:
 
@@ -91,7 +94,8 @@ Returnera ENDAST giltig JSON:
       "kategori": "pris"|"fullständighet"|"språk"|"juridik"|"rot"|"risk",
       "allvarlighet": "bra"|"tips"|"varning"|"fel",
       "titel": "Kort titel",
-      "beskrivning": "Förklaring och eventuellt förslag"
+      "beskrivning": "Förklaring av problemet eller det positiva",
+      "åtgärd": "Konkret förslag på hur man åtgärdar (null om 'bra')"
     }
   ],
   "antal_bra": N,
