@@ -333,20 +333,18 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     alert('Kopierat till urklipp!')
   }
 
-  // Renderar utkast-HTML med ROT-rader infogade i kalkyltabellen
+  // Renderar utkast-HTML med ROT-rader — ersätter TOTALT INKL MOMS-raden
   function renderAnbudHtml(md: string) {
     let html = mdTillHtml(md)
     if (rotData.rotBelopp > 0) {
-      // Hitta "TOTALT INKL. MOMS"-raden och lägg till ROT-rader efter den
-      const totaltMatch = html.match(/(TOTALT\s+INKL\.?\s*MOMS[^<]*<[^>]*>)/i)
-      if (totaltMatch && totaltMatch.index !== undefined) {
-        const pos = totaltMatch.index + totaltMatch[0].length
-        const rotRader = `
-<p><strong>Skattereduktion:</strong> -${rotData.rotBelopp.toLocaleString('sv-SE')} kr</p>
-<h3>NI BETALAR: ${rotData.kundBetalar.toLocaleString('sv-SE')} kr</h3>
-<p style="font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.</em></p>`
-        html = html.slice(0, pos) + rotRader + html.slice(pos)
-      }
+      // Ersätt "TOTALT INKL. MOMS: XXX kr" med ROT-version
+      html = html.replace(
+        /TOTALT\s+INKL\.?\s*MOMS:?\s*[\d\s]*\s*kr/i,
+        `TOTALT INKL. MOMS: ${(rotData.kundBetalar + rotData.rotBelopp).toLocaleString('sv-SE')} kr
+<br><strong>Skattereduktion:</strong> -${rotData.rotBelopp.toLocaleString('sv-SE')} kr
+<br><strong style="font-size:1.2em">NI BETALAR: ${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong>
+<br><em style="font-size:11px;color:#666">Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.</em>`
+      )
     }
     return html
   }
