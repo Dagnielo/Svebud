@@ -333,6 +333,25 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     alert('Kopierat till urklipp!')
   }
 
+  function byggRotHtml() {
+    if (rotData.rotBelopp <= 0) return ''
+    // Kolla om ROT redan finns i utkastet (programmatiskt tillagd av recommendation-agent)
+    if (utkast && /prissammanfattning med skattereduktion/i.test(utkast)) return ''
+    const mom = kalkylMoment ?? snabbMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
+    const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
+    const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
+    const totExkl = totArbete + totMaterial
+    const totInkl = totExkl + Math.round(totExkl * 0.25)
+    return `<h2>Prissammanfattning med skattereduktion</h2>
+<table><thead><tr><th>Post</th><th style="text-align:right">Belopp</th></tr></thead><tbody>
+<tr><td>Totalt inkl. moms</td><td style="text-align:right">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td>Skattereduktion</td><td style="text-align:right">-${rotData.rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td><strong>Kunden betalar</strong></td><td style="text-align:right"><strong>${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong></td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete.
+Kunden ansvarar för att de uppfyller Skatteverkets villkor för skattereduktion.</em></p>`
+  }
+
   function byggKalkylHtml() {
     // Undvik dubbel kalkyl — om utkastet redan har en kalkylsektion, lägg inte till en till
     if (utkast && /##\s*kalkyl/i.test(utkast)) return ''
@@ -343,17 +362,6 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     const totExkl = totArbete + totMaterial
     const moms = Math.round(totExkl * 0.25)
     const totInkl = totExkl + moms
-    const rotSektion = rotData.rotBelopp > 0
-      ? `<h2>Prissammanfattning med skattereduktion</h2>
-<table><thead><tr><th>Post</th><th style="text-align:right">Belopp</th></tr></thead><tbody>
-<tr><td>Totalt inkl. moms</td><td style="text-align:right">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
-<tr><td>Skattereduktion</td><td style="text-align:right">-${rotData.rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
-<tr><td><strong>Kunden betalar</strong></td><td style="text-align:right"><strong>${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong></td></tr>
-</tbody></table>
-<p style="font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete.
-Kunden ansvarar för att de uppfyller Skatteverkets villkor för skattereduktion.</em></p>`
-      : ''
-
     return `<h2>Kalkyl</h2>
 <table>
 <thead><tr><th>Moment</th><th style="text-align:right">Timmar</th><th style="text-align:right">Timpris</th><th style="text-align:right">Material</th><th style="text-align:right">Belopp</th></tr></thead>
@@ -368,7 +376,7 @@ ${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.ti
 <tr style="background:#0E1B2E;color:#fff"><td colspan="3"></td><td style="text-align:right;padding:12px 14px;font-weight:700">Totalt inkl. moms</td><td style="text-align:right;padding:12px 14px;font-size:16px;font-weight:800">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
 </tfoot>
 </table>
-${rotSektion}`
+`
   }
 
   function mdTillHtml(md: string) {
@@ -382,6 +390,7 @@ ${rotSektion}`
     win.document.write(EXPORT_HTML_HEAD.replace('<title>Anbud</title>', `<title>Anbud - ${projekt?.namn}</title>`))
     win.document.write(mdTillHtml(utkast))
     win.document.write(byggKalkylHtml())
+    win.document.write(byggRotHtml())
     win.document.write(EXPORT_HTML_FOOT)
     win.document.close()
     setTimeout(() => win.print(), 500)
@@ -401,7 +410,7 @@ tr:nth-child(even){background:#f8f9fb}
 strong{font-weight:700;color:#0E1B2E}
 hr{border:none;border-top:1pt solid #e0e0e0}
 </style></head>
-<body>${mdTillHtml(utkast)}${byggKalkylHtml()}</body></html>`
+<body>${mdTillHtml(utkast)}${byggKalkylHtml()}${byggRotHtml()}</body></html>`
 
     const blob = new Blob([html], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
@@ -952,6 +961,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           <div class="dokument">
                             ${mdTillHtml(utkast)}
                             ${byggKalkylHtml()}
+                            ${byggRotHtml()}
                           </div>`
                         }}
                       />
