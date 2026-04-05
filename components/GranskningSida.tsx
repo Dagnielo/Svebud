@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 
 type MatchatKrav = {
   krav: string
@@ -22,7 +23,8 @@ type AnalysData = {
   prismodell: string | null
   uppdragsbeskrivning: string | null
   värde_kr: number | null
-  go_no_go: 'GO' | 'NO_GO' | 'GO_MED_RESERVATION'
+  anbudsläge?: string
+  go_no_go?: string
   match_procent: number
   sammanfattning: string
   rekommendation: string
@@ -61,7 +63,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
     if (projekt) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const resultat = (projekt as any)['jämförelse_resultat'] as AnalysData | null
-      if (resultat?.go_no_go) {
+      if (resultat?.anbudsläge || resultat?.go_no_go) {
         setData(resultat)
         onAnalysKlar?.()
       }
@@ -105,14 +107,16 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
   }
 
   const totalKrav = data.matchade_krav.length + data.kräver_bekräftelse.length + data.ej_uppfyllda.length
+  const anbudsläge = hämtaAnbudsläge(data as unknown as Record<string, unknown>)
+  const visning = anbudsläge ? bedömningsVisning(anbudsläge) : { label: 'Analyserad', kort: '—', färg: 'var(--muted-custom)', bgFärg: 'var(--navy)', beskrivning: '' }
 
   return (
     <div className="space-y-4">
-      {/* GO/NO-GO — Stort sammanfattningskort */}
+      {/* Anbudsläge — Stort sammanfattningskort */}
       <div
         style={{
           background: 'var(--navy-mid)',
-          border: `2px solid ${data.go_no_go === 'GO' ? 'var(--green)' : data.go_no_go === 'NO_GO' ? 'var(--red)' : 'var(--orange)'}`,
+          border: `2px solid ${visning.färg}`,
           borderRadius: 14,
           padding: '24px',
         }}
@@ -122,28 +126,19 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
           <div
             style={{
               width: 64, height: 64, borderRadius: '50%',
-              border: `4px solid ${data.go_no_go === 'GO' ? 'var(--green)' : data.go_no_go === 'NO_GO' ? 'var(--red)' : 'var(--orange)'}`,
+              border: `4px solid ${visning.färg}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            <span style={{
-              fontSize: 20, fontWeight: 800,
-              color: data.go_no_go === 'GO' ? 'var(--green)' : data.go_no_go === 'NO_GO' ? 'var(--red)' : 'var(--orange)',
-            }}>
+            <span style={{ fontSize: 20, fontWeight: 800, color: visning.färg }}>
               {data.match_procent}%
             </span>
           </div>
 
           <div className="flex-1">
-            <div style={{
-              fontSize: 22, fontWeight: 800,
-              color: data.go_no_go === 'GO' ? 'var(--green)' : data.go_no_go === 'NO_GO' ? 'var(--red)' : 'var(--orange)',
-              marginBottom: 4,
-            }}>
-              {data.go_no_go === 'GO' ? 'GO — Lämna anbud' :
-               data.go_no_go === 'NO_GO' ? 'NO-GO — Avvakta' :
-               'GO med reservation'}
+            <div style={{ fontSize: 22, fontWeight: 800, color: visning.färg, marginBottom: 4 }}>
+              {visning.label}
             </div>
             <div style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.5 }}>
               {data.sammanfattning}

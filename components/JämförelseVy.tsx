@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 
 type Krav = {
   krav: string
@@ -15,7 +16,8 @@ type Krav = {
 
 type KravmatchData = {
   sammanfattning: string
-  go_no_go: 'GO' | 'NO-GO' | 'GO_MED_RESERVATION'
+  anbudsläge?: string
+  go_no_go?: string
   ska_krav: Krav[]
   bör_krav: Krav[]
   saknade_certifikat: string[]
@@ -33,16 +35,13 @@ type Props = {
   laddar?: boolean
 }
 
-function GoNoGoBadge({ beslut }: { beslut: string }) {
-  const config = {
-    GO: { bg: 'var(--green-bg)', color: 'var(--green)', text: 'GO – Lämna anbud' },
-    'NO-GO': { bg: 'var(--red-bg)', color: 'var(--red)', text: 'NO-GO – Avvakta' },
-    GO_MED_RESERVATION: { bg: 'var(--orange-bg)', color: 'var(--orange)', text: 'GO MED RESERVATION' },
-  }[beslut] ?? { bg: 'var(--steel)', color: 'var(--muted-custom)', text: beslut }
-
+function BedömningsBadge({ data }: { data: Record<string, unknown> }) {
+  const läge = hämtaAnbudsläge(data)
+  if (!läge) return null
+  const v = bedömningsVisning(läge)
   return (
-    <span style={{ fontSize: 12, fontWeight: 800, padding: '5px 12px', borderRadius: 6, background: config.bg, color: config.color }}>
-      {config.text}
+    <span style={{ fontSize: 12, fontWeight: 800, padding: '5px 12px', borderRadius: 6, background: v.bgFärg, color: v.färg }}>
+      {v.label}
     </span>
   )
 }
@@ -113,14 +112,14 @@ export default function JämförelseVy({ projektId, data, onKörMatchning, ladda
       <div
         style={{
           background: 'var(--navy-mid)',
-          border: `1px solid ${data.go_no_go === 'GO' ? 'rgba(0,198,122,0.3)' : data.go_no_go === 'NO-GO' ? 'rgba(255,77,77,0.3)' : 'rgba(255,140,66,0.3)'}`,
+          border: `1px solid ${(() => { const l = hämtaAnbudsläge(data as unknown as Record<string, unknown>); const v = l ? bedömningsVisning(l) : null; return v ? v.färg : 'var(--navy-border)' })()}`,
           borderRadius: 12,
           padding: '18px 20px',
         }}
       >
         <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
           <span style={{ fontSize: 15, fontWeight: 800 }}>Bedömning</span>
-          <GoNoGoBadge beslut={data.go_no_go} />
+          <BedömningsBadge data={data as unknown as Record<string, unknown>} />
         </div>
         <p style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.6 }}>{data.sammanfattning}</p>
         <p style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.6, marginTop: 8 }}>{data.rekommendation}</p>

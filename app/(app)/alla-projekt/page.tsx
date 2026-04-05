@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/Sidebar'
 import { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
+import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 
 type UserProfil = {
   fullnamn: string | null
@@ -47,13 +48,16 @@ function formatKr(v: unknown): string | null {
 }
 
 function getAiStatus(p: Projekt): { label: string; färg: string } {
-  if (p.rekommendation_status === 'klar') {
-    // Check kravmatchning for go/no-go if available
-    return { label: 'GO', färg: 'var(--green)' }
+  // Läs anbudsläge från kravmatchning (JSONB)
+  const kravmatch = (p as Record<string, unknown>).kravmatchning as Record<string, unknown> | null
+  const läge = hämtaAnbudsläge(kravmatch)
+  if (läge) {
+    const v = bedömningsVisning(läge)
+    return { label: v.kort, färg: v.färg }
   }
   if (p.rekommendation_status === 'pågår') return { label: 'Analyserar...', färg: 'var(--blue-accent)' }
   if (p.analys_komplett) return { label: 'Analyserad', färg: 'var(--blue-accent)' }
-  if (p.jämförelse_status === 'klar') return { label: 'Jämförd', färg: 'var(--blue-accent)' }
+  if (p.jämförelse_status === 'klar') return { label: 'Analyserad', färg: 'var(--blue-accent)' }
   return { label: 'Ej analyserad', färg: 'var(--slate)' }
 }
 

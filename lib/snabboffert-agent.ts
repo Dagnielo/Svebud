@@ -198,7 +198,7 @@ Kategorisera jobbet, föreslå konkreta arbetsmoment med priser, och identifiera
           analystyp: 'snabb',
         } as unknown as Record<string, unknown>,
         kravmatchning: {
-          go_no_go: 'GO',
+          anbudsläge: 'STARKT_LÄGE',
           sammanfattning: resultat.sammanfattning,
           analystyp: 'snabb',
           kategori: resultat.kategori,

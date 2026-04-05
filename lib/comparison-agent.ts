@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import { parseClaudeJSON } from '@/lib/utils'
+import type { Anbudsläge } from '@/lib/verdict'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 const supabase = createClient(
@@ -21,7 +22,7 @@ export type Krav = {
 
 export type KravmatchResultat = {
   sammanfattning: string
-  go_no_go: 'GO' | 'NO-GO' | 'GO_MED_RESERVATION'
+  anbudsläge: Anbudsläge
   ska_krav: Krav[]
   bör_krav: Krav[]
   saknade_certifikat: string[]
@@ -34,29 +35,31 @@ export type KravmatchResultat = {
 
 const SYSTEM_PROMPT = `Du är en AI-assistent som hjälper svenska elfirmor att bedöma förfrågningsunderlag (FU).
 
-Din uppgift är att matcha kraven i FU:et mot elfirmans profil (certifikat, erfarenhet, resurser) och ge en Go/No-Go-bedömning.
+Din uppgift är att matcha kraven i FU:et mot elfirmans profil (certifikat, erfarenhet, resurser) och ge en anbudsläge-bedömning.
 
 UPPGIFT:
 1. Identifiera ALLA krav i förfrågningsunderlaget
 2. Kategorisera varje krav som SKA-KRAV (obligatoriskt) eller BÖR-KRAV (meriterande)
 3. Matcha varje krav mot elfirmans profil
-4. Ge en Go/No-Go-bedömning
+4. Ge en anbudsläge-bedömning
 
 REGLER:
 - SKA-KRAV som inte uppfylls → flagga tydligt, men ge elfirman chansen att svara
-- BÖR-KRAV som inte uppfylls → GO med reservation
+- BÖR-KRAV som inte uppfylls → notera men straffa inte hårt
 - Om elfirman saknar certifikat men KAN ha det → markera som "oklart, kräver manuell bekräftelse"
 - Var specifik om VAR i dokumentet kravet hittades
+- Säg ALDRIG åt elfirman att inte lämna anbud — ge en positionsbedömning
 
-GO/NO-GO LOGIK:
-- GO: Alla ska-krav uppfyllda
-- GO_MED_RESERVATION: Alla ska-krav uppfyllda men bör-krav saknas, eller ska-krav kräver manuell bekräftelse
-- NO-GO: Ska-krav som definitivt inte kan uppfyllas (t.ex. kräver 50 montörer men firman har 5)
+ANBUDSLÄGE (4-gradig bedömning):
+- STARKT_LÄGE: Inga ej uppfyllda ska-krav, max 2 att bekräfta
+- BRA_LÄGE: Inga ej uppfyllda ska-krav men >2 att bekräfta
+- OSÄKERT_LÄGE: 1-2 ska-krav ej uppfyllda
+- SVÅRT_LÄGE: 3+ ska-krav ej uppfyllda
 
 Returnera ENDAST giltig JSON med denna struktur:
 {
   "sammanfattning": "Kort bedömning i 2-3 meningar",
-  "go_no_go": "GO" | "NO-GO" | "GO_MED_RESERVATION",
+  "anbudsläge": "STARKT_LÄGE" | "BRA_LÄGE" | "OSÄKERT_LÄGE" | "SVÅRT_LÄGE",
   "ska_krav": [
     { "krav": "Beskrivning", "typ": "ska", "uppfyllt": true|false|null, "konfidens": 0-100, "kommentar": "Matchning mot profil", "källa": "Var i dokumentet" }
   ],

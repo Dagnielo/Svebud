@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import { parseClaudeJSON } from '@/lib/utils'
+import type { Anbudsläge } from '@/lib/verdict'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 const supabase = createClient(
@@ -27,8 +28,8 @@ export type AnalysResultat = {
   prismodell: string | null
   uppdragsbeskrivning: string | null
   värde_kr: number | null
-  // GO/NO-GO
-  go_no_go: 'GO' | 'NO_GO' | 'GO_MED_RESERVATION'
+  // Anbudsläge (ersätter GO/NO-GO)
+  anbudsläge: Anbudsläge
   match_procent: number
   sammanfattning: string
   rekommendation: string
@@ -48,7 +49,7 @@ DIN UPPGIFT (gör allt i ETT steg):
 1. Extrahera projektinformation (beställare, deadline, avtalsvillkor, scope etc.)
 2. Identifiera ALLA ska-krav och bör-krav i dokumenten
 3. MATCHA varje krav mot elfirmans profil (se nedan)
-4. Ge GO/NO-GO-bedömning med matchningsprocent
+4. Ge en anbudsläge-bedömning (STARKT_LÄGE/BRA_LÄGE/OSÄKERT_LÄGE/SVÅRT_LÄGE) med matchningsprocent
 
 ELFIRMANS PROFIL:
 ${JSON.stringify(profil, null, 2)}
@@ -58,10 +59,12 @@ MATCHNINGSREGLER:
 - "kräver_bekräftelse" = Kravet KAN uppfyllas men profilen är inte tydlig nog (t.ex. omsättning, riskklass, specifika referensuppdrag)
 - "ej_uppfyllt" = Kravet kan definitivt INTE uppfyllas (t.ex. kräver 50 montörer men firman har 5)
 
-GO/NO-GO LOGIK:
-- GO: Inga "ej_uppfyllt" ska-krav, max 3 "kräver_bekräftelse"
-- GO_MED_RESERVATION: Inga "ej_uppfyllt" ska-krav men >3 "kräver_bekräftelse"
-- NO_GO: Minst 1 ska-krav som är "ej_uppfyllt"
+ANBUDSLÄGE (4-gradig bedömning):
+- STARKT_LÄGE: Inga "ej_uppfyllt" ska-krav, max 2 "kräver_bekräftelse"
+- BRA_LÄGE: Inga "ej_uppfyllt" ska-krav men >2 "kräver_bekräftelse"
+- OSÄKERT_LÄGE: 1-2 ska-krav som är "ej_uppfyllt"
+- SVÅRT_LÄGE: 3+ ska-krav som är "ej_uppfyllt"
+OBS: Säg ALDRIG åt elfirman att inte lämna anbud. Ge en positionsbedömning, inte ett förbud.
 
 match_procent = (antal uppfyllda ska-krav / totalt antal ska-krav) * 100
 
@@ -91,7 +94,7 @@ Returnera ENDAST giltig JSON:
   "prismodell": string|null,
   "uppdragsbeskrivning": string|null,
   "värde_kr": number|null,
-  "go_no_go": "GO"|"NO_GO"|"GO_MED_RESERVATION",
+  "anbudsläge": "STARKT_LÄGE"|"BRA_LÄGE"|"OSÄKERT_LÄGE"|"SVÅRT_LÄGE",
   "match_procent": number,
   "sammanfattning": "Kort bedömning i 2-3 meningar",
   "rekommendation": "Detaljerad rekommendation",
@@ -173,7 +176,7 @@ export async function analyseraOchMatcha(projektId: string): Promise<AnalysResul
   try {
     const messageContent = byggClaudeContent(
       delar,
-      `Analysera ALLA dokument ovan. Extrahera projektinfo, identifiera ALLA ska/bör-krav, och matcha varje krav mot elfirmans profil. Ge GO/NO-GO-bedömning.`
+      `Analysera ALLA dokument ovan. Extrahera projektinfo, identifiera ALLA ska/bör-krav, och matcha varje krav mot elfirmans profil. Ge anbudsläge-bedömning.`
     )
 
     const response = await anthropic.messages.create({
@@ -225,7 +228,7 @@ export async function analyseraOchMatcha(projektId: string): Promise<AnalysResul
         anbud_id: firstAnbud.id,
         steg: 'analys_matchning',
         status: 'klar',
-        meddelande: `${resultat.go_no_go} (${resultat.match_procent}%) — ${totalKrav} krav: ${resultat.matchade_krav.length} matchade, ${resultat.kräver_bekräftelse.length} att bekräfta, ${resultat.ej_uppfyllda.length} ej uppfyllda`,
+        meddelande: `${resultat.anbudsläge} (${resultat.match_procent}%) — ${totalKrav} krav: ${resultat.matchade_krav.length} matchade, ${resultat.kräver_bekräftelse.length} att bekräfta, ${resultat.ej_uppfyllda.length} ej uppfyllda`,
         tokens_använda: tokens,
         varaktighet_ms: varaktighet,
       })

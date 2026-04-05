@@ -7,10 +7,12 @@ import AnbudsUppladdning from '@/components/AnbudsUppladdning'
 import GranskningSida from '@/components/GranskningSida'
 import SnabboffertVy, { type SnabbMoment } from '@/components/SnabboffertVy'
 import RotKalkyl from '@/components/RotKalkyl'
+import ForanmalanTracker from '@/components/ForanmalanTracker'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { marked } from 'marked'
 import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument-style'
+import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 
 type Inskickning = {
   datum: string
@@ -40,7 +42,7 @@ type ProjektData = {
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
 type LoggRad = { id: string; steg: string; status: string; meddelande: string | null; skapad: string }
 
-const stegLabels = ['Dokument', 'Analys & GO/NO-GO', 'Anbud & Skicka']
+const stegLabels = ['Dokument', 'Analys & Bedömning', 'Anbud & Skicka']
 
 function getAktivtSteg(p: ProjektData): number {
   if (p.pipeline_status === 'inskickat' || p.pipeline_status === 'tilldelning') return 3
@@ -306,7 +308,8 @@ hr{border:none;border-top:1pt solid #e0e0e0}
   }
 
   const kravmatch = projekt.kravmatchning as Record<string, unknown> | null
-  const goNoGo = kravmatch?.go_no_go as string | undefined
+  const anbudsläge = hämtaAnbudsläge(kravmatch)
+  const bedömning = anbudsläge ? bedömningsVisning(anbudsläge) : null
   const rekData = projekt.rekommendation as Record<string, unknown> | null
 
   return (
@@ -347,13 +350,13 @@ hr{border:none;border-top:1pt solid #e0e0e0}
             />
           </div>
 
-          {goNoGo && (
+          {bedömning && (
             <span style={{
-              fontSize: 12, fontWeight: 800, textTransform: 'uppercase', padding: '5px 12px', borderRadius: 6,
-              background: goNoGo === 'GO' ? 'var(--green-bg)' : goNoGo === 'NO_GO' ? 'var(--red-bg)' : 'var(--orange-bg)',
-              color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO_GO' ? 'var(--red)' : 'var(--orange)',
+              fontSize: 12, fontWeight: 800, padding: '5px 12px', borderRadius: 6,
+              background: bedömning.bgFärg,
+              color: bedömning.färg,
             }}>
-              {goNoGo === 'GO' ? 'GO' : goNoGo === 'NO_GO' ? 'NO-GO' : 'GO m. reservation'}
+              {bedömning.kort} {(kravmatch as Record<string, unknown>)?.match_procent ? `${(kravmatch as Record<string, unknown>).match_procent}%` : ''}
             </span>
           )}
         </div>
@@ -378,7 +381,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     color: done ? 'var(--navy)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
                     fontSize: 14, fontWeight: 800, boxShadow: active ? '0 0 0 4px var(--yellow-glow)' : 'none', transition: 'all 0.2s',
                   }}>
-                    {done ? '✓' : nr}
+                    {nr}
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)' }}>
                     {label}
@@ -769,13 +772,21 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                   {/* Tilldelning */}
                   {(projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') && (
                     <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '16px 24px' }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Hur gick det?</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Hur gick det?</div>
+                      <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 10 }}>
+                        Markera utfallet. Vid vunnet anbud aktiveras föranmälan-trackern automatiskt.
+                      </p>
                       <div className="flex gap-3">
                         <Button onClick={() => uppdateraTilldelning('vunnet')} style={{ background: projekt.tilldelning_status === 'vunnet' ? 'var(--green)' : 'transparent', color: projekt.tilldelning_status === 'vunnet' ? 'var(--navy)' : 'var(--green)', border: '1px solid var(--green)' }}>✅ Vunnet</Button>
                         <Button onClick={() => uppdateraTilldelning('forlorat')} style={{ background: projekt.tilldelning_status === 'forlorat' ? 'var(--red)' : 'transparent', color: projekt.tilldelning_status === 'forlorat' ? 'white' : 'var(--red)', border: '1px solid var(--red)' }}>❌ Förlorat</Button>
                         <Button onClick={() => uppdateraTilldelning('vantar')} style={{ background: projekt.tilldelning_status === 'vantar' ? 'var(--orange)' : 'transparent', color: projekt.tilldelning_status === 'vantar' ? 'var(--navy)' : 'var(--orange)', border: '1px solid var(--orange)' }}>⏳ Väntar</Button>
                       </div>
                     </div>
+                  )}
+
+                  {/* Föranmälan-tracker — visas efter tilldelning (vunnet) */}
+                  {projekt.tilldelning_status === 'vunnet' && (
+                    <ForanmalanTracker projektId={projektId} projektNamn={projekt.namn} />
                   )}
                 </div>
               )}
@@ -799,8 +810,8 @@ hr{border:none;border-top:1pt solid #e0e0e0}
 
           {kravmatch && (
             <SidePanel title="Analys">
-              <div style={{ fontSize: 12, color: goNoGo === 'GO' ? 'var(--green)' : goNoGo === 'NO_GO' ? 'var(--red)' : 'var(--orange)', fontWeight: 700, marginBottom: 8 }}>
-                {goNoGo === 'GO' ? 'GO — Lämna anbud' : goNoGo === 'NO_GO' ? 'NO-GO' : 'GO med reservation'}
+              <div style={{ fontSize: 12, color: bedömning?.färg ?? 'var(--muted-custom)', fontWeight: 700, marginBottom: 8 }}>
+                {bedömning?.label ?? 'Analyserad'}
               </div>
               <div style={{ fontSize: 12, color: 'var(--soft)' }}>{(kravmatch as Record<string, unknown>).sammanfattning as string}</div>
             </SidePanel>
@@ -816,6 +827,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               </div>
             ))}
           </SidePanel>
+
         </div>
       </div>
     </div>
