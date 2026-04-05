@@ -72,7 +72,6 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [kundFrågor, setKundFrågor] = useState<string[] | null>(null)
   const [nyFråga, setNyFråga] = useState('')
   const kontaktInfogad = utkast.includes('Med vänliga hälsningar')
-  const frågorInfogade = utkast.includes('Frågor vi behöver svar på')
   const [följebrev, setFöljebrev] = useState<string | null>(null)
   const [följebrevLaddat, setFöljebrevLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
@@ -781,7 +780,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       </div>
 
                       <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10 }}>
-                        Redigera, ta bort eller lägg till frågor. Kopiera och skicka till kunden innan du färdigställer offerten.
+                        Kopiera och skicka till kunden innan du genererar anbudet. Ladda sedan upp kundens svar som dokument i steg 1 och kör om analysen för en bättre kalkyl.
                       </p>
                     </div>
                   )}
@@ -1067,56 +1066,6 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     laddar={kvalitetLaddar}
                   />
 
-                  {/* Frågor till kund */}
-                  {(kundFrågor ?? []).length > 0 && (
-                    <div
-                      style={{
-                        background: 'var(--navy-mid)',
-                        border: '1px solid var(--navy-border)',
-                        borderRadius: 12,
-                        padding: '16px 20px',
-                      }}
-                    >
-                      <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700 }}>❓ Frågor till kund</span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              if (frågorInfogade) {
-                                setUtkast(prev => prev.replace(/\n*## Frågor vi behöver svar på[\s\S]*?\*Vänligen återkom.*?\*/, ''))
-                              } else {
-                                const text = '\n\n## Frågor vi behöver svar på\n\n' + (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n') + '\n\n*Vänligen återkom med svar på ovanstående så att vi kan ge ett exakt pris.*'
-                                setUtkast(prev => prev + text)
-                              }
-                            }}
-                            style={{
-                              fontSize: 11, fontWeight: 700,
-                              color: frågorInfogade ? 'var(--navy)' : 'var(--yellow)',
-                              background: frågorInfogade ? 'var(--green)' : 'var(--yellow-glow)',
-                              border: `1px solid ${frågorInfogade ? 'var(--green)' : 'rgba(245,196,0,0.3)'}`,
-                              borderRadius: 6, padding: '4px 12px', cursor: 'pointer',
-                            }}
-                          >
-                            {frågorInfogade ? '✅ Infogat — ta bort' : 'Infoga i anbudet'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
-                              navigator.clipboard.writeText(text)
-                            }}
-                            style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
-                          >
-                            📋 Kopiera
-                          </button>
-                        </div>
-                      </div>
-                      <div style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--navy)', border: '1px solid var(--navy-border)', fontSize: 12, color: 'var(--soft)', lineHeight: 1.6 }}>
-                        {(kundFrågor ?? []).map((f, i) => (
-                          <div key={i}>{i + 1}. {f}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Ladda ner anbudsutkast */}
                   <div
