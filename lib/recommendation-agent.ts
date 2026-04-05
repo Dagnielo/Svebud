@@ -63,6 +63,7 @@ PRISSÄTTNING:
 - Gör rimliga uppskattningar av timmar baserat på scope
 - Specificera material separat
 - Visa exkl. moms, moms, inkl. moms
+- Om ROT/Grön teknik-data finns med i prompten: INKLUDERA en prissammanfattning som visar totalbelopp, avdragsbelopp och vad kunden betalar efter avdrag. Lägg till disclaimer att kunden ansvarar för att uppfylla Skatteverkets villkor.
 
 VIKTIGT:
 - Skriv i klarspråk som en BRF-ordförande förstår
