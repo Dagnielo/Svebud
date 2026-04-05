@@ -99,7 +99,8 @@ export async function genereraAnbud(projektId: string): Promise<AnbudsResultat> 
     .single() as { data: any }
 
   if (!projekt) throw new Error('Projekt hittades inte')
-  console.log('[rekommendation] ROT-data:', { rot_aktiverat: projekt.rot_aktiverat, rot_typ: projekt.rot_typ, rot_belopp: projekt.rot_belopp, rot_kund_betalar: projekt.rot_kund_betalar })
+  console.log('[rekommendation] ROT-data:', JSON.stringify({ rot_aktiverat: projekt.rot_aktiverat, rot_typ: projekt.rot_typ, rot_belopp: projekt.rot_belopp, rot_kund_betalar: projekt.rot_kund_betalar }))
+  console.log('[rekommendation] Projekt-keys:', Object.keys(projekt).filter(k => k.startsWith('rot')).join(', '))
 
   const kravmatchning = projekt.kravmatchning
   if (!kravmatchning) throw new Error('Kör analys först')
@@ -173,6 +174,33 @@ Baserat på analysresultatet och den BEFINTLIGA KALKYLEN ovan, generera ett komp
     if (content.type !== 'text') throw new Error('Oväntat svar')
 
     const resultat = parseClaudeJSON<AnbudsResultat>(content.text)
+
+    // Lägg till ROT-sektion i anbudsdokumentet om aktiverat
+    if (projekt.rot_aktiverat && projekt.rot_belopp > 0) {
+      const rotTypLabel: Record<string, string> = {
+        rot: 'ROT-avdrag (30%)',
+        gronteknik_laddbox: 'Grön teknik — Laddbox (15%)',
+        gronteknik_solceller: 'Grön teknik — Solceller (20%)',
+        gronteknik_batteri: 'Grön teknik — Batteri (20%)',
+      }
+      const typLabel = rotTypLabel[projekt.rot_typ] ?? 'Skattereduktion'
+
+      const rotSektion = `
+
+---
+
+## Prissammanfattning med skattereduktion
+
+| Post | Belopp |
+|------|--------|
+| Totalt inkl. moms | ${Number(projekt.rot_kund_betalar + projekt.rot_belopp).toLocaleString('sv-SE')} kr |
+| ${typLabel} | -${Number(projekt.rot_belopp).toLocaleString('sv-SE')} kr |
+| **Ni betalar** | **${Number(projekt.rot_kund_betalar).toLocaleString('sv-SE')} kr** |
+
+*Skattereduktionen begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att villkoren för avdrag är uppfyllda. Om Skatteverket nekar avdraget ansvarar kunden för mellanskillnaden.*
+`
+      resultat.anbudsdokument = resultat.anbudsdokument + rotSektion
+    }
 
     // Spara
     await supabase
