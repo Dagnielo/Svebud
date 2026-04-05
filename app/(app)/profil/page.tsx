@@ -51,6 +51,8 @@ export default function ProfilPage() {
   const [telefon, setTelefon] = useState('')
   const [antalMontorer, setAntalMontorer] = useState('')
   const [omsattning, setOmsattning] = useState('')
+  const [webbadress, setWebbadress] = useState('')
+  const [företagsbeskrivning, setFöretagsbeskrivning] = useState('')
   const [timprisStandard, setTimprisStandard] = useState('')
   const [timprisJour, setTimprisJour] = useState('')
   const [timprisOb, setTimprisOb] = useState('')
@@ -92,6 +94,8 @@ export default function ProfilPage() {
         setOrt((p.ort as string) ?? '')
         setRegion((p.region as string) ?? '')
         setTelefon((p.telefon as string) ?? '')
+        setWebbadress((p.webbadress as string) ?? '')
+        setFöretagsbeskrivning((p.företagsbeskrivning as string) ?? '')
         setAntalMontorer((p.antal_montorer as number)?.toString() ?? '')
         setOmsattning((p.omsattning_msek as number)?.toString() ?? '')
         setTimprisStandard((p.timpris_standard as number)?.toString() ?? '')
@@ -127,6 +131,8 @@ export default function ProfilPage() {
         timpris_standard: timprisStandard ? parseInt(timprisStandard) : null,
         timpris_jour: timprisJour ? parseInt(timprisJour) : null,
         timpris_ob: timprisOb ? parseInt(timprisOb) : null,
+        webbadress: webbadress || null,
+        företagsbeskrivning: företagsbeskrivning || null,
         referensprojekt,
         kontaktpersoner,
       })
@@ -346,6 +352,20 @@ export default function ProfilPage() {
                   <div>
                     <label style={labelStyle}>Omsättning (MSEK)</label>
                     <input style={inputStyle} type="number" value={omsattning} onChange={e => setOmsattning(e.target.value)} placeholder="15" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Webbadress</label>
+                    <input style={inputStyle} value={webbadress} onChange={e => setWebbadress(e.target.value)} placeholder="www.elfirma.se" />
+                  </div>
+                  <div className="col-span-2">
+                    <label style={labelStyle}>Kort företagsbeskrivning</label>
+                    <textarea
+                      value={företagsbeskrivning}
+                      onChange={e => setFöretagsbeskrivning(e.target.value)}
+                      rows={3}
+                      placeholder="Beskriv ert företag i 2-3 meningar. T.ex. typ av uppdrag, geografiskt område, specialkompetens. Används i anbud."
+                      style={{ ...inputStyle, resize: 'none' }}
+                    />
                   </div>
                 </div>
               </SectionCard>

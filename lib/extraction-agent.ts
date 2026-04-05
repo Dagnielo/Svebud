@@ -157,6 +157,8 @@ export async function analyseraOchMatcha(projektId: string): Promise<AnalysResul
     certifikat: profil.certifikat ?? [],
     erfarenhet: profil.erfarenhet ?? [],
     timpris_standard: profil.timpris_standard,
+    webbadress: profil.webbadress ?? null,
+    företagsbeskrivning: profil.företagsbeskrivning ?? null,
     referensprojekt: (profil.referensprojekt ?? []).map((r: Record<string, unknown>) => ({
       projektnamn: r.projektnamn,
       beställare: r.beställare,

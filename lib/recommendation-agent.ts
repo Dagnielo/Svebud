@@ -132,6 +132,8 @@ Företag: ${profil.företag}
 Org.nr: ${profil.org_nr ?? 'Ej angivet'}
 Adress: ${profil.adress ?? ''}, ${profil.postnr ?? ''} ${profil.ort ?? ''}
 Telefon: ${profil.telefon ?? 'Ej angivet'}
+${profil.webbadress ? `Webb: ${profil.webbadress}` : ''}
+${profil.företagsbeskrivning ? `Om företaget: ${profil.företagsbeskrivning}` : ''}
 Timpris standard: ${profil.timpris_standard ?? 650} kr/tim
 Timpris jour: ${profil.timpris_jour ?? 950} kr/tim
 ${projekt.rekommendation?.kontaktperson_anbud ? `

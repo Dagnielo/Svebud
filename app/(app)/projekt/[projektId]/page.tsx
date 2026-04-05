@@ -813,39 +813,6 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           : 'AI:n skapar ett komplett anbudsutkast baserat på analysen och er företagsprofil. Du kan redigera utkastet innan du skickar.'}
                       </p>
 
-                      {/* Kontaktperson-val */}
-                      {kontaktpersoner.length > 0 && (
-                        <div style={{ marginBottom: 16, maxWidth: 360, margin: '0 auto 16px', textAlign: 'left' }}>
-                          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
-                            Kontaktperson som signerar anbudet
-                          </label>
-                          <select
-                            value={valdKontakt}
-                            onChange={e => setValdKontakt(Number(e.target.value))}
-                            style={{
-                              width: '100%',
-                              padding: '8px 12px',
-                              borderRadius: 8,
-                              background: 'var(--navy)',
-                              border: '1px solid var(--navy-border)',
-                              color: 'var(--white)',
-                              fontSize: 13,
-                            }}
-                          >
-                            {kontaktpersoner.map((kp, i) => (
-                              <option key={i} value={i}>
-                                {kp.namn} — {kp.roll}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                      {kontaktpersoner.length === 0 && (
-                        <p style={{ fontSize: 11, color: 'var(--orange)', marginBottom: 12 }}>
-                          Ingen kontaktperson tillagd. <a href="/profil" style={{ color: 'var(--yellow)', textDecoration: 'underline' }}>Lägg till i Företagsprofil →</a>
-                        </p>
-                      )}
-
                       <Button onClick={körAnbudsGenerering} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, fontWeight: 700, padding: '12px 32px' }}>
                         {utkast ? '🔄 Generera nytt anbud →' : 'Generera anbudsutkast →'}
                       </Button>
