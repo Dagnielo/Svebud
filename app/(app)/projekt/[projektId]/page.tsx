@@ -267,7 +267,6 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     setAnbudLaddar(false)
     setGenSteg(0)
     setAktivTab('anbud')
-    körGranskning()
   }
 
   // Auto-save utkast med debounce — bara efter initial laddning
