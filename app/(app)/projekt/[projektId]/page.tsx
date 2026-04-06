@@ -333,21 +333,21 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     alert('Kopierat till urklipp!')
   }
 
-  // Renderar utkast-HTML med ROT-rader — ersätter TOTALT INKL MOMS-raden
-  function renderAnbudHtml(md: string) {
-    let html = mdTillHtml(md)
-    if (rotData.rotBelopp > 0) {
-      // Ersätt "TOTALT INKL. MOMS: XXX kr" med ROT-version
-      // Hanterar markdown-bold (**), HTML-bold (<strong>), mellanslag, punkter i belopp
-      html = html.replace(
-        /TOTALT\s+INKL\.?\s*MOMS:?\s*(<\/?(strong|b)>|\*\*)*\s*[\d\s.,]+\s*kr\s*(<\/?(strong|b)>|\*\*)*/i,
-        `TOTALT INKL. MOMS: ${(rotData.kundBetalar + rotData.rotBelopp).toLocaleString('sv-SE')} kr
-<br><strong>Skattereduktion:</strong> -${rotData.rotBelopp.toLocaleString('sv-SE')} kr
-<br><strong style="font-size:1.2em">NI BETALAR: ${rotData.kundBetalar.toLocaleString('sv-SE')} kr</strong>
-<br><em style="font-size:11px;color:#666">Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.</em>`
-      )
+  // Lägger till ROT i markdown INNAN rendering — ingen regex på HTML
+  function mdMedRot(md: string): string {
+    if (rotData.rotBelopp <= 0) return md
+    const rotText = `\n\n**Skattereduktion:** -${rotData.rotBelopp.toLocaleString('sv-SE')} kr\n**NI BETALAR: ${rotData.kundBetalar.toLocaleString('sv-SE')} kr**\n\n*Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.*`
+    // Hitta TOTALT INKL. MOMS i markdown och lägg ROT direkt efter
+    const totaltRegex = /(\*{0,2}TOTALT\s+INKL\.?\s*MOMS:?\*{0,2}\s*\*{0,2}[\d\s.,]+\s*kr\*{0,2})/i
+    if (totaltRegex.test(md)) {
+      return md.replace(totaltRegex, `$1${rotText}`)
     }
-    return html
+    // Fallback — lägg till i slutet
+    return md + rotText
+  }
+
+  function renderAnbudHtml(md: string) {
+    return mdTillHtml(mdMedRot(md))
   }
 
   function byggKalkylHtml() {
