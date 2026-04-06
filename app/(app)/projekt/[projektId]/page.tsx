@@ -78,7 +78,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [följebrevLaddat, setFöljebrevLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
-  const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number }>({ rotBelopp: 0, kundBetalar: 0 })
+  const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number; aktiverat: boolean }>({ rotBelopp: 0, kundBetalar: 0, aktiverat: false })
   const [analysTyp, setAnalysTyp] = useState<'formell' | 'snabb' | null>(null)
   const [snabbMoment, setSnabbMoment] = useState<SnabbMoment[] | null>(null)
   const [expanderadDok, setExpanderadDok] = useState<string | null>(null)
@@ -103,6 +103,16 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       const jr = (p as Record<string, unknown>).jämförelse_resultat as Record<string, unknown> | null
       if (jr?.analystyp === 'snabb') setAnalysTyp('snabb')
       else if (jr && !jr.analystyp) setAnalysTyp('formell')
+      // Ladda ROT-data från databasen
+      const proj = p as Record<string, unknown>
+      if (proj.rot_aktiverat && proj.rot_belopp) {
+        setRotData({
+          rotBelopp: proj.rot_belopp as number,
+          kundBetalar: proj.rot_kund_betalar as number ?? 0,
+          aktiverat: true,
+        })
+      }
+
       // Initiera följebrev från sparad data
       const rek = (p as Record<string, unknown>).rekommendation as Record<string, unknown> | null
       if (rek?.följebrev && följebrev === null) {
@@ -334,7 +344,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   }
 
   function byggRotBlock() {
-    if (rotData.rotBelopp <= 0) return ''
+    if (!rotData.aktiverat || rotData.rotBelopp <= 0) return ''
     return `<div style="background:#f0fdf4;border:2px solid #00C67A;border-radius:8px;padding:16px 20px;margin:16px 0">
 <h3 style="margin:0 0 8px;color:#166534">Skattereduktion</h3>
 <table style="width:100%;border-collapse:collapse">
@@ -698,7 +708,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       arbeteExMoms={snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)}
                       materialExMoms={snabbMoment.reduce((s, m) => s + m.materialkostnad, 0)}
                       projektId={projektId}
-                      onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
+                      onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar, aktiverat: rotBelopp > 0 })}
                     />
                   )}
 
@@ -882,7 +892,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             .reduce((s, m) => s + m.materialkostnad, 0)
                         }
                         projektId={projektId}
-                        onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar })}
+                        onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar, aktiverat: rotBelopp > 0 })}
                       />
                     </>
                   )}
