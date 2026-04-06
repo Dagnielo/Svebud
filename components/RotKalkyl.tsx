@@ -350,25 +350,13 @@ export default function RotKalkyl({
           Prissammanfattning
         </div>
 
-        {[
-          { label: 'Arbetskostnad inkl moms', värde: Math.round(arbeteExMoms * 1.25) },
-          { label: 'Material inkl moms', värde: Math.round(materialExMoms * 1.25) },
-          { label: 'Totalt inkl moms', värde: res.totalInkMoms, bold: true },
-        ].map(rad => (
-          <div
-            key={rad.label}
-            className="flex justify-between"
-            style={{
-              fontSize: 13,
-              padding: '4px 0',
-              color: rad.bold ? 'var(--white)' : 'var(--muted-custom)',
-              fontWeight: rad.bold ? 700 : 400,
-            }}
-          >
-            <span>{rad.label}</span>
-            <span>{Math.round(rad.värde).toLocaleString('sv')} kr</span>
-          </div>
-        ))}
+        <div
+          className="flex justify-between"
+          style={{ fontSize: 13, padding: '4px 0', color: 'var(--white)', fontWeight: 700 }}
+        >
+          <span>Totalt inkl moms</span>
+          <span>{Math.round(res.totalInkMoms).toLocaleString('sv')} kr</span>
+        </div>
 
         {aktiverat && res.rotBelopp > 0 && (
           <div
