@@ -345,12 +345,20 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
 
   function byggRotBlock() {
     if (!rotData.aktiverat || rotData.rotBelopp <= 0) return ''
+    // Beräkna från AKTUELL kalkyl — inte sparade värden
+    const mom = kalkylMoment ?? snabbMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
+    const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
+    const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
+    const totExkl = totArbete + totMaterial
+    const totInkl = totExkl + Math.round(totExkl * 0.25)
+    const rotBelopp = rotData.rotBelopp
+    const kundBetalar = totInkl - rotBelopp
     return `<div style="background:#f0fdf4;border:2px solid #00C67A;border-radius:8px;padding:16px 20px;margin:16px 0">
 <h3 style="margin:0 0 8px;color:#166534">Skattereduktion</h3>
 <table style="width:100%;border-collapse:collapse">
-<tr><td style="padding:4px 0">Totalt inkl. moms</td><td style="text-align:right;padding:4px 0">${(rotData.kundBetalar + rotData.rotBelopp).toLocaleString('sv-SE')} kr</td></tr>
-<tr><td style="padding:4px 0;color:#166534">Skattereduktion</td><td style="text-align:right;padding:4px 0;color:#166534">-${rotData.rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
-<tr style="border-top:2px solid #166534"><td style="padding:8px 0;font-weight:800;font-size:16px">Ni betalar</td><td style="text-align:right;padding:8px 0;font-weight:800;font-size:16px">${rotData.kundBetalar.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td style="padding:4px 0">Totalt inkl. moms</td><td style="text-align:right;padding:4px 0">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td style="padding:4px 0;color:#166534">Skattereduktion</td><td style="text-align:right;padding:4px 0;color:#166534">-${rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
+<tr style="border-top:2px solid #166534"><td style="padding:8px 0;font-weight:800;font-size:16px">Ni betalar</td><td style="text-align:right;padding:8px 0;font-weight:800;font-size:16px">${kundBetalar.toLocaleString('sv-SE')} kr</td></tr>
 </table>
 <p style="margin:8px 0 0;font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.</em></p>
 </div>`
