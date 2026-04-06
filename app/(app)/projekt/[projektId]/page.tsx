@@ -333,21 +333,17 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     alert('Kopierat till urklipp!')
   }
 
-  // Lägger till ROT i markdown INNAN rendering — ingen regex på HTML
-  function mdMedRot(md: string): string {
-    if (rotData.rotBelopp <= 0) return md
-    const rotText = `\n\n**Skattereduktion:** -${rotData.rotBelopp.toLocaleString('sv-SE')} kr\n**NI BETALAR: ${rotData.kundBetalar.toLocaleString('sv-SE')} kr**\n\n*Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.*`
-    // Hitta TOTALT INKL. MOMS i markdown och lägg ROT direkt efter
-    const totaltRegex = /(\*{0,2}TOTALT\s+INKL\.?\s*MOMS:?\*{0,2}\s*\*{0,2}[\d\s.,]+\s*kr\*{0,2})/i
-    if (totaltRegex.test(md)) {
-      return md.replace(totaltRegex, `$1${rotText}`)
-    }
-    // Fallback — lägg till i slutet
-    return md + rotText
-  }
-
-  function renderAnbudHtml(md: string) {
-    return mdTillHtml(mdMedRot(md))
+  function byggRotBlock() {
+    if (rotData.rotBelopp <= 0) return ''
+    return `<div style="background:#f0fdf4;border:2px solid #00C67A;border-radius:8px;padding:16px 20px;margin:16px 0">
+<h3 style="margin:0 0 8px;color:#166534">Skattereduktion</h3>
+<table style="width:100%;border-collapse:collapse">
+<tr><td style="padding:4px 0">Totalt inkl. moms</td><td style="text-align:right;padding:4px 0">${(rotData.kundBetalar + rotData.rotBelopp).toLocaleString('sv-SE')} kr</td></tr>
+<tr><td style="padding:4px 0;color:#166534">Skattereduktion</td><td style="text-align:right;padding:4px 0;color:#166534">-${rotData.rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
+<tr style="border-top:2px solid #166534"><td style="padding:8px 0;font-weight:800;font-size:16px">Ni betalar</td><td style="text-align:right;padding:8px 0;font-weight:800;font-size:16px">${rotData.kundBetalar.toLocaleString('sv-SE')} kr</td></tr>
+</table>
+<p style="margin:8px 0 0;font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.</em></p>
+</div>`
   }
 
   function byggKalkylHtml() {
@@ -386,8 +382,9 @@ ${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.ti
     const win = window.open('', '_blank')
     if (!win) return
     win.document.write(EXPORT_HTML_HEAD.replace('<title>Anbud</title>', `<title>Anbud - ${projekt?.namn}</title>`))
-    win.document.write(renderAnbudHtml(utkast))
+    win.document.write(mdTillHtml(utkast))
     win.document.write(byggKalkylHtml())
+    win.document.write(byggRotBlock())
     win.document.write(EXPORT_HTML_FOOT)
     win.document.close()
     setTimeout(() => win.print(), 500)
@@ -407,7 +404,7 @@ tr:nth-child(even){background:#f8f9fb}
 strong{font-weight:700;color:#0E1B2E}
 hr{border:none;border-top:1pt solid #e0e0e0}
 </style></head>
-<body>${renderAnbudHtml(utkast)}${byggKalkylHtml()}</body></html>`
+<body>${mdTillHtml(utkast)}${byggKalkylHtml()}${byggRotBlock()}</body></html>`
 
     const blob = new Blob([html], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
@@ -956,7 +953,8 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         dangerouslySetInnerHTML={{
                           __html: `<style>${DOKUMENT_CSS}</style>
                           <div class="dokument">
-                            ${renderAnbudHtml(utkast)}
+                            ${mdTillHtml(utkast)}
+                            ${byggRotBlock()}
                             ${byggKalkylHtml()}
                           </div>`
                         }}
