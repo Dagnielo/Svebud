@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SveBud – Vinn fler el-uppdrag. På halva tiden.</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ─── DESIGN TOKENS ─── */
+:root {
+  /* Accent */
+  --amber:        #C8960A;
+  --amber-dim:    #A37A08;
+  --amber-glow:   rgba(200,150,10,0.10);
+  --amber-border: rgba(200,150,10,0.22);
+
+  /* Dark surfaces (Hero, Nav, Footer) */
+  --dark:         #0C0E10;
+  --dark2:        #101214;
+  --dark3:        #141618;
+  --dark4:        #1A1C1F;
+  --dark-border:  rgba(255,255,255,0.08);
+  --dark-border-a:rgba(200,150,10,0.20);
+
+  /* Light surfaces (alternating sections) */
+  --cream:        #F7F3EC;
+  --white:        #FFFFFF;
+  --light-border: #E8E2D8;
+  --light-border2:#D8D0C4;
+
+  /* Text on dark */
+  --dt1: #F0EBE2;
+  --dt2: #C8C0B0;
+  --dt3: #9A9080;
+  --dt4: #5A5448;
+
+  /* Text on light */
+  --lt1: #111111;
+  --lt2: #333333;
+  --lt3: #555555;
+  --lt4: #888888;
+
+  /* Status */
+  --green: #2A7A4A;
+  --gbg:   rgba(42,122,74,0.10);
+  --red:   #8A3030;
+  --rbg:   rgba(138,48,48,0.08);
+  --blue:  #2A5A8A;
+  --bbg:   rgba(42,90,138,0.10);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--dark); color:var(--dt1); overflow-x:hidden; line-height:1.65; }
+.wrap { max-width:1120px; margin:0 auto; padding:0 28px; }
+section { padding:104px 0; }
+
+/* Scroll reveal */
+.rv { opacity:0; transform:translateY(20px); transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1); }
+.rv.up { opacity:1; transform:translateY(0); }
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+
+/* Light section text overrides */
+.light-section { color:var(--lt1); }
+.light-section .eyebrow { color:var(--amber); }
+.light-section .eyebrow::before { background:var(--amber); }
+.light-section .h2 { color:var(--lt1); }
+.light-section .h3 { color:var(--lt1); }
+.light-section .body-l { color:var(--lt3); }
+.light-section .body-l strong { color:var(--lt2); }
+
+/* ─── NAV ─── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  height:62px; background:rgba(12,14,16,.94);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--dark-border-a);
+  display:flex; align-items:center;
+}
+.ni { display:flex; align-items:center; max-width:1120px; margin:0 auto; width:100%; padding:0 28px; }
+.nlogo { display:flex; align-items:center; gap:9px; text-decoration:none; }
+.nbolt { width:30px; height:30px; background:var(--amber); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.nname { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; color:var(--dt1); letter-spacing:-.01em; }
+.nname span { color:var(--amber); }
+.nlinks { display:flex; gap:2px; margin-left:36px; }
+.nlink { font-size:13px; color:var(--dt3); padding:6px 13px; border-radius:7px; text-decoration:none; transition:color .15s; }
+.nlink:hover { color:var(--dt1); background:rgba(255,255,255,.05); }
+.nr { margin-left:auto; display:flex; gap:10px; align-items:center; }
+.btn-ng { font-size:13px; font-weight:500; color:var(--dt3); background:none; border:1px solid var(--dark-border-a); padding:7px 16px; border-radius:8px; cursor:pointer; font-family:'DM Sans',sans-serif; text-decoration:none; transition:all .15s; }
+.btn-ng:hover { border-color:var(--amber); color:var(--dt2); }
+.btn-nc { font-size:13px; font-weight:600; color:var(--dark); background:var(--amber); border:none; padding:8px 18px; border-radius:8px; cursor:pointer; font-family:'DM Sans',sans-serif; text-decoration:none; transition:all .15s; }
+.btn-nc:hover { background:var(--amber-dim); transform:translateY(-1px); }
+
+/* ─── BUTTONS ─── */
+.btn-p { display:inline-flex; align-items:center; gap:8px; background:var(--amber); color:var(--dark); font-size:16px; font-weight:600; font-family:'DM Sans',sans-serif; border:none; padding:14px 30px; border-radius:10px; cursor:pointer; text-decoration:none; transition:all .2s cubic-bezier(.34,1.56,.64,1); }
+.btn-p:hover { background:var(--amber-dim); transform:translateY(-2px); box-shadow:0 8px 24px rgba(200,150,10,.28); }
+.btn-p.lg { font-size:17px; padding:16px 34px; border-radius:11px; }
+.btn-s-dark { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--dt2); font-size:15px; font-weight:500; font-family:'DM Sans',sans-serif; border:1px solid rgba(255,255,255,.12); padding:14px 22px; border-radius:10px; cursor:pointer; text-decoration:none; transition:all .15s; }
+.btn-s-dark:hover { border-color:var(--dark-border-a); color:var(--dt1); }
+.btn-s-light { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--lt2); font-size:15px; font-weight:500; font-family:'DM Sans',sans-serif; border:1px solid var(--light-border2); padding:14px 22px; border-radius:10px; cursor:pointer; text-decoration:none; transition:all .15s; }
+.btn-s-light:hover { border-color:var(--amber); color:var(--lt1); }
+
+/* ─── EYEBROWS & TYPE ─── */
+.eyebrow { display:flex; align-items:center; gap:10px; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.12em; color:var(--amber); margin-bottom:18px; }
+.eyebrow::before { content:''; width:28px; height:1px; background:var(--amber); opacity:.6; display:inline-block; }
+.eyebrow-pill { display:inline-flex; align-items:center; gap:7px; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.10em; color:var(--amber); background:var(--amber-glow); border:1px solid var(--amber-border); padding:4px 13px; border-radius:20px; margin-bottom:22px; }
+.ep-dot { width:5px; height:5px; background:var(--amber); border-radius:50%; animation:epulse 2s ease-in-out infinite; }
+@keyframes epulse{0%,100%{opacity:1}50%{opacity:.3}}
+.h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(44px,5.5vw,66px); font-weight:500; letter-spacing:-.035em; line-height:1.04; color:var(--dt1); }
+.h1 em { font-style:italic; color:var(--amber); }
+.h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,4vw,50px); font-weight:500; letter-spacing:-.03em; line-height:1.1; margin-bottom:16px; }
+.h3 { font-family:'Cormorant Garamond',serif; font-size:clamp(20px,2.5vw,26px); font-weight:500; letter-spacing:-.02em; line-height:1.22; margin-bottom:10px; }
+.body-l { font-size:17px; line-height:1.78; }
+
+/* ════════════════════════
+   HERO  (dark)
+════════════════════════ */
+#hero {
+  padding-top:62px; position:relative; overflow:hidden;
+  min-height:100vh; display:flex; align-items:center;
+}
+.hero-bg {
+  position:absolute; inset:0; z-index:0;
+  background-image:url('https://cdn.midjourney.com/cf684de5-056b-42b7-adab-37985956f128/0_2.png');
+  background-size:cover; background-position:center 30%;
+  filter:brightness(.52) saturate(.75);
+}
+.hero-grad {
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(105deg, rgba(12,14,16,.62) 40%, rgba(12,14,16,.22) 100%);
+}
+.hero-dots { position:absolute; inset:0; z-index:1; pointer-events:none; background-image:radial-gradient(rgba(200,150,10,.04) 1px,transparent 1px); background-size:30px 30px; }
+.hero-divider { position:absolute; bottom:0; left:0; right:0; height:1px; z-index:2; background:linear-gradient(90deg,transparent,rgba(200,150,10,.25),transparent); }
+.hero-inner { position:relative; z-index:2; display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; padding:88px 0 80px; }
+.hero-risk { font-size:12px; color:var(--dt4); margin-top:16px; }
+.hero-trust { display:flex; align-items:center; gap:10px; margin-top:28px; padding-top:24px; border-top:1px solid rgba(255,255,255,.07); }
+.hstars { color:var(--amber); font-size:13px; letter-spacing:2px; }
+.htrust { font-size:13px; color:var(--dt4); }
+.htrust strong { color:var(--dt3); font-weight:500; }
+
+/* Browser frame (hero) */
+.bframe { background:var(--dark3); border:1px solid var(--dark-border-a); border-radius:14px; overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,.7),0 0 0 1px rgba(200,150,10,.06); }
+.bbar { background:var(--dark4); border-bottom:1px solid rgba(255,255,255,.06); padding:10px 14px; display:flex; align-items:center; gap:7px; }
+.dot{width:10px;height:10px;border-radius:50%} .dr{background:#FF5F57} .dy{background:#FFBD2E} .dg{background:#28C840}
+.burl { flex:1; background:var(--dark); border-radius:5px; padding:3px 10px; font-size:10px; color:var(--dt4); font-family:'JetBrains Mono',monospace; margin-left:8px; }
+.bbody { padding:14px; }
+.db-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.db-title { font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:500; color:var(--dt2); }
+.db-btn { background:var(--amber); color:var(--dark); border:none; border-radius:5px; padding:4px 10px; font-size:10px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; }
+.krow { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:12px; }
+.kc { background:var(--dark2); border:1px solid rgba(255,255,255,.06); border-radius:7px; padding:10px; text-align:center; position:relative; overflow:hidden; }
+.kc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kc.a::after{background:var(--amber)}.kc.g::after{background:var(--green)}.kc.b::after{background:var(--blue)}
+.kv{font-size:17px;font-weight:600;letter-spacing:-.02em;font-family:'JetBrains Mono',monospace}
+.kv.a{color:var(--amber)}.kv.g{color:var(--green)}.kv.b{color:var(--blue)}
+.kl{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--dt4);margin-top:2px}
+.brow{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:8px 11px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.brow:last-child{margin-bottom:0}
+.bdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bname{font-size:11px;font-weight:500;color:var(--dt2);flex:1}
+.bval{font-size:10px;color:var(--dt4);font-family:'JetBrains Mono',monospace}
+.btag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.tgo{background:var(--gbg);color:var(--green)}.tai{background:var(--amber-glow);color:var(--amber);border:1px solid var(--amber-border)}.tsent{background:var(--bbg);color:var(--blue)}
+
+/* Floating badges */
+.fbadge{position:absolute;background:var(--dark3);border:1px solid var(--dark-border-a);border-radius:9px;padding:8px 13px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.fb1{bottom:32px;left:-24px;animation:flt 4s ease-in-out infinite}
+.fb2{top:32px;right:-18px;animation:flt 4s ease-in-out infinite .9s}
+.fb3{bottom:-8px;right:48px;animation:flt 4s ease-in-out infinite 1.8s}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.fbl{font-size:9px;color:var(--dt4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.fbv{font-size:15px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.fbv.gr{color:var(--green)}.fbv.am{color:var(--amber)}
+
+/* ════════════════════════
+   LOGO STRIP
+════════════════════════ */
+#logos{padding:24px 0;overflow:hidden;background:#F0EBE2;border-top:1px solid var(--light-border2);border-bottom:1px solid var(--light-border2)}
+.lstrip-lbl{text-align:center;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--lt4);margin-bottom:16px}
+.ltrack{display:flex;gap:52px;align-items:center;width:max-content;animation:marquee 30s linear infinite}
+.ltrack:hover{animation-play-state:paused}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.litem{display:flex;align-items:center;gap:9px;opacity:.5;transition:opacity .2s;white-space:nowrap}
+.litem:hover{opacity:.85}
+.licon{width:22px;height:22px;background:var(--amber-glow);border:1px solid var(--amber-border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:var(--amber)}
+.lname{font-size:13px;font-weight:500;color:var(--lt2)}
+
+/* ════════════════════════
+   PAIN (cream bg + photo)
+════════════════════════ */
+#pain { background:var(--cream); border-top:1px solid var(--light-border); }
+.pain-cols{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.pain-list{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+.pain-item{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;background:rgba(138,48,48,.05);border:1px solid rgba(138,48,48,.15);border-radius:11px}
+.pain-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+.pain-item-h{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--lt1);margin-bottom:3px}
+.pain-item-p{font-size:13px;color:var(--lt3);line-height:1.65}
+/* Pain photo */
+.pain-photo-wrap{position:relative;border-radius:16px;overflow:hidden;box-shadow:0 20px 56px rgba(0,0,0,.18)}
+.pain-photo{width:100%;display:block;border-radius:16px}
+.pain-photo-cap{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(12,14,16,.85));border-radius:0 0 16px 16px}
+.pain-cap-inner{display:flex;justify-content:space-between;align-items:flex-end}
+.pain-cap-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:rgba(240,235,226,.6)}
+.pain-cap-val{font-size:22px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--dt1)}
+
+/* ════════════════════════
+   SOLUTION (white)
+════════════════════════ */
+#solution{background:var(--white);border-top:1px solid var(--light-border)}
+.sol-inner{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.sol-steps{display:flex;flex-direction:column}
+.sol-step{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--light-border);cursor:pointer;transition:all .15s}
+.sol-step:last-child{border-bottom:none}
+.sol-num{width:36px;height:36px;border-radius:8px;border:1px solid var(--light-border2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--lt4);background:var(--cream);flex-shrink:0;transition:all .2s}
+.sol-step.act .sol-num{background:var(--amber);color:var(--dark);border-color:var(--amber)}
+.sol-step-h{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--lt3);margin-bottom:3px;transition:color .2s}
+.sol-step.act .sol-step-h{color:var(--lt1)}
+.sol-step-p{font-size:13px;color:var(--lt4);line-height:1.55}
+.sol-time{font-size:11px;font-weight:600;color:var(--amber);font-family:'JetBrains Mono',monospace;margin-top:5px}
+.sscr{display:none}
+.sscr.act{display:block;animation:scrin .3s ease}
+@keyframes scrin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.scrwrap{background:var(--dark3);border:1px solid var(--dark-border-a);border-radius:14px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,.22)}
+.scrbar{background:var(--dark4);border-bottom:1px solid rgba(255,255,255,.06);padding:9px 14px;display:flex;align-items:center;gap:7px}
+.scrlbl{font-size:10px;color:var(--dt4);font-family:'JetBrains Mono',monospace;margin-left:7px}
+.scrbody{padding:16px}
+.uzone{border:2px dashed rgba(255,255,255,.1);border-radius:10px;padding:28px;text-align:center;background:var(--dark2);margin-bottom:10px}
+.uh{font-size:13px;font-weight:600;color:var(--dt2);margin-bottom:3px}
+.up2{font-size:12px;color:var(--dt3)}
+.ufmt{font-size:10px;color:var(--dt4);margin-top:6px;font-family:'JetBrains Mono',monospace}
+.uprog{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:8px}
+.pbar{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.pfill{height:100%;background:var(--amber);border-radius:2px;animation:panim 2s ease-in-out infinite}
+@keyframes panim{0%{width:0}100%{width:100%}}
+.plbl{font-size:10px;color:var(--amber);font-weight:600;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.ablock{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.abhdr{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between}
+.abhtitle{font-size:11px;font-weight:600;color:var(--dt2)}
+.aibadge{font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--amber-glow);color:var(--amber);border:1px solid var(--amber-border)}
+.abrow{display:flex;justify-content:space-between;padding:6px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
+.abrow:last-child{border-bottom:none}
+.abk{color:var(--dt4)}.abv{font-weight:500;color:var(--dt2);text-align:right;max-width:55%}
+.gngblock{background:var(--gbg);border:1px solid rgba(42,122,74,.22);border-radius:8px;padding:10px 12px;margin-top:8px}
+.gngt{font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px}
+.gngrow{font-size:11px;color:var(--dt2);margin-bottom:5px;display:flex;gap:7px}
+.gngrow:last-child{margin-bottom:0}
+.ctbl{width:100%;border-collapse:collapse}
+.ctbl th{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--dt4);padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left}
+.ctbl td{font-size:11px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--dt2)}
+.ctbl tr:last-child td{border-bottom:none}
+.ci{background:var(--dark);border:1px solid rgba(255,255,255,.07);border-radius:4px;color:var(--dt1);font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 6px;width:52px;text-align:right}
+.ci:focus{outline:none;border-color:var(--amber)}
+.ctotal{margin-top:10px;padding:10px 12px;background:var(--dark2);border-radius:8px;display:flex;justify-content:space-between;align-items:center}
+.ctlbl{font-size:11px;font-weight:600;color:var(--dt3)}
+.ctval{font-size:17px;font-weight:600;color:var(--amber);font-family:'JetBrains Mono',monospace}
+.bsec{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:7px;overflow:hidden;margin-bottom:6px}
+.bsec.open{border-color:var(--dark-border-a)}
+.bshdr{padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:11px}
+.bsnum{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dt4);width:18px}
+.bsname{flex:1;font-weight:500;color:var(--dt2)}
+.bsbody{padding:8px 12px;border-top:1px solid rgba(255,255,255,.05);font-size:11px;color:var(--dt3);line-height:1.6}
+.regenbtn{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--amber-glow);color:var(--amber);border:1px solid var(--amber-border);cursor:pointer}
+
+/* ════════════════════════
+   COMPARISON (cream)
+════════════════════════ */
+#compare{background:var(--cream);border-top:1px solid var(--light-border)}
+.cmpgrid{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center}
+.cmpcol{background:var(--white);border:1px solid var(--light-border);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.cmpcol.after{border-color:rgba(42,122,74,.3);box-shadow:0 2px 20px rgba(42,122,74,.08)}
+.cmphdr{padding:13px 18px;border-bottom:1px solid var(--light-border);display:flex;align-items:center;gap:10px}
+.cmphdr-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.old-hdr .cmphdr-icon{background:var(--rbg)}
+.new-hdr .cmphdr-icon{background:var(--gbg)}
+.cmphdr-lbl{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500}
+.old-hdr .cmphdr-lbl{color:var(--red)}
+.new-hdr .cmphdr-lbl{color:var(--green)}
+.cmpbody{padding:14px;background:var(--white)}
+.cmprow{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--light-border)}
+.cmprow:last-child{border-bottom:none}
+.cico{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.cico.bad{background:var(--rbg);color:var(--red)}.cico.good{background:var(--gbg);color:var(--green)}
+.ctxt{font-size:13px;line-height:1.4;flex:1;color:var(--lt2)}
+.ctxt strong{color:var(--lt1);font-weight:500}
+.ctxt span{font-size:11px;color:var(--lt4)}
+.ctime{font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;flex-shrink:0;margin-top:1px}
+.ctime.bad{color:var(--red)}.ctime.good{color:var(--green)}
+.cmpfoot{padding:12px 16px;border-top:1px solid var(--light-border);display:flex;justify-content:space-between;align-items:center;background:var(--cream)}
+.cfootle{font-size:12px;color:var(--lt4);font-weight:500}
+.cfoottv{font-size:22px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.cfoottv.bad{color:var(--red)}.cfoottv.good{color:var(--green)}
+.vsdiv{display:flex;flex-direction:column;align-items:center;gap:8px}
+.vsline{width:1px;height:40px;background:var(--light-border)}
+.vscircle{width:48px;height:48px;background:var(--white);border:1px solid var(--light-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--lt4)}
+
+/* ════════════════════════
+   FEATURES (white)
+════════════════════════ */
+#features{background:var(--white);border-top:1px solid var(--light-border)}
+.featrows{display:flex;flex-direction:column;gap:80px;margin-top:56px}
+.featrow{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.featrow.rev{direction:rtl}.featrow.rev>*{direction:ltr}
+.feat-eye{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:12px}
+.feat-p{font-size:15px;color:var(--lt3);line-height:1.78}
+.feat-pts{margin-top:24px;display:flex;flex-direction:column;gap:14px}
+.feat-pt{display:flex;align-items:flex-start;gap:14px;font-size:15px;color:var(--lt2);line-height:1.6;padding-left:16px;border-left:2px solid var(--amber)}
+.feat-pt::before{display:none}
+.featscr{background:var(--dark3);border:1px solid var(--dark-border-a);border-radius:14px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.15)}
+.fsbar{background:var(--dark4);border-bottom:1px solid rgba(255,255,255,.06);padding:9px 14px;display:flex;align-items:center;gap:7px}
+.fslbl{font-size:10px;color:var(--dt4);font-family:'JetBrains Mono',monospace;margin-left:7px}
+.fsbody{padding:16px}
+.gngcard{background:var(--gbg);border:1px solid rgba(42,122,74,.22);border-radius:9px;padding:12px 14px;margin-bottom:9px}
+.gngcard-t{font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px}
+.gngline{font-size:11px;color:var(--dt2);margin-bottom:6px;display:flex;gap:7px}
+.gngline:last-child{margin-bottom:0}
+.certbox{background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:11px 14px}
+.certbox-t{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--dt4);margin-bottom:9px}
+.certrow{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--dt2);margin-bottom:6px}
+.certrow:last-child{margin-bottom:0}
+.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ════════════════════════
+   PROOF – Swedish (cream)
+════════════════════════ */
+#proof{background:var(--cream);border-top:1px solid var(--light-border)}
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+
+/* Stat block */
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-bottom:56px}
+.stat{background:var(--white);border:1px solid var(--light-border);text-align:center;padding:28px 16px}
+.stat:first-child{border-radius:12px 0 0 12px}.stat:last-child{border-radius:0 12px 12px 0}
+.statv{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:500;letter-spacing:-.04em;color:var(--amber)}
+.statl{font-size:13px;color:var(--lt3);margin-top:4px}
+
+/* Branschfakta card */
+.proof-card{background:var(--white);border:1px solid var(--light-border);border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.proof-card:hover{box-shadow:0 4px 24px rgba(0,0,0,.1);transform:translateY(-2px);transition:all .2s}
+.pc-icon{font-size:28px;margin-bottom:14px}
+.pc-type{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px}
+.pc-h{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--lt1);line-height:1.25;margin-bottom:12px}
+.pc-body{font-size:14px;color:var(--lt3);line-height:1.72}
+.pc-source{font-size:11px;color:var(--lt4);margin-top:14px;padding-top:14px;border-top:1px solid var(--light-border)}
+
+/* Grundarens röst */
+.founder-card{background:var(--white);border:1px solid var(--light-border);border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.founder-card:hover{box-shadow:0 4px 24px rgba(0,0,0,.1);transform:translateY(-2px);transition:all .2s}
+.founder-quote{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;font-weight:400;color:var(--lt2);line-height:1.65;margin-bottom:20px;position:relative;padding-left:20px}
+.founder-quote::before{content:'"';font-family:'Cormorant Garamond',serif;font-size:64px;color:var(--amber);opacity:.2;position:absolute;left:-4px;top:-14px;line-height:1}
+.founder-auth{display:flex;align-items:center;gap:12px}
+.founder-av{width:44px;height:44px;background:var(--amber);color:var(--dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.founder-name{font-size:14px;font-weight:600;color:var(--lt1)}
+.founder-role{font-size:12px;color:var(--lt4)}
+
+/* Beta card */
+.beta-card{background:var(--dark);border:2px solid var(--amber);border-radius:16px;padding:28px;position:relative;overflow:hidden}
+.beta-card::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(200,150,10,.12) 0%,transparent 70%);pointer-events:none}
+.beta-type{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px}
+.beta-h{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--dt1);line-height:1.25;margin-bottom:12px}
+.beta-body{font-size:14px;color:var(--dt3);line-height:1.72;margin-bottom:20px}
+.spots{display:flex;align-items:center;gap:8px;margin-bottom:20px}
+.spot{width:18px;height:18px;border-radius:4px;background:var(--amber)}
+.spot.taken{background:rgba(200,150,10,.2)}
+.spots-lbl{font-size:12px;font-weight:600;color:var(--amber);font-family:'JetBrains Mono',monospace}
+
+/* ════════════════════════
+   PRICING (white)
+════════════════════════ */
+#pricing{background:var(--white);border-top:1px solid var(--light-border)}
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:980px;margin:0 auto}
+.pcard{background:var(--cream);border:1px solid var(--light-border);border-radius:16px;padding:30px;position:relative;transition:transform .2s,box-shadow .2s}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.1)}
+.pcard.hot{border-color:var(--amber);border-width:2px;background:var(--white)}
+.pbadge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--dark);font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap}
+.ptier{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--lt4);margin-bottom:6px}
+.pprice{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:500;letter-spacing:-.04em;margin-bottom:4px;line-height:1;color:var(--lt1)}
+.pprice sub{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:400;color:var(--lt4)}
+.pdesc{font-size:13px;color:var(--lt3);margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--light-border);line-height:1.55}
+.plist{list-style:none;margin-bottom:24px}
+.plist li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--lt2);padding:6px 0;border-bottom:1px solid var(--light-border)}
+.plist li:last-child{border-bottom:none}
+.plist li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.plist li.no{color:var(--lt4)}.plist li.no::before{content:'×';color:var(--lt4)}
+.pbtn{width:100%;padding:12px;border-radius:9px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.pbtn.pri{background:var(--amber);color:var(--dark);border:none}.pbtn.pri:hover{background:var(--amber-dim)}
+.pbtn.sec{background:transparent;color:var(--lt3);border:1px solid var(--light-border2)}.pbtn.sec:hover{border-color:var(--amber);color:var(--lt1)}
+.ptoggle{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:44px}
+.tgl-l{font-size:13px;font-weight:500;color:var(--lt4)}.tgl-l.on{color:var(--lt1)}
+.tgl{width:42px;height:22px;background:var(--light-border);border:1px solid var(--light-border2);border-radius:11px;position:relative;cursor:pointer;transition:all .2s}
+.tgl.on{background:var(--amber);border-color:var(--amber-dim)}
+.tglk{position:absolute;top:2px;left:2px;width:16px;height:16px;background:var(--white);border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tgl.on .tglk{transform:translateX(20px)}
+.savepill{font-size:10px;font-weight:600;background:var(--gbg);color:var(--green);padding:2px 9px;border-radius:5px;border:1px solid rgba(42,122,74,.2)}
+.pnote{text-align:center;margin-top:22px;font-size:12px;color:var(--lt4)}.pnote strong{color:var(--green)}
+
+/* ════════════════════════
+   FAQ (cream)
+════════════════════════ */
+#faq{background:var(--cream);border-top:1px solid var(--light-border)}
+.faqwrap{max-width:680px;margin:0 auto}
+.fi{background:var(--white);border:1px solid var(--light-border);border-radius:11px;margin-bottom:9px;overflow:hidden;transition:border-color .15s;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.fi:hover,.fi.open{border-color:var(--amber)}
+.fq{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;font-size:14px;font-weight:500;color:var(--lt2);gap:14px}
+.fqi{font-size:16px;color:var(--amber);flex-shrink:0;transition:transform .2s}
+.fi.open .fqi{transform:rotate(45deg)}
+.fa{padding:0 20px 16px;font-size:13px;color:var(--lt3);line-height:1.75;display:none;border-top:1px solid var(--light-border);padding-top:14px}
+.fi.open .fa{display:block}
+
+/* ════════════════════════
+   FINAL CTA (dark)
+════════════════════════ */
+#cta{background:var(--dark);text-align:center;padding:120px 0;position:relative;overflow:hidden;border-top:1px solid var(--dark-border-a)}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:500px;pointer-events:none;background:radial-gradient(ellipse,rgba(200,150,10,.065) 0%,transparent 70%)}
+.cta-inner{position:relative;z-index:2}
+.cta-divider{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:22px}
+.cta-divider::before,.cta-divider::after{content:'';width:60px;height:1px;background:var(--dark-border-a)}
+.cta-eye{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.12em;color:var(--amber)}
+.cta-sub{font-size:17px;color:var(--dt3);max-width:420px;margin:0 auto 40px;line-height:1.7}
+.cta-btns{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
+.cta-risk{display:flex;justify-content:center;align-items:center;gap:24px;margin-top:18px;flex-wrap:wrap}
+.ctar{font-size:12px;color:var(--dt4);display:flex;align-items:center;gap:5px}
+.ctar::before{content:'✓';color:var(--green);font-weight:700}
+
+/* ════════════════════════
+   FOOTER (dark)
+════════════════════════ */
+footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding:56px 0 28px}
+.ftgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px}
+.ftbrand p{font-size:13px;color:var(--dt4);margin-top:10px;max-width:240px;line-height:1.7}
+.fct{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dt4);margin-bottom:14px}
+.flinks{list-style:none;display:flex;flex-direction:column;gap:7px}
+.flinks a{font-size:13px;color:var(--dt4);text-decoration:none;transition:color .15s}
+.flinks a:hover{color:var(--dt2)}
+.ftbot{display:flex;align-items:center;justify-content:space-between;padding-top:28px;border-top:1px solid var(--dark-border);font-size:12px;color:var(--dt4);flex-wrap:wrap;gap:10px}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .hero-inner,.pain-cols,.sol-inner,.featrow,.cmpgrid{grid-template-columns:1fr}
+  .featrow.rev{direction:ltr}
+  .cmpgrid{display:flex;flex-direction:column}
+  .vsdiv{flex-direction:row;justify-content:center}
+  .vsline{width:40px;height:1px}
+  .statrow,.proof-grid,.pcards{grid-template-columns:1fr}
+  .stat:first-child,.stat:last-child{border-radius:0}
+  .ftgrid{grid-template-columns:1fr 1fr}
+  .nlinks{display:none}
+  #hero{padding-top:62px}
+}
+@media(max-width:600px){
+  .ftgrid{grid-template-columns:1fr}
+  .ftbot{flex-direction:column;text-align:center}
+  section{padding:72px 0}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="ni">
+    <a href="#" class="nlogo">
+      <div class="nbolt">⚡</div>
+      <span class="nname">Sve<span>Bud</span></span>
+    </a>
+    <div class="nlinks">
+      <a href="#solution" class="nlink">Hur det fungerar</a>
+      <a href="#features" class="nlink">Funktioner</a>
+      <a href="#pricing" class="nlink">Priser</a>
+      <a href="#faq" class="nlink">FAQ</a>
+    </div>
+    <div class="nr">
+      <a href="/login" class="btn-ng" id="auth-btn">Logga in</a>
+      <a href="#pricing" class="btn-nc" id="cta-btn">Testa gratis ⚡</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO (dark + foto) ══ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grad"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-divider"></div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow-pill"><span class="ep-dot"></span> Byggt för svenska elfirmor</div>
+        <h1 class="h1" style="margin-bottom:20px">Vinn fler<br>el-uppdrag.<br>På <em>halva tiden.</em></h1>
+        <p class="body-l" style="max-width:440px;margin-bottom:32px;color:var(--dt3)">SveBud läser ditt förfrågningsunderlag och genererar ett <strong style="color:var(--dt2)">komplett anbud på 20 minuter</strong> – istället för en hel arbetsdag.</p>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <a href="#pricing" class="btn-p lg">⚡ Testa gratis i 14 dagar</a>
+          <a href="#solution" class="btn-s-dark">Se hur det fungerar →</a>
+        </div>
+        <div class="hero-risk">✓ Inget kreditkort &nbsp;·&nbsp; ✓ Klar på 5 min &nbsp;·&nbsp; ✓ Avbryt när som helst</div>
+        <div class="hero-trust">
+          <span class="hstars">★★★★★</span>
+          <span class="htrust"><strong>4,9/5 från betaanvändare</strong> · Testat av elfirmor i Stockholm, Göteborg och Malmö</span>
+        </div>
+      </div>
+      <div style="position:relative;padding-bottom:36px">
+        <div class="bframe">
+          <div class="bbar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><div class="burl">app.svebud.se/dashboard</div></div>
+          <div class="bbody">
+            <div class="db-top"><span class="db-title">Anbudspipeline</span><button class="db-btn">⚡ Nytt anbud</button></div>
+            <div class="krow">
+              <div class="kc a"><div class="kv a">6</div><div class="kl">Aktiva</div></div>
+              <div class="kc g"><div class="kv g">67%</div><div class="kl">Win rate</div></div>
+              <div class="kc b"><div class="kv b">4,2M</div><div class="kl">Pipeline</div></div>
+            </div>
+            <div class="brow"><div class="bdot" style="background:var(--red)"></div><span class="bname">BRF Kungsholmen</span><span class="bval">1,8M</span><span class="btag tgo">GO</span></div>
+            <div class="brow"><div class="bdot" style="background:var(--blue)"></div><span class="bname">Hammarby Fastigheter</span><span class="bval">920K</span><span class="btag tai">⚡ AI</span></div>
+            <div class="brow"><div class="bdot" style="background:var(--green)"></div><span class="bname">BRF Solrosen</span><span class="bval">380K</span><span class="btag tsent">Skickat</span></div>
+          </div>
+        </div>
+        <div class="fbadge fb1"><div class="fbl">Tid sparat</div><div class="fbv gr">8,5 tim</div></div>
+        <div class="fbadge fb2"><div class="fbl">Win rate ↑</div><div class="fbv am">+24%</div></div>
+        <div class="fbadge fb3"><div class="fbl">Anbud/mån ×</div><div class="fbv am">2</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGO STRIP -->
+<div id="logos">
+  <div class="lstrip-lbl">Används av elfirmor i hela Sverige</div>
+  <div class="ltrack">
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Eriksson El AB</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Lindqvist El & Kraft</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">PHel AB</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Svensson Elektro</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Nordin El & Installation</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Bergström Elteknik</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Johansson El AB</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Magnusson Eltjänst</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Eriksson El AB</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Lindqvist El & Kraft</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">PHel AB</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Svensson Elektro</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Nordin El & Installation</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Bergström Elteknik</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Johansson El AB</span></div>
+    <div class="litem"><div class="licon">⚡</div><span class="lname">Magnusson Eltjänst</span></div>
+  </div>
+</div>
+
+<!-- ══ PAIN (cream + foto) ══ -->
+<section id="pain" class="light-section">
+  <div class="wrap">
+    <div class="pain-cols">
+      <div>
+        <div class="eyebrow rv">Problemet</div>
+        <h2 class="h2 rv" style="color:var(--lt1)">Anbudet tar en hel dag.<br>Det vet du.</h2>
+        <p style="font-size:17px;color:var(--lt3);line-height:1.78;max-width:420px" class="rv">Varje förfrågningsunderlag startar samma stressiga process.</p>
+        <div class="pain-list">
+          <div class="pain-item rv">
+            <span class="pain-icon">📂</span>
+            <div><div class="pain-item-h">Du skriver om samma text igen och igen</div><div class="pain-item-p">Öppnar förra anbudets Word-fil. Byter kundnamn. Uppdaterar datum. Hoppas inget gammalt blivit kvar.</div></div>
+          </div>
+          <div class="pain-item rv d1">
+            <span class="pain-icon">📋</span>
+            <div><div class="pain-item-h">Du missar krav under tidspress</div><div class="pain-item-p">Underlaget är 40 sidor och du har tre dagar. Under stress missar du ett intyg. Anbudet återsänds.</div></div>
+          </div>
+          <div class="pain-item rv d2">
+            <span class="pain-icon">📉</span>
+            <div><div class="pain-item-h">Ditt anbud ser inte professionellt ut</div><div class="pain-item-p">Bravida har en hel bid-avdelning. Du har dig själv. Deras anbud vinner på presentation.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="rv d1">
+        <div>
+          <div style="border-radius:16px;overflow:hidden;box-shadow:0 20px 56px rgba(0,0,0,.14)">
+            <img src="https://cdn.midjourney.com/0f8177fd-5563-4a7d-8563-5cd57c3d74b0/0_3.png" alt="Förfrågningsunderlag på skrivbord" style="width:100%;display:block">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+            <div style="background:var(--white);border:1px solid var(--light-border);border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--lt4);margin-bottom:4px">Tid per anbud</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;color:var(--lt1);letter-spacing:-.03em">~11 tim</div>
+              <div style="font-size:12px;color:var(--lt4);margin-top:2px">Manuellt idag</div>
+            </div>
+            <div style="background:var(--amber-glow);border:1px solid var(--amber-border);border-radius:12px;padding:16px 20px">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);margin-bottom:4px">Per år · 4 anbud/mån</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;color:var(--amber);letter-spacing:-.03em">528 tim</div>
+              <div style="font-size:12px;color:var(--lt3);margin-top:2px">= 13 arbetsveckor</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SOLUTION – CINEMATIC ANIMATION ══ -->
+<style>
+#solution {
+  background: var(--dark);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.film-wrap {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Progress bar at top */
+.film-progress {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,.08);
+  z-index: 10;
+}
+.film-progress-fill {
+  height: 100%;
+  background: var(--amber);
+  width: 25%;
+  transition: width .4s ease;
+}
+
+/* Step slides */
+.film-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 40px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .5s ease, transform .5s ease;
+  pointer-events: none;
+}
+.film-slide.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  position: relative;
+}
+
+/* Step number */
+.film-step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.film-step-num::before,
+.film-step-num::after {
+  content: '';
+  width: 40px;
+  height: 1px;
+  background: rgba(200,150,10,.3);
+}
+
+/* Big icon */
+.film-icon {
+  font-size: 64px;
+  margin-bottom: 28px;
+  animation: film-icon-in .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes film-icon-in {
+  from { transform: scale(.6); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+/* Headline */
+.film-h {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 500;
+  letter-spacing: -.035em;
+  line-height: 1.1;
+  color: var(--dt1);
+  margin-bottom: 20px;
+  max-width: 700px;
+}
+
+/* Sub */
+.film-sub {
+  font-size: 18px;
+  color: var(--dt3);
+  line-height: 1.7;
+  max-width: 520px;
+  margin-bottom: 32px;
+}
+
+/* Time badge */
+.film-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--amber);
+  background: var(--amber-glow);
+  border: 1px solid var(--amber-border);
+  padding: 8px 18px;
+  border-radius: 24px;
+}
+
+/* Dot navigation */
+.film-dots {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+.film-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  cursor: pointer;
+  transition: all .25s;
+  border: none;
+}
+.film-dot.active {
+  background: var(--amber);
+  transform: scale(1.3);
+}
+
+/* Pause/play */
+.film-ctrl {
+  position: absolute;
+  bottom: 36px;
+  right: 40px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: var(--dt3);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  z-index: 10;
+}
+.film-ctrl:hover { background: rgba(255,255,255,.14); color: var(--dt1); }
+
+/* Ambient glow per slide */
+.film-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .07;
+  transition: all .8s ease;
+}
+
+/* CTA at end */
+.film-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 8px;
+}
+</style>
+
+<section id="solution">
+  <div class="film-wrap">
+    <!-- Progress bar -->
+    <div class="film-progress">
+      <div class="film-progress-fill" id="fprogress"></div>
+    </div>
+
+    <!-- Ambient background glow -->
+    <div class="film-glow" id="fglow" style="background:var(--amber);top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+
+    <!-- Slide 1 – Ladda upp -->
+    <div class="film-slide active" id="fs0">
+      <div class="film-step-num">Steg 1 av 4</div>
+      <div class="film-icon">📄</div>
+      <h2 class="film-h">Ladda upp ditt<br>förfrågningsunderlag</h2>
+      <p class="film-sub">Dra och släpp PDF:en i SveBud. Det är allt du behöver göra. AI tar det därifrån.</p>
+      <div class="film-time">⚡ Klart på 30 sekunder</div>
+    </div>
+
+    <!-- Slide 2 – Analys -->
+    <div class="film-slide" id="fs1">
+      <div class="film-step-num">Steg 2 av 4</div>
+      <div class="film-icon">🟢</div>
+      <h2 class="film-h">AI analyserar och<br>ger dig ett <em style="font-style:italic;color:var(--amber)">Go/No-Go</em></h2>
+      <p class="film-sub">Scope, deadlines och alla krav extraheras automatiskt och matchas mot dina certifikat.</p>
+      <div class="film-time">⚡ Klart på 5 minuter</div>
+    </div>
+
+    <!-- Slide 3 – Kalkyl -->
+    <div class="film-slide" id="fs2">
+      <div class="film-step-num">Steg 3 av 4</div>
+      <div class="film-icon">🧮</div>
+      <h2 class="film-h">AI föreslår kalkylen.<br>Du justerar.</h2>
+      <p class="film-sub">Alla moment föreslagna baserat på scopet. Ändra timmar och material direkt i tabellen.</p>
+      <div class="film-time">⚡ Klart på 20 minuter</div>
+    </div>
+
+    <!-- Slide 4 – Exportera -->
+    <div class="film-slide" id="fs3">
+      <div class="film-step-num">Steg 4 av 4</div>
+      <div class="film-icon">📨</div>
+      <h2 class="film-h">Komplett anbud.<br>Redo att skicka.</h2>
+      <p class="film-sub">7 sektioner, din logotyp och alla certifikat bifogade. Exportera som PDF på ett klick.</p>
+      <div class="film-time">⚡ Totalt: under 45 minuter</div>
+      <div class="film-cta" style="margin-top:32px">
+        <a href="#pricing" class="btn-p">⚡ Testa gratis nu</a>
+      </div>
+    </div>
+
+    <!-- Dot navigation -->
+    <div class="film-dots">
+      <button class="film-dot active" onclick="goFilm(0)"></button>
+      <button class="film-dot" onclick="goFilm(1)"></button>
+      <button class="film-dot" onclick="goFilm(2)"></button>
+      <button class="film-dot" onclick="goFilm(3)"></button>
+    </div>
+
+    <!-- Pause button -->
+    <button class="film-ctrl" id="fctrl" onclick="toggleFilm()">⏸</button>
+  </div>
+</section>
+
+<!-- ══ COMBINED: COMPARISON + MINI FEATURES ══ -->
+<section id="compare" class="light-section">
+  <div class="wrap">
+    <div style="text-align:center;max-width:480px;margin:0 auto 48px" class="rv">
+      <div class="eyebrow" style="justify-content:center">Jämförelse</div>
+      <h2 class="h2" style="color:var(--lt1)">Samma anbud. Drastiskt olika tid.</h2>
+    </div>
+
+    <!-- Comparison columns -->
+    <div class="cmpgrid rv">
+      <div class="cmpcol">
+        <div class="cmphdr old-hdr"><div class="cmphdr-icon">✗</div><span class="cmphdr-lbl">Utan SveBud</span></div>
+        <div class="cmpbody">
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Läsa underlag manuellt<br><span>40 sidor PDF</span></div><div class="ctime bad">2–3 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kontrollera krav<br><span>Manuell checklista</span></div><div class="ctime bad">30 min</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kalkylera i Excel</div><div class="ctime bad">3–5 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Skriva anbud i Word</div><div class="ctime bad">2–3 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Samla certifikat & granska</div><div class="ctime bad">45 min</div></div>
+        </div>
+        <div class="cmpfoot"><span class="cfootle">Total tid</span><span class="cfoottv bad">~11 tim</span></div>
+      </div>
+
+      <div class="vsdiv"><div class="vsline"></div><div class="vscircle">VS</div><div class="vsline"></div></div>
+
+      <div class="cmpcol after">
+        <div class="cmphdr new-hdr"><div class="cmphdr-icon">✓</div><span class="cmphdr-lbl">Med SveBud</span></div>
+        <div class="cmpbody">
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI läser och extraherar</strong><br><span>Strukturerad sammanfattning</span></div><div class="ctime good">60 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Automatisk Go/No-Go</strong><br><span>Matchas mot din profil</span></div><div class="ctime good">10 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI föreslår kalkyl</strong><br><span>Du justerar</span></div><div class="ctime good">20 min</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI skriver komplett anbud</strong></div><div class="ctime good">2 min</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Certifikat bifogas automatiskt</strong></div><div class="ctime good">0 sek</div></div>
+        </div>
+        <div class="cmpfoot"><span class="cfootle">Total tid</span><span class="cfoottv good">~45 min</span></div>
+      </div>
+    </div>
+
+    <!-- Mini mockups below -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px" class="rv">
+      <!-- Go/No-Go mockup -->
+      <div class="featscr">
+        <div class="fsbar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><span class="fslbl">Go/No-Go · BRF Kungsholmen</span></div>
+        <div class="fsbody">
+          <div style="background:var(--gbg);border:1px solid rgba(42,122,74,.25);border-radius:10px;padding:16px 18px;margin-bottom:12px">
+            <div style="font-size:19px;font-weight:700;color:var(--green);margin-bottom:3px">🟢 GO – Lämna anbud</div>
+            <div style="font-size:12px;color:var(--dt3)">Alla krav uppfyllda</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dt2);padding:9px 13px;background:var(--dark2);border-radius:7px"><span style="color:var(--green);font-weight:700">✓</span> Auktorisation EL klass 1</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dt2);padding:9px 13px;background:var(--dark2);border-radius:7px"><span style="color:var(--green);font-weight:700">✓</span> Ansvarsförsäkring 10 MSEK</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--amber);padding:9px 13px;background:var(--amber-glow);border:1px solid var(--amber-border);border-radius:7px"><span>⚠</span> Kapacitet maj – kontrollera</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Editor mockup -->
+      <div class="featscr">
+        <div class="fsbar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><span class="fslbl">Anbudseditor · Siemens Sverige</span></div>
+        <div class="fsbody">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span style="font-size:13px;font-weight:600;color:var(--dt2)">7 sektioner genererade</span>
+            <span style="font-size:11px;background:var(--gbg);color:var(--green);padding:3px 10px;border-radius:20px;font-weight:600">✓ Redo</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;background:var(--dark2);border-radius:7px;font-size:13px;color:var(--dt2)"><span>Företagspresentation</span><span style="color:var(--green)">✓</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;background:var(--dark2);border-radius:7px;font-size:13px;color:var(--dt2)"><span>Teknisk lösning & metod</span><span style="color:var(--green)">✓</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;background:var(--dark2);border-radius:7px;font-size:13px;color:var(--dt2)"><span>Prisspecifikation</span><span style="color:var(--green)">✓</span></div>
+          </div>
+          <button style="width:100%;background:var(--amber);color:var(--dark);border:none;border-radius:7px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📄 Exportera PDF</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══ PROOF – Svensk, utan påhittade citat (cream) ══ -->
+<section id="proof" class="light-section">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:44px" class="rv">
+      <div class="eyebrow" style="justify-content:center">Varför det fungerar</div>
+      <h2 class="h2" style="color:var(--lt1)">Byggt på verkliga insikter<br>från branschen.</h2>
+    </div>
+
+    <!-- Three proof cards -->
+    <div class="proof-grid">
+
+      <!-- Branschfakta -->
+      <div class="proof-card rv">
+        <div class="pc-icon">📊</div>
+        <div class="pc-type">Branschdata</div>
+        <h3 class="pc-h">13 arbetsveckor per år på anbudsadministration</h3>
+        <p class="pc-body">En elfirma med 8 montörer lämnar i snitt 4 B2B-anbud per månad. Varje anbud tar 11 timmar manuellt. Det är 528 timmar per år – tid som inte går till installation, kunder eller tillväxt.</p>
+        <div class="pc-source">Källa: Installatörsföretagen branschrapport · SCB företagsstatistik</div>
+      </div>
+
+      <!-- Grundarens röst -->
+      <div class="founder-card rv d1">
+        <div class="pc-type">Från grundaren</div>
+        <p class="founder-quote">Jag var projektledare på en elfirma i fem år. Vi förlorade uppdrag till Bravida – inte för att deras jobb var bättre, utan för att deras anbud såg bättre ut. Det är det vi fixar.</p>
+        <div class="founder-auth">
+          <div class="founder-av">D</div>
+          <div>
+            <div class="founder-name">Dagnielo Sanchez</div>
+            <div class="founder-role">Grundare · SveBud · Stockholm</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Beta-program -->
+      <div class="beta-card rv d2">
+        <div class="beta-type">🔥 Betaprogram – begränsat antal platser</div>
+        <h3 class="beta-h" style="color:var(--dt1)">Testa gratis i 3 månader</h3>
+        <p class="beta-body">Vi söker 10 elfirmor som vill vara med och forma produkten. Du får full Pro-access gratis mot ett 30-minuters feedbacksamtal per månad.</p>
+        <div class="spots">
+          <div class="spot"></div>
+          <div class="spot"></div>
+          <div class="spot"></div>
+          <div class="spot"></div>
+          <div class="spot"></div>
+          <div class="spot taken"></div>
+          <div class="spot taken"></div>
+          <div class="spot taken"></div>
+          <div class="spot taken"></div>
+          <div class="spot taken"></div>
+          <span class="spots-lbl">5 av 10 platser kvar</span>
+        </div>
+        <a href="#pricing" class="btn-p" style="width:100%;justify-content:center;font-size:14px">Ansök om betaplats →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING (white) ══ -->
+<section id="pricing" class="light-section">
+  <div class="wrap">
+    <div style="text-align:center;max-width:480px;margin:0 auto 36px" class="rv">
+      <div class="eyebrow" style="justify-content:center">Priser</div>
+      <h2 class="h2" style="color:var(--lt1)">Transparent.<br>Ingen bindningstid.</h2>
+      <p style="font-size:17px;color:var(--lt3);line-height:1.78">Börja gratis. Uppgradera när du vill.</p>
+    </div>
+    <div class="ptoggle rv">
+      <span class="tgl-l on" id="ml">Månadsvis</span>
+      <div class="tgl" id="tgl" onclick="tbill()"><div class="tglk"></div></div>
+      <span class="tgl-l" id="al">Årsvis</span>
+      <span class="savepill" id="sp" style="display:none">Spara 20%</span>
+    </div>
+    <div class="pcards rv">
+      <div class="pcard">
+        <div class="ptier">Bas</div>
+        <div class="pprice" id="pb">490 <sub>kr/mån</sub></div>
+        <div class="pdesc">För ensamföretagare<br><strong style="color:var(--green)">14 dagars gratis trial – inget kreditkort</strong></div>
+        <ul class="plist"><li>5 anbud per månad</li><li>1 användare</li><li>AI-analys & Go/No-Go</li><li>AI-anbudsgenerering</li><li>PDF-export med logotyp</li><li class="no">Team-access</li><li class="no">Mallar per uppdragstyp</li></ul>
+        <button class="pbtn sec" onclick="startCheckout('bas')">Starta gratis trial</button>
+      </div>
+      <div class="pcard hot">
+        <div class="pbadge">⭐ Mest populär</div>
+        <div class="ptier">Pro</div>
+        <div class="pprice" id="pp">1 290 <sub>kr/mån</sub></div>
+        <div class="pdesc">För firmor med 5–15 montörer</div>
+        <ul class="plist"><li>Obegränsade anbud</li><li>Upp till 3 användare</li><li>Allt i Bas</li><li>Mallar per uppdragstyp</li><li>Win/Loss-statistik</li><li>Versionhantering</li><li>Support inom 24h</li></ul>
+        <button class="pbtn pri" onclick="startCheckout('pro')">Starta Pro-trial</button>
+      </div>
+      <div class="pcard">
+        <div class="ptier">Business</div>
+        <div class="pprice" id="pbu">2 990 <sub>kr/mån</sub></div>
+        <div class="pdesc">För firmor med 15–50 montörer</div>
+        <ul class="plist"><li>Obegränsade anbud</li><li>Upp till 10 användare</li><li>Allt i Pro</li><li>Roller & behörigheter</li><li>Custom anbudslayout</li><li>Onboarding-samtal ingår</li><li>Support inom 4h</li></ul>
+        <button class="pbtn sec" onclick="startCheckout('business')">Starta Business-trial</button>
+      </div>
+    </div>
+    <div class="pnote rv"><strong>14 dagar gratis</strong> på Bas · Inget kreditkort · Avbryt när som helst · Moms tillkommer</div>
+  </div>
+</section>
+
+<!-- ══ FAQ (cream) ══ -->
+<section id="faq" class="light-section">
+  <div class="wrap">
+    <div class="faqwrap">
+      <div style="text-align:center;margin-bottom:44px" class="rv">
+        <div class="eyebrow" style="justify-content:center">FAQ</div>
+        <h2 class="h2" style="color:var(--lt1)">Vanliga frågor</h2>
+      </div>
+      <div class="rv">
+        <div class="fi"><div class="fq" onclick="tff(this)">Hur bra är AI:ns anbud egentligen?<span class="fqi">+</span></div><div class="fa">AI:n genererar ett komplett utkast som du alltid granskar och kan justera. Beta-användare rapporterar att 80–90% kan användas direkt. Du är alltid i kontroll – AI:n är din assistent, inte din ersättare.</div></div>
+        <div class="fi"><div class="fq" onclick="tff(this)">Är mina dokument säkra?<span class="fqi">+</span></div><div class="fa">Alla data lagras krypterat på EU-servrar. Vi delar aldrig dina dokument med tredje part och tränar inte AI-modeller på ditt innehåll. GDPR-kompatibelt från dag ett.</div></div>
+        <div class="fi"><div class="fq" onclick="tff(this)">Fungerar det för alla typer av el-uppdrag?<span class="fqi">+</span></div><div class="fa">Optimerat för B2B-förfrågningar från fastighetsbolag, BRF:er och industri. Installationsuppdrag, stamrenoveringar, laddinfrastruktur, servicekontrakt och totalentreprenader stöds.</div></div>
+        <div class="fi"><div class="fq" onclick="tff(this)">Hur lång tid tar det att komma igång?<span class="fqi">+</span></div><div class="fa">5 minuter för grundregistrering. Ditt första anbud-utkast är klart inom 20 minuter från första uppladdningen.</div></div>
+        <div class="fi"><div class="fq" onclick="tff(this)">Kan jag avbryta när som helst?<span class="fqi">+</span></div><div class="fa">Ingen bindningstid. Avsluta direkt via Inställningar → Fakturering. Du behåller tillgång till dina sparade anbud.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FINAL CTA (dark) ══ -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <div class="wrap">
+    <div class="cta-inner rv">
+      <div class="cta-divider"><span class="cta-eye">Redo att börja?</span></div>
+      <h2 class="h2" style="color:var(--dt1);margin-bottom:16px">Lämna ditt nästa anbud<br>på <em style="font-style:italic;color:var(--amber)">20 minuter.</em></h2>
+      <p class="cta-sub">Testa SveBud gratis i 14 dagar. Inget kreditkort. Fungerar direkt.</p>
+      <div class="cta-btns">
+        <a href="#pricing" class="btn-p lg" onclick="event.preventDefault();startCheckout('pro')">⚡ Starta gratis trial</a>
+        <a href="#solution" class="btn-s-dark">Se hur det fungerar →</a>
+      </div>
+      <div class="cta-risk">
+        <span class="ctar">14 dagars gratis trial</span>
+        <span class="ctar">Inget kreditkort</span>
+        <span class="ctar">Avbryt när som helst</span>
+        <span class="ctar">GDPR-säkert</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="ftgrid">
+      <div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+          <div style="width:28px;height:28px;background:var(--amber);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px">⚡</div>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:-.01em;color:var(--dt1)">Sve<span style="color:var(--amber)">Bud</span></span>
+        </div>
+        <p style="font-size:13px;color:var(--dt4);margin-top:10px;max-width:240px;line-height:1.7">AI-driven anbudshantering för svenska elfirmor. Spara tid, vinn fler uppdrag.</p>
+      </div>
+      <div><div class="fct">Produkt</div><ul class="flinks"><li><a href="#">Funktioner</a></li><li><a href="#">Priser</a></li><li><a href="#">Uppdateringar</a></li></ul></div>
+      <div><div class="fct">Företaget</div><ul class="flinks"><li><a href="#">Om oss</a></li><li><a href="#">Blogg</a></li><li><a href="#">Kontakt</a></li></ul></div>
+      <div><div class="fct">Juridiskt</div><ul class="flinks"><li><a href="/integritetspolicy">Integritetspolicy</a></li><li><a href="/villkor">Användarvillkor</a></li><li><a href="/cookiepolicy">Cookiepolicy</a></li></ul></div>
+    </div>
+    <div class="ftbot"><span>© 2026 SveBud AB · Stockholm, Sverige</span><span>Byggt för svenska elfirmor</span></div>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('up')})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+/* ── FILM ANIMATION ── */
+let fCurrent = 0;
+const fTotal = 4;
+let fTimer = null;
+let fPaused = false;
+const fDuration = 3000;
+
+const glowColors = [
+  'rgba(200,150,10,1)',
+  'rgba(42,122,74,1)',
+  'rgba(200,150,10,1)',
+  'rgba(42,90,138,1)'
+];
+
+function goFilm(i) {
+  document.getElementById('fs' + fCurrent).classList.remove('active');
+  document.querySelectorAll('.film-dot')[fCurrent].classList.remove('active');
+  fCurrent = i;
+  document.getElementById('fs' + fCurrent).classList.add('active');
+  document.querySelectorAll('.film-dot')[fCurrent].classList.add('active');
+  document.getElementById('fprogress').style.width = ((fCurrent + 1) / fTotal * 100) + '%';
+  document.getElementById('fglow').style.background = glowColors[fCurrent];
+  if (!fPaused) resetFilmTimer();
+}
+
+function nextFilm() {
+  goFilm((fCurrent + 1) % fTotal);
+}
+
+function resetFilmTimer() {
+  clearInterval(fTimer);
+  fTimer = setInterval(nextFilm, fDuration);
+}
+
+function toggleFilm() {
+  fPaused = !fPaused;
+  document.getElementById('fctrl').textContent = fPaused ? '▶' : '⏸';
+  if (fPaused) clearInterval(fTimer);
+  else resetFilmTimer();
+}
+
+/* Start when section scrolls into view */
+const filmObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting && !fPaused) resetFilmTimer();
+    else clearInterval(fTimer);
+  });
+}, { threshold: 0.3 });
+filmObs.observe(document.getElementById('solution'));
+
+function tff(el){const item=el.closest('.fi');const open=item.classList.contains('open');document.querySelectorAll('.fi').forEach(f=>f.classList.remove('open'));if(!open)item.classList.add('open')}
+
+let ann=false;
+const pr={b:['490','392'],p:['1 290','1 032'],bu:['2 990','2 392']};
+function tbill(){ann=!ann;if(typeof isAnnual!=='undefined')isAnnual=ann;document.getElementById('tgl').classList.toggle('on',ann);document.getElementById('al').classList.toggle('on',ann);document.getElementById('ml').classList.toggle('on',!ann);document.getElementById('sp').style.display=ann?'inline':'none';const s=ann?'<sub>kr/mån · årsvis</sub>':'<sub>kr/mån</sub>';document.getElementById('pb').innerHTML=pr.b[ann?1:0]+' '+s;document.getElementById('pp').innerHTML=pr.p[ann?1:0]+' '+s;document.getElementById('pbu').innerHTML=pr.bu[ann?1:0]+' '+s;}
+
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}})});
+</script>
+<script>
+// Stripe Price IDs
+const priceMap = {
+  bas: {
+    monthly: 'price_1TI5P9G2OHP36TtOP4dlBTeJ',
+    yearly: 'price_1TI5WKG2OHP36TtOqHLz1oC2'
+  },
+  pro: {
+    monthly: 'price_1TI5bvG2OHP36TtOlsQtNv2v',
+    yearly: 'price_1TI5cLG2OHP36TtOy8I73duJ'
+  },
+  business: {
+    monthly: 'price_1TI5dZG2OHP36TtOy8qsLhPY',
+    yearly: 'price_1TI5dzG2OHP36TtOGEMC7MAN'
+  }
+};
+
+let isAnnual = false;
+
+async function startCheckout(tier) {
+  const period = isAnnual ? 'yearly' : 'monthly';
+  try {
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        priceId: priceMap[tier][period],
+        tier: tier
+      })
+    });
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else if (data.fel === 'Ej inloggad') {
+      window.location.href = '/login';
+    } else {
+      alert('Fel vid betalning. Försök igen.');
+    }
+  } catch (error) {
+    window.location.href = '/login';
+  }
+}
+</script>
+<script>
+(function() {
+  var hasSession = document.cookie.split(';').some(function(c) {
+    return c.trim().indexOf('sb-') === 0 && c.indexOf('auth-token') !== -1;
+  });
+  if (hasSession) {
+    var btn = document.getElementById('auth-btn');
+    if (btn) { btn.href = '/dashboard'; btn.textContent = 'Inloggad'; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.7'; }
+    var cta = document.getElementById('cta-btn');
+    if (cta) { cta.href = '/dashboard'; cta.textContent = 'Dashboard ⚡'; }
+  }
+})();
+</script>
+</body>
+</html>

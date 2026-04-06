@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* SveBud Design System */
+  --yellow: #F5C400;
+  --yellow-dim: #C9A000;
+  --yellow-glow: rgba(245,196,0,0.15);
+  --navy: #0E1B2E;
+  --navy-mid: #172233;
+  --navy-light: #1E2F45;
+  --navy-border: #243650;
+  --steel: #2E4060;
+  --slate: #4A6080;
+  --muted-custom: #8099B5;
+  --soft: #B8CCDE;
+  --white: #F4F8FC;
+  --green: #00C67A;
+  --green-bg: rgba(0,198,122,0.1);
+  --red: #FF4D4D;
+  --red-bg: rgba(255,77,77,0.1);
+  --orange: #FF8C42;
+  --orange-bg: rgba(255,140,66,0.1);
+  --blue-accent: #4A9EFF;
+
+  /* shadcn mappings */
+  --background: #0E1B2E;
+  --foreground: #F4F8FC;
+  --card: #172233;
+  --card-foreground: #F4F8FC;
+  --popover: #172233;
+  --popover-foreground: #F4F8FC;
+  --primary: #F5C400;
+  --primary-foreground: #0E1B2E;
+  --secondary: #1E2F45;
+  --secondary-foreground: #F4F8FC;
+  --muted: #1E2F45;
+  --muted-foreground: #8099B5;
+  --accent: #1E2F45;
+  --accent-foreground: #F4F8FC;
+  --destructive: #FF4D4D;
+  --border: #243650;
+  --input: #243650;
+  --ring: #F5C400;
+  --chart-1: #F5C400;
+  --chart-2: #00C67A;
+  --chart-3: #4A9EFF;
+  --chart-4: #FF8C42;
+  --chart-5: #FF4D4D;
+  --radius: 0.625rem;
+  --sidebar: #172233;
+  --sidebar-foreground: #F4F8FC;
+  --sidebar-primary: #F5C400;
+  --sidebar-primary-foreground: #0E1B2E;
+  --sidebar-accent: #1E2F45;
+  --sidebar-accent-foreground: #F4F8FC;
+  --sidebar-border: #243650;
+  --sidebar-ring: #F5C400;
+}
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
