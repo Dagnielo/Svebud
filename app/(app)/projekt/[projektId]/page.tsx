@@ -89,7 +89,8 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [kvalitet, setKvalitet] = useState<KvalitetsResultat | null>(null)
   const [kvalitetLaddar, setKvalitetLaddar] = useState(false)
   const [expanderadVersion, setExpanderadVersion] = useState<number | null>(null)
-  const [förhandsgranskning, setFörhandsgranskning] = useState(false)
+  const [förhandsgranskning, setFörhandsgranskning] = useState(true)
+  const [utkastÖppet, setUtkastÖppet] = useState(false)
   const [aktivTab, setAktivTab] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -565,8 +566,8 @@ hr{border:none;border-top:1pt solid #e0e0e0}
         <div className="flex items-stretch">
           {stegLabels.map((label, i) => {
             const nr = i + 1
-            const done = aktivtSteg > nr
-            const active = aktivtSteg === nr
+            const done = aktivtSteg > nr || (nr === 3 && aktivtSteg === 3 && !!utkast)
+            const active = aktivtSteg === nr && !done
             const isLast = i === stegLabels.length - 1
             const tabMap = ['dokument', 'analys', 'anbud']
             return (
@@ -594,17 +595,37 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               </div>
             )
           })}
+          {/* Föranmälan-flik — visas bara vid vunnet anbud */}
+          {projekt.tilldelning_status === 'vunnet' && (
+            <div className="flex items-center" style={{ paddingLeft: 16, marginLeft: 16, borderLeft: '2px solid var(--steel)' }}>
+              <button onClick={() => setAktivTab('foranmalan')} className="flex flex-col items-center" style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                <div className="flex items-center justify-center" style={{
+                  width: 40, height: 40, borderRadius: '50%',
+                  border: `2px solid ${aktivTab === 'foranmalan' ? 'var(--blue-accent, #4A9EFF)' : 'var(--steel)'}`,
+                  background: aktivTab === 'foranmalan' ? 'rgba(74,158,255,0.15)' : 'var(--navy-mid)',
+                  color: aktivTab === 'foranmalan' ? '#4A9EFF' : 'var(--muted-custom)',
+                  fontSize: 16, transition: 'all 0.2s',
+                }}>
+                  ⚡
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: aktivTab === 'foranmalan' ? '#4A9EFF' : 'var(--muted-custom)' }}>
+                  Föranmälan
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Instruktionsruta — baseras på vilken flik man tittar på */}
         <div style={{ marginTop: 16, padding: '14px 18px', borderRadius: 10, background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)' }}>
           <div className="flex items-center gap-3">
-            <span style={{ fontSize: 18 }}>{aktivTab === 'dokument' ? '📎' : aktivTab === 'analys' ? '📊' : '📋'}</span>
+            <span style={{ fontSize: 18 }}>{aktivTab === 'dokument' ? '📎' : aktivTab === 'analys' ? '📊' : aktivTab === 'foranmalan' ? '⚡' : '📋'}</span>
             <div className="flex-1">
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
                 {aktivTab === 'dokument' && 'Steg 1: Ladda upp förfrågningsunderlaget'}
                 {aktivTab === 'analys' && 'Steg 2: Analys, kalkyl och bedömning'}
                 {aktivTab === 'anbud' && 'Steg 3: Granska anbudsutkast, justera och skicka'}
+                {aktivTab === 'foranmalan' && 'Föranmälan — spåra nätbolagets handläggning'}
               </div>
             </div>
             {aktivTab === 'dokument' && anbud.length > 0 && (
@@ -612,62 +633,19 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                 {analysLaddar ? '⏳ Analyserar...' : '🔍 Analysera förfrågan →'}
               </Button>
             )}
+            {aktivTab === 'analys' && projekt.jämförelse_status === 'klar' && (
+              <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
+                {anbudLaddar ? '⏳ Genererar...' : 'Generera anbud →'}
+              </Button>
+            )}
           </div>
 
-          {/* Checklista — vad kan man göra i detta steg */}
-          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(245,196,0,0.15)' }}>
-            {aktivTab === 'dokument' && (
-              <div className="grid grid-cols-2 gap-x-8 gap-y-1" style={{ fontSize: 12 }}>
-                <div style={{ color: anbud.length > 0 ? 'var(--green)' : 'var(--muted-custom)' }}>
-                  {anbud.length > 0 ? '✅' : '○'} Ladda upp dokument (PDF, Word, Excel)
-                </div>
-                <div style={{ color: 'var(--muted-custom)' }}>
-                  ○ Eller klistra in text/mail
-                </div>
-                <div style={{ color: projekt.jämförelse_status === 'klar' ? 'var(--green)' : 'var(--muted-custom)' }}>
-                  {projekt.jämförelse_status === 'klar' ? '✅' : '○'} Analysera förfrågan
-                </div>
-                <div style={{ color: 'var(--slate)', fontSize: 11 }}>
-                  AI läser dokumenten och matchar mot er profil
-                </div>
-              </div>
-            )}
-            {aktivTab === 'analys' && (
-              <div className="grid grid-cols-2 gap-x-8 gap-y-1" style={{ fontSize: 12 }}>
-                <div style={{ color: 'var(--green)' }}>
-                  ✅ Granska AI:ns analys och bedömning
-                </div>
-                <div style={{ color: snabbMoment && snabbMoment.length > 0 ? 'var(--green)' : 'var(--muted-custom)' }}>
-                  {snabbMoment && snabbMoment.length > 0 ? '✅' : '○'} Justera moment, timmar och materialpriser
-                </div>
-                <div style={{ color: rotData.rotBelopp > 0 ? 'var(--green)' : 'var(--muted-custom)' }}>
-                  {rotData.rotBelopp > 0 ? '✅' : '○'} Aktivera ROT/Grön teknik om tillämpligt
-                </div>
-                <div style={{ color: utkast ? 'var(--green)' : 'var(--muted-custom)' }}>
-                  {utkast ? '✅' : '○'} Generera anbud
-                </div>
-              </div>
-            )}
-            {aktivTab === 'anbud' && (
-              <div className="grid grid-cols-2 gap-x-8 gap-y-1" style={{ fontSize: 12 }}>
-                <div style={{ color: utkast ? 'var(--green)' : 'var(--muted-custom)' }}>
-                  {utkast ? '✅' : '○'} Granska och redigera anbudsutkastet
-                </div>
-                <div style={{ color: 'var(--muted-custom)' }}>
-                  ○ Förhandsgranska det färdiga dokumentet
-                </div>
-                <div style={{ color: 'var(--muted-custom)' }}>
-                  ○ Infoga kontaktperson
-                </div>
-                <div style={{ color: 'var(--muted-custom)' }}>
-                  ○ Förbered mail, ladda ner PDF och skicka
-                </div>
-                <div style={{ color: (projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') ? 'var(--green)' : 'var(--muted-custom)' }}>
-                  {(projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') ? '✅' : '○'} Markera som skickat
-                </div>
-              </div>
-            )}
-          </div>
+          <p style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(245,196,0,0.15)', fontSize: 12, color: 'var(--soft)' }}>
+            {aktivTab === 'dokument' && 'Ladda upp PDF, Word eller Excel — eller klistra in text. AI:n analyserar och matchar mot er profil.'}
+            {aktivTab === 'analys' && 'Granska AI:ns analys, justera priser och moment, aktivera avdrag och generera anbudsutkast.'}
+            {aktivTab === 'anbud' && 'Förhandsgranska, redigera, ladda ner PDF och markera som skickat.'}
+            {aktivTab === 'foranmalan' && 'Följ upp föranmälan, installationsmedgivande och färdiganmälan mot nätbolaget.'}
+          </p>
         </div>
       </div>
 
@@ -679,6 +657,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               <TabsTrigger value="dokument">Dokument</TabsTrigger>
               <TabsTrigger value="analys">Analys</TabsTrigger>
               <TabsTrigger value="anbud">Anbud</TabsTrigger>
+              <TabsTrigger value="foranmalan">Föranmälan</TabsTrigger>
             </TabsList>
 
             {/* TAB 1: Dokument */}
@@ -872,35 +851,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               ) : (
                 <GranskningSida projektId={projektId} externtScanning={analysLaddar} />
               )}
-              {projekt.jämförelse_status === 'klar' && (
+              {projekt.jämförelse_status === 'klar' && anbudLaddar && (
                 <div style={{ marginTop: 16 }}>
-                  {anbudLaddar ? (
-                    <GenererarVy steg={genSteg} />
-                  ) : (
-                    <div
-                      style={{
-                        background: 'var(--navy-mid)',
-                        border: '1px solid var(--navy-border)',
-                        borderRadius: 12,
-                        padding: '28px 24px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div style={{ fontSize: 28, marginBottom: 8 }}>{utkast ? '🔄' : '📋'}</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
-                        {utkast ? 'Generera nytt anbud' : 'Redo att generera anbud'}
-                      </div>
-                      <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 16, maxWidth: 440, margin: '0 auto 16px' }}>
-                        {utkast
-                          ? 'Om du justerat priser eller lagt till moment kan du generera ett nytt anbudsutkast. Det ersätter det nuvarande.'
-                          : 'AI:n skapar ett komplett anbudsutkast baserat på analysen och er företagsprofil. Du kan redigera utkastet innan du skickar.'}
-                      </p>
-
-                      <Button onClick={körAnbudsGenerering} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, fontWeight: 700, padding: '12px 32px' }}>
-                        {utkast ? '🔄 Generera nytt anbud →' : 'Generera anbudsutkast →'}
-                      </Button>
-                    </div>
-                  )}
+                  <GenererarVy steg={genSteg} />
                 </div>
               )}
             </TabsContent>
@@ -984,78 +937,120 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     </div>
                   )}
 
-                  {/* Redigerbart utkast */}
+                  {/* Anbudsutkast — fällbar rullgardin */}
                   <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
-                    <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
-                      <span style={{ fontSize: 14, fontWeight: 700 }}>📋 Anbudsutkast (redigerbart)</span>
-                      <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setUtkastÖppet(!utkastÖppet)}
+                      className="flex items-center justify-between w-full"
+                      style={{ padding: '14px 18px', background: 'none', border: 'none', borderBottom: utkastÖppet ? '1px solid var(--navy-border)' : 'none', cursor: 'pointer' }}
+                    >
+                      <div>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--white)' }}>📋 Anbudsutkast</span>
+                        <span style={{ fontSize: 11, color: 'var(--muted-custom)', marginLeft: 8 }}>Genererat från din analys i steg 2 — öppna för att granska eller redigera</span>
+                      </div>
+                      <div className="flex items-center gap-3">
                         {sparar && (
                           <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>Sparar...</span>
                         )}
-                        <Button
-                          onClick={() => setFörhandsgranskning(!förhandsgranskning)}
-                          variant="outline"
-                          style={{
-                            fontSize: 12,
-                            borderColor: förhandsgranskning ? 'var(--yellow)' : 'var(--navy-border)',
-                            color: förhandsgranskning ? 'var(--yellow)' : 'var(--soft)',
-                            background: förhandsgranskning ? 'var(--yellow-glow)' : 'transparent',
-                          }}
-                        >
-                          {förhandsgranskning ? '✏️ Redigera' : '👁 Förhandsgranska'}
-                        </Button>
-                        <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📋 Kopiera text</Button>
-                        <Button onClick={körGranskning} disabled={kvalitetLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>
-                          {kvalitetLaddar ? '⏳ Granskar...' : '🔍 Granska'}
-                        </Button>
-                        <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--yellow)', color: 'var(--yellow)' }}>
-                          🔄 Generera nytt anbud
-                        </Button>
                         {projekt.uppdaterad && (
-                          <span style={{ fontSize: 10, color: 'var(--slate)', alignSelf: 'center' }}>
-                            Senast genererat: {new Date(projekt.uppdaterad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })} kl {new Date(projekt.uppdaterad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                          <span style={{ fontSize: 10, color: 'var(--slate)' }}>
+                            Genererat {new Date(projekt.uppdaterad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })} kl {new Date(projekt.uppdaterad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
+                        <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                          {utkastÖppet ? '▲ Dölj' : '▼ Visa'}
+                        </span>
                       </div>
-                    </div>
-                    {förhandsgranskning ? (
+                    </button>
+                    {/* Förhandsvisning (ihopfällt) — visar toppen av anbudet med fade */}
+                    {!utkastÖppet && (
                       <div
-                        style={{ background: '#fff', minHeight: 500 }}
-                        ref={(el) => {
-                          if (!el) return
-                          el.innerHTML = `<style>${DOKUMENT_CSS}</style><div class="dokument">${byggKompletAnbudHtml()}</div>`
-                        }}
-                      />
-                    ) : (
-                      <textarea
-                        value={utkast}
-                        onChange={e => setUtkast(e.target.value)}
-                        style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--navy)', color: 'var(--soft)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
-                      />
+                        onClick={() => setUtkastÖppet(true)}
+                        style={{ position: 'relative', maxHeight: 150, overflow: 'hidden', cursor: 'pointer' }}
+                      >
+                        <div
+                          style={{ background: '#fff', padding: '12px 18px' }}
+                          ref={(el) => {
+                            if (!el) return
+                            el.innerHTML = `<style>${DOKUMENT_CSS}</style><div class="dokument">${byggKompletAnbudHtml()}</div>`
+                          }}
+                        />
+                        <div style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+                          background: 'linear-gradient(transparent, var(--navy-mid))',
+                          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12,
+                        }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--yellow)' }}>Klicka för att visa hela anbudet</span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Expanderat läge */}
+                    {utkastÖppet && (
+                      <>
+                        <div className="flex items-center gap-2" style={{ padding: '10px 18px', borderBottom: '1px solid var(--navy-border)' }}>
+                          <Button
+                            onClick={() => setFörhandsgranskning(!förhandsgranskning)}
+                            variant="outline"
+                            style={{
+                              fontSize: 12,
+                              borderColor: !förhandsgranskning ? 'var(--yellow)' : 'var(--navy-border)',
+                              color: !förhandsgranskning ? 'var(--yellow)' : 'var(--soft)',
+                              background: !förhandsgranskning ? 'var(--yellow-glow)' : 'transparent',
+                            }}
+                          >
+                            {förhandsgranskning ? '✏️ Redigera' : '👁 Förhandsgranska'}
+                          </Button>
+                          <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📋 Kopiera text</Button>
+                          <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--yellow)', color: 'var(--yellow)' }}>
+                            🔄 Generera nytt
+                          </Button>
+                        </div>
+                        {förhandsgranskning ? (
+                          <div
+                            style={{ background: '#fff', minHeight: 500 }}
+                            ref={(el) => {
+                              if (!el) return
+                              el.innerHTML = `<style>${DOKUMENT_CSS}</style><div class="dokument">${byggKompletAnbudHtml()}</div>`
+                            }}
+                          />
+                        ) : (
+                          <textarea
+                            value={utkast}
+                            onChange={e => setUtkast(e.target.value)}
+                            style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--navy)', color: 'var(--soft)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
 
-                  {/* Kalkyl-indikator — visar att kalkyl+ROT infogas automatiskt */}
+                  {/* Prisöversikt */}
                   {(() => {
                     const mom = kalkylMoment ?? snabbMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? []
                     if (mom.length === 0) return null
                     const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
                     const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
                     const totExkl = totArbete + totMaterial
-                    const totInkl = totExkl + Math.round(totExkl * 0.25)
+                    const moms = Math.round(totExkl * 0.25)
+                    const totInkl = totExkl + moms
+                    const harAvdrag = rotData.aktiverat && rotData.rotBelopp > 0
+                    const avdragNamn = harAvdrag
+                      ? ({ rot: 'ROT-avdrag (30%)', gronteknik_laddbox: 'Grön teknik — Laddbox (15%)', gronteknik_solceller: 'Grön teknik — Solceller (20%)', gronteknik_batteri: 'Grön teknik — Batteri (20%)' }[rotData.typ ?? 'rot'] ?? 'Skattereduktion')
+                      : null
                     return (
                       <div
                         style={{
                           background: 'var(--navy-mid)',
-                          border: '1px dashed rgba(245,196,0,0.4)',
-                          borderRadius: 10,
-                          padding: '14px 20px',
+                          border: '1px solid var(--navy-border)',
+                          borderRadius: 12,
+                          padding: '16px 20px',
                         }}
                       >
-                        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
-                            📊 Kalkyl infogas automatiskt
-                          </span>
+                        <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+                          <div>
+                            <span style={{ fontSize: 14, fontWeight: 700 }}>💰 Prisöversikt</span>
+                            <span style={{ fontSize: 11, color: 'var(--muted-custom)', marginLeft: 8 }}>Ingår i anbudsutkastet ovan</span>
+                          </div>
                           <button
                             onClick={() => setAktivTab('analys')}
                             style={{
@@ -1069,21 +1064,31 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                               cursor: 'pointer',
                             }}
                           >
-                            Justera i steg 2 →
+                            Ändra priser i steg 2 →
                           </button>
                         </div>
-                        <p style={{ fontSize: 12, color: 'var(--muted-custom)', margin: 0 }}>
-                          {mom.length} moment · {rotData.aktiverat && rotData.rotBelopp > 0 ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 6, fontSize: 13, color: 'var(--soft)' }}>
+                          <span>Arbete ({mom.length} moment)</span>
+                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace' }}>{totArbete.toLocaleString('sv-SE')} kr</span>
+                          <span>Material</span>
+                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace' }}>{totMaterial.toLocaleString('sv-SE')} kr</span>
+                          <span>Moms (25%)</span>
+                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace' }}>{moms.toLocaleString('sv-SE')} kr</span>
+                          <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--navy-border)', margin: '4px 0' }} />
+                          <span style={{ fontWeight: 700 }}>Totalt inkl. moms</span>
+                          <span style={{ textAlign: 'right', fontWeight: 700, fontFamily: 'var(--font-mono), monospace' }}>{totInkl.toLocaleString('sv-SE')} kr</span>
+                          {harAvdrag && (
                             <>
-                              <strong style={{ color: 'var(--yellow)' }}>Kunden betalar {(totInkl - rotData.rotBelopp).toLocaleString('sv-SE')} kr</strong>
-                              <span style={{ color: 'var(--green)' }}> · {
-                                { rot: 'ROT-avdrag', gronteknik_laddbox: 'Grön teknik — Laddbox', gronteknik_solceller: 'Grön teknik — Solceller', gronteknik_batteri: 'Grön teknik — Batteri' }[rotData.typ ?? 'rot'] ?? 'Skattereduktion'
-                              } –{rotData.rotBelopp.toLocaleString('sv-SE')} kr</span>
-                              <span> · Totalt {totInkl.toLocaleString('sv-SE')} kr</span>
+                              <span style={{ color: 'var(--green)' }}>{avdragNamn}</span>
+                              <span style={{ textAlign: 'right', color: 'var(--green)', fontFamily: 'var(--font-mono), monospace' }}>−{rotData.rotBelopp.toLocaleString('sv-SE')} kr</span>
+                              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--navy-border)', margin: '4px 0' }} />
+                              <span style={{ fontWeight: 700, color: 'var(--yellow)' }}>Kunden betalar</span>
+                              <span style={{ textAlign: 'right', fontWeight: 700, color: 'var(--yellow)', fontSize: 15, fontFamily: 'var(--font-mono), monospace' }}>{(totInkl - rotData.rotBelopp).toLocaleString('sv-SE')} kr</span>
                             </>
-                          ) : (
-                            <strong style={{ color: 'var(--white)' }}>Totalt inkl. moms {totInkl.toLocaleString('sv-SE')} kr</strong>
                           )}
+                        </div>
+                        <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10, marginBottom: 0 }}>
+                          Priserna läggs till automatiskt i anbudet vid export och förhandsgranskning.
                         </p>
                       </div>
                     )
@@ -1185,7 +1190,10 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       padding: '16px 20px',
                     }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>📄 Ladda ner anbudsutkast</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>📄 Ladda ner anbudsutkast</div>
+                    <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 0, marginBottom: 12 }}>
+                      Färdigt anbud med aktuella priser, kalkyl och eventuella avdrag. Redo att skickas till kund.
+                    </p>
                     <div className="flex gap-3">
                       <button
                         onClick={exporteraSomPdf}
@@ -1458,12 +1466,13 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                     </div>
                   )}
 
-                  {/* Föranmälan-tracker — visas efter tilldelning (vunnet) */}
-                  {projekt.tilldelning_status === 'vunnet' && (
-                    <ForanmalanTracker projektId={projektId} projektNamn={projekt.namn} />
-                  )}
                 </div>
               )}
+            </TabsContent>
+
+            {/* TAB 4: Föranmälan — visas bara vid vunnet anbud */}
+            <TabsContent value="foranmalan">
+              <ForanmalanTracker projektId={projektId} projektNamn={projekt.namn} />
             </TabsContent>
           </Tabs>
         </div>

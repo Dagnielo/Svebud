@@ -17,6 +17,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Skicka föranmälan via föranmälan.nu eller nätbolagets egna system. Ange effektbehov (kW) och antal laddplatser.",
       medgivande: "Nätbolaget bedömer nätkapacitet. Kan kräva nätförstärkning om kapacitet saknas.",
       fardig: "Skicka färdiganmälan efter installation. Driftsättning får EJ ske innan godkännande."
+    },
+    haRedo: {
+      fore: ["Installationsadress + fastighetsbeteckning", "Effektbehov per laddbox (kW)", "Antal laddplatser", "Huvudsäkringens storlek (A)", "Elinstallatörens behörighetsnummer"],
+      fardig: ["Foto på installationen", "Protokoll med mätarvärden"]
     }
   },
   {
@@ -31,6 +35,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Skicka föranmälan med systemstorlek (kWp), växelriktarmodell och installationsadress.",
       medgivande: "Nätbolaget kontrollerar att växelriktaren finns på Energiföretagens Rikta Rätt-lista.",
       fardig: "Efter färdiganmälan byter nätbolaget elmätare (räkna med 1–3 veckor extra)."
+    },
+    haRedo: {
+      fore: ["Installationsadress + fastighetsbeteckning", "Systemstorlek (kWp)", "Växelriktare — märke och modell", "Situationsplan / takritning", "Elinstallatörens behörighetsnummer", "ALP-blankett (vissa nätbolag)"],
+      fardig: ["Installationsprotokoll", "Foto på växelriktare och paneler"]
     }
   },
   {
@@ -45,6 +53,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Ange batterikapacitet (kWh), märkeffekt (kW) och om det kopplas till befintliga solceller.",
       medgivande: "Nätbolaget bekräftar att inmatningssäkringen täcker batteriets maxeffekt.",
       fardig: "Driftsätt aldrig innan godkännande — risk för skador på grannars utrustning."
+    },
+    haRedo: {
+      fore: ["Installationsadress", "Batterikapacitet (kWh)", "Märkeffekt in/ut (kW)", "Koppling till solceller (ja/nej + storlek)", "Elinstallatörens behörighetsnummer"],
+      fardig: ["Installationsprotokoll", "Serienummer på batteri"]
     }
   },
   {
@@ -59,6 +71,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Ange värmepumpens märkeffekt (kW). Kolla om huvudsäkringen behöver höjas.",
       medgivande: "Många nätbolag godkänner snabbt om säkringen räcker. Kontrollera lokala rutiner.",
       fardig: "Skicka färdiganmälan efter driftsättning."
+    },
+    haRedo: {
+      fore: ["Installationsadress", "Värmepumpens märkeffekt (kW)", "Märke och modell", "Nuvarande huvudsäkring (A)", "Elinstallatörens behörighetsnummer"],
+      fardig: ["Installationsprotokoll"]
     }
   },
   {
@@ -73,6 +89,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Ange aggregatets effekt (kW). Kontrollera om ny grupp behöver dras.",
       medgivande: "Standardärende om befintlig säkring räcker.",
       fardig: "Skicka färdiganmälan efter installation."
+    },
+    haRedo: {
+      fore: ["Installationsadress", "Aggregatets effekt (kW)", "Nuvarande huvudsäkring (A)", "Elinstallatörens behörighetsnummer"],
+      fardig: ["Installationsprotokoll"]
     }
   },
   {
@@ -87,6 +107,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Skicka in tidigt — nätbolaget kan behöva planera kabelgrävning och nätförstärkning.",
       medgivande: "Installationsmedgivande anger anslutningspunkt och tekniska krav.",
       fardig: "Nätbolaget monterar mätare vid färdiganmälan."
+    },
+    haRedo: {
+      fore: ["Fastighetsbeteckning + situationsplan", "Önskad säkringsstorlek (A)", "Beräknad effektförbrukning (kW)", "Bygglov / startbesked", "Önskad inkopplingsdatum", "Elinstallatörens behörighetsnummer"],
+      fardig: ["Installationsprotokoll", "Slutbesiktningsprotokoll"]
     }
   },
   {
@@ -101,6 +125,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Ange nuvarande säkring (A) och önskad säkring (A).",
       medgivande: "Nätbolaget kontrollerar om ledning och transformator klarar ökad belastning.",
       fardig: "Nätbolaget uppdaterar nätavgiften baserat på ny säkringsstorlek."
+    },
+    haRedo: {
+      fore: ["Installationsadress + fastighetsbeteckning", "Nuvarande säkring (A)", "Önskad säkring (A)", "Motivering (t.ex. laddbox, värmepump)", "Elinstallatörens behörighetsnummer"],
+      fardig: ["Protokoll efter inkoppling"]
     }
   },
   {
@@ -115,6 +143,10 @@ export const FORANMALAN_JOBBTYPER = [
       fore: "Ange antal lägenheter, nuvarande och planerad säkring per lägenhet.",
       medgivande: "Nätbolaget bedömer om matarledningen räcker för ny last.",
       fardig: "Etappvis driftsättning — skicka färdiganmälan per etapp om nätbolaget kräver det."
+    },
+    haRedo: {
+      fore: ["Antal lägenheter / elcentraler som berörs", "Nuvarande och planerad säkring per lägenhet (A)", "Matarledningens dimension", "Fastighetsbeteckning", "Elinstallatörens behörighetsnummer"],
+      fardig: ["Installationsprotokoll per etapp", "Mätarförteckning"]
     }
   },
   {

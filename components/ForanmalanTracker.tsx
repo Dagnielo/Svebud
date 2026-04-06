@@ -337,6 +337,11 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
               const aktiv = i === nuvarandeStegIdx
               const klickbar = klar || aktiv
               const vald = valtSteg === steg.id
+              // Hitta datum för detta steg från loggen
+              const stegLogg = fp.foranmalan_steg_logg
+                .filter(l => l.steg === steg.id)
+                .sort((a, b) => new Date(a.skapad).getTime() - new Date(b.skapad).getTime())
+              const stegDatum = stegLogg.length > 0 ? new Date(stegLogg[0].skapad) : null
               return (
                 <div
                   key={steg.id}
@@ -379,16 +384,15 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                   >
                     {steg.label}
                   </span>
-                  {aktiv && !vald && (
+                  {stegDatum && (klar || aktiv) ? (
+                    <span style={{ fontSize: 9, color: klar ? 'var(--green)' : 'var(--yellow)', marginTop: 2, fontWeight: 600, fontFamily: 'var(--font-mono), monospace' }}>
+                      {stegDatum.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  ) : aktiv && !stegDatum ? (
                     <span style={{ fontSize: 9, color: 'var(--yellow)', marginTop: 2, fontWeight: 600 }}>
                       ← Du är här
                     </span>
-                  )}
-                  {klar && !vald && (
-                    <span style={{ fontSize: 9, color: 'var(--slate)', marginTop: 2 }}>
-                      Klicka för detaljer
-                    </span>
-                  )}
+                  ) : null}
                 </div>
               )
             })}
@@ -491,6 +495,19 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
               <p style={{ color: 'var(--soft)', lineHeight: 1.7, margin: 0, fontSize: 13 }}>
                 {jobbInfo.stegOchHjälp[fp.nuvarande_steg as keyof typeof jobbInfo.stegOchHjälp] || ''}
               </p>
+              {/* Ha redo-lista */}
+              {(jobbInfo as unknown as { haRedo?: Record<string, string[]> }).haRedo?.[fp.nuvarande_steg as string] && (
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--navy-border)' }}>
+                  <div style={{ fontWeight: 700, color: 'var(--yellow)', fontSize: 11, marginBottom: 6 }}>
+                    Ha redo:
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: 'var(--soft)', lineHeight: 1.8 }}>
+                    {((jobbInfo as unknown as { haRedo: Record<string, string[]> }).haRedo[fp.nuvarande_steg as string]).map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {jobbInfo.regelLank && (
                 <a
                   href={jobbInfo.regelLank}

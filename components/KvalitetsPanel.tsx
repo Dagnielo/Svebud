@@ -47,7 +47,28 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar 
   const [expanderad, setExpanderad] = useState(true)
 
   if (!resultat && !laddar) {
-    return null
+    return (
+      <div
+        style={{
+          background: 'var(--navy-mid)',
+          border: '1px solid var(--navy-border)',
+          borderRadius: 12,
+          padding: '16px 20px',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700 }}>🔍 Kvalitetsgranskning</div>
+            <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2, marginBottom: 0 }}>
+              Låt AI:n granska anbudet och ge förbättringsförslag.
+            </p>
+          </div>
+          <Button onClick={onGranska} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
+            Granska anbudet →
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (laddar) {
