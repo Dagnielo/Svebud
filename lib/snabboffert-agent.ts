@@ -142,7 +142,13 @@ Timpris standard: ${profil.timpris_standard ?? 650} kr/tim
 Timpris jour: ${profil.timpris_jour ?? 950} kr/tim
 Antal montörer: ${profil.antal_montorer ?? 'Ej angivet'}
 Certifikat: ${(profil.certifikat ?? []).map((c: { namn: string }) => c.namn).join(', ') || 'Ej angivna'}
-Erfarenhet: ${(profil.erfarenhet ?? []).join(', ') || 'Ej angivna'}` : ''
+Erfarenhet: ${(profil.erfarenhet ?? []).join(', ') || 'Ej angivna'}${(() => {
+    const ai = profil.anbudsinstallningar as Record<string, unknown> | null
+    if (!ai) return ''
+    const frågor = (ai.fragor_till_kund as string[]) ?? []
+    if (frågor.length === 0) return ''
+    return `\n\nELFIRMANS STANDARDFRÅGOR (inkludera ALLTID dessa i frågor_till_kund):\n${frågor.map(f => `- ${f}`).join('\n')}\nLägg till max 2-3 projektspecifika frågor utöver dessa.`
+  })()}` : ''
 
   const startTid = Date.now()
 

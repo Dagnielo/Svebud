@@ -62,12 +62,14 @@ interface Props {
 export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
   const [data, setData] = useState<SnabboffertData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [sparadKalkyl, setSparadKalkyl] = useState<SnabbMoment[] | null>(null)
   const supabase = createClient()
 
   const [moment, setMoment] = useState<Array<{
     beskrivning: string; timmar: number; timpris: number; materialkostnad: number; belopp: number
   }>>([])
 
+  // Ladda BÅDA datakällorna i en enda query — undviker race condition
   useEffect(() => {
     async function hämta() {
       const { data: projekt } = await supabase
@@ -77,26 +79,35 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
         .single()
 
       if (projekt) {
-        const jr = (projekt as Record<string, unknown>)['jämförelse_resultat'] as SnabboffertData | null
+        const p = projekt as Record<string, unknown>
+        const jr = p['jämförelse_resultat'] as SnabboffertData | null
         if (jr?.analystyp === 'snabb') setData(jr)
+
+        // Sparad kalkyl (redigerade moment)
+        const rek = p.rekommendation as Record<string, unknown> | null
+        const kalkyl = rek?.kalkyl as Record<string, unknown> | null
+        if (kalkyl?.moment) {
+          setSparadKalkyl(kalkyl.moment as SnabbMoment[])
+        }
       }
       setLoading(false)
     }
     hämta()
   }, [projektId])
 
-  // Initiera moment från data — kör bara en gång när data laddats
+  // Initiera moment EFTER all data laddats — sparad kalkyl prioriteras
   const momentInitierat = moment.length > 0
   useEffect(() => {
-    if (data && !momentInitierat) {
-      const init = data.föreslagna_moment.map(m => ({
+    if (!momentInitierat && data && !loading) {
+      const källa = sparadKalkyl ?? data.föreslagna_moment
+      const init = källa.map(m => ({
         ...m,
         belopp: m.timmar * m.timpris + m.materialkostnad,
       }))
       setMoment(init)
       onMomentChange?.(init)
     }
-  }, [data, momentInitierat, onMomentChange])
+  }, [data, sparadKalkyl, momentInitierat, loading, onMomentChange])
 
   if (loading) {
     return (

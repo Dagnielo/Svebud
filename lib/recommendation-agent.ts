@@ -40,35 +40,32 @@ export type AnbudsResultat = {
   garanti: string
 }
 
-const SYSTEM_PROMPT = `Du är en AI-assistent som genererar anbudsdokument för svenska elfirmor.
+const SYSTEM_PROMPT = `Du genererar EXTREMT KORTA anbudsdokument för elfirmor. MAX 1500 tecken.
 
-Du har fått ett förfrågningsunderlag (FU), en kravmatchning och elfirmans priser.
-Generera ett komplett anbudsutkast som elfirman kan justera och skicka.
+STRUKTUR — strikt ordning, inga extra sektioner:
+1. Elfirmans namn, adress, org.nr, telefon — EN rad
+2. Datum + "Giltigt 30 dagar"
+3. "## Anbud avseende [beskrivning]"
+4. "## VAD INGÅR" — max 6 punkter, max 10 ord per punkt
+5. "## INGÅR EJ" — 3 punkter
+6. "## FÖRUTSÄTTNINGAR" — 2 punkter
+7. "## BETALNINGSVILLKOR" — EN rad
+8. "## GARANTI" — EN rad
+9. "## FÖRBEHÅLL" — 3 punkter, max 8 ord per punkt
 
-ANBUDSDOKUMENTET SKA INNEHÅLLA:
-1. Kontaktuppgifter (elfirman + beställare)
-2. Datum och giltighetstid (standard 30 dagar)
-3. Rubrik: "[Anbud/Offert] avseende [uppdragsbeskrivning]"
-4. "Vad ingår i detta uppdrag" - tydligt, klarspråk
-   - "Detta ingår" (konkreta arbetsmoment)
-   - "Detta ingår inte" (minst 3 exkluderingar)
-   - "Förutsättningar för priset"
-5. Kalkyl med moment, timmar, material, belopp
-6. Betalningsvillkor (standard 30 dagar)
-7. Garanti (2 år arbete, tillverkarens garanti på material)
-8. Standardförbehåll
+INKLUDERA ABSOLUT INTE: kalkyl, priser, summor, ROT, skattereduktion, prissammanfattning.
+Systemet lägger till dessa automatiskt.
 
-PRISSÄTTNING:
-- Använd elfirmans egna timpriser som grund
-- Gör rimliga uppskattningar av timmar baserat på scope
-- Specificera material separat
-- Visa exkl. moms, moms, inkl. moms
-- Om ROT/Grön teknik-data finns med i prompten: INKLUDERA en prissammanfattning som visar totalbelopp, avdragsbelopp och vad kunden betalar efter avdrag. Lägg till disclaimer att kunden ansvarar för att uppfylla Skatteverkets villkor.
+KALKYL-JSON (separat, INTE i texten):
+- Elfirmans timpriser, rimliga timmar, material separat
 
-VIKTIGT:
-- Skriv i klarspråk som en BRF-ordförande förstår
-- Undvik branschjargong utan förklaring
-- Var specifik om vad som ingår och inte
+REGLER:
+- Max 1500 tecken i anbudsdokumentet
+- Bara punktlistor, ingen löptext
+- Inga inledningar, avslutningar eller artighetsfraser
+- Max 10 ord per punkt
+- Klarspråk utan branschjargong
+- Om elfirmans anbudsinställningar finns → ANVÄND DEM ORDAGRANT för betalningsvillkor, garanti, förbehåll, "ingår ej" och förutsättningar. Komplettera bara med projektspecifika punkter.
 
 Returnera ENDAST giltig JSON med denna struktur:
 {
@@ -123,7 +120,7 @@ export async function genereraAnbud(projektId: string): Promise<AnbudsResultat> 
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 8192,
+      max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [
         {
@@ -153,12 +150,23 @@ ${(profil.referensprojekt as Array<Record<string, unknown>>).map((r: Record<stri
 ${projekt.rot_aktiverat ? `
 ROT/GRÖN TEKNIK (aktiverat av elfirman):
 Typ: ${projekt.rot_typ}
-Fastighetstyp: ${projekt.rot_fastighetstyp}
-Antal ägare: ${projekt.rot_antal_agare}
-ROT-belopp: ${projekt.rot_belopp} kr
-Kund betalar: ${projekt.rot_kund_betalar} kr
-VIKTIGT: Inkludera ROT/Grön teknik-information i anbudet med korrekt avdragsbelopp och disclaimer.
+OBS: Inkludera INTE ROT/prissammanfattning i anbudstexten — det infogas automatiskt av systemet.
 ` : ''}
+${(() => {
+  const ai = profil.anbudsinstallningar as Record<string, unknown> | null
+  if (!ai) return ''
+  const delar: string[] = []
+  delar.push('ELFIRMANS ANBUDSINSTÄLLNINGAR (ANVÄND DESSA ORDAGRANT — ändra INTE):')
+  if (ai.betalningsvillkor) delar.push(`Betalningsvillkor: ${ai.betalningsvillkor}`)
+  if (ai.avtalsvillkor) delar.push(`Avtalsvillkor: Enligt ${ai.avtalsvillkor}. Ange detta i anbudets förbehåll.`)
+  if (ai.garanti) delar.push(`Garanti: ${ai.garanti}`)
+  if (ai.giltighetstid) delar.push(`Giltighetstid: ${ai.giltighetstid}`)
+  if ((ai.forbehall as string[] ?? []).length > 0) delar.push(`Förbehåll:\n${(ai.forbehall as string[]).map(f => `- ${f}`).join('\n')}`)
+  if ((ai.ingar_ej as string[] ?? []).length > 0) delar.push(`Ingår ej (standard — inkludera alltid dessa):\n${(ai.ingar_ej as string[]).map(i => `- ${i}`).join('\n')}`)
+  if ((ai.forutsattningar as string[] ?? []).length > 0) delar.push(`Förutsättningar (standard):\n${(ai.forutsattningar as string[]).map(f => `- ${f}`).join('\n')}`)
+  if (ai.ovriga_instruktioner) delar.push(`Övriga instruktioner: ${ai.ovriga_instruktioner}`)
+  return delar.join('\n')
+})()}
 ANALYSRESULTAT (från AI-scanning av förfrågningsunderlaget):
 ${JSON.stringify(kravmatchning, null, 2).slice(0, 15000)}
 ${projekt.rekommendation?.kalkyl ? `
@@ -175,31 +183,11 @@ Baserat på analysresultatet och den BEFINTLIGA KALKYLEN ovan, generera ett komp
 
     const resultat = parseClaudeJSON<AnbudsResultat>(content.text)
 
-    // Lägg till ROT-sektion i anbudsdokumentet om aktiverat
-    if (projekt.rot_aktiverat && projekt.rot_belopp > 0) {
-      const rotTypLabel: Record<string, string> = {
-        rot: 'ROT-avdrag (30%)',
-        gronteknik_laddbox: 'Grön teknik — Laddbox (15%)',
-        gronteknik_solceller: 'Grön teknik — Solceller (20%)',
-        gronteknik_batteri: 'Grön teknik — Batteri (20%)',
-      }
-      const typLabel = rotTypLabel[projekt.rot_typ] ?? 'Skattereduktion'
+    // ROT/prissammanfattning hanteras av byggRotBlock() i frontend — inget appendas här
 
-      const rotSektion = `
-
----
-
-## Prissammanfattning med skattereduktion
-
-| Post | Belopp |
-|------|--------|
-| Totalt inkl. moms | ${Number(projekt.rot_kund_betalar + projekt.rot_belopp).toLocaleString('sv-SE')} kr |
-| ${typLabel} | -${Number(projekt.rot_belopp).toLocaleString('sv-SE')} kr |
-| **Ni betalar** | **${Number(projekt.rot_kund_betalar).toLocaleString('sv-SE')} kr** |
-
-*Skattereduktionen begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att villkoren för avdrag är uppfyllda. Om Skatteverket nekar avdraget ansvarar kunden för mellanskillnaden.*
-`
-      resultat.anbudsdokument = resultat.anbudsdokument + rotSektion
+    // Bevara användarens redigerade kalkyl om den finns
+    if (projekt.rekommendation?.kalkyl) {
+      resultat.kalkyl = projekt.rekommendation.kalkyl
     }
 
     // Spara

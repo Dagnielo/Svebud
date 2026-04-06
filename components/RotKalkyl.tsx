@@ -9,14 +9,16 @@ interface Props {
   arbeteExMoms: number
   materialExMoms: number
   projektId: string
-  onRotChange?: (rotBelopp: number, kundBetalar: number) => void
+  onRotChange?: (rotBelopp: number, kundBetalar: number, typ: string) => void
+  föreslagenTyp?: string
 }
 
 export default function RotKalkyl({
   arbeteExMoms,
   materialExMoms,
   projektId,
-  onRotChange
+  onRotChange,
+  föreslagenTyp,
 }: Props) {
   const [aktiverat, setAktiverat] = useState(false)
   const [typ, setTyp] = useState<RotTyp>('rot')
@@ -33,11 +35,23 @@ export default function RotKalkyl({
       const { data: p } = await supabase.from('projekt').select('*').eq('id', projektId).single()
       if (p) {
         const proj = p as Record<string, unknown>
-        if (proj.rot_aktiverat) setAktiverat(true)
-        if (proj.rot_typ) setTyp(proj.rot_typ as RotTyp)
-        if (proj.rot_antal_agare) setAntalAgare(proj.rot_antal_agare as number)
-        if (proj.rot_tidigare_utnyttjat) setTidligareUtnyttjat(proj.rot_tidigare_utnyttjat as number)
-        if (proj.rot_fastighetstyp) setFastighetstyp(proj.rot_fastighetstyp as FastighetsTyp)
+        if (proj.rot_aktiverat) {
+          // Redan sparat — ladda sparade värden
+          setAktiverat(true)
+          if (proj.rot_typ) setTyp(proj.rot_typ as RotTyp)
+          if (proj.rot_antal_agare) setAntalAgare(proj.rot_antal_agare as number)
+          if (proj.rot_tidigare_utnyttjat) setTidligareUtnyttjat(proj.rot_tidigare_utnyttjat as number)
+          if (proj.rot_fastighetstyp) setFastighetstyp(proj.rot_fastighetstyp as FastighetsTyp)
+        } else if (föreslagenTyp) {
+          // Inget sparat — auto-föreslå baserat på AI-analys
+          if (föreslagenTyp === 'ej_rot') {
+            setAktiverat(false)
+            setTyp('ej_rot' as RotTyp)
+          } else {
+            setAktiverat(true)
+            setTyp(föreslagenTyp as RotTyp)
+          }
+        }
       }
       setLaddat(true)
     }
@@ -58,8 +72,8 @@ export default function RotKalkyl({
   const valdTypInfo = ROT_TYPER.find(t => t.id === typ)
 
   useEffect(() => {
-    onRotChange?.(res.rotBelopp, res.kundBetalar)
-  }, [res.rotBelopp, res.kundBetalar])
+    onRotChange?.(res.rotBelopp, res.kundBetalar, typ)
+  }, [res.rotBelopp, res.kundBetalar, typ])
 
   // Spara till Supabase
   // Spara ROT-data med debounce — direkt via Supabase

@@ -7,41 +7,41 @@ export const DOKUMENT_CSS = `
   .dokument {
     max-width: 780px;
     margin: 0 auto;
-    padding: 48px 56px;
+    padding: 32px 48px;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-size: 14px;
-    line-height: 1.7;
+    font-size: 11px;
+    line-height: 1.5;
     color: #1a1a2e;
   }
 
   .dokument h1 {
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 800;
     color: #0E1B2E;
-    margin: 0 0 8px 0;
-    padding-bottom: 12px;
+    margin: 0 0 6px 0;
+    padding-bottom: 8px;
     border-bottom: 3px solid #F5C400;
     letter-spacing: -0.02em;
   }
 
   .dokument h2 {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 700;
     color: #0E1B2E;
-    margin: 32px 0 12px 0;
-    padding-bottom: 6px;
+    margin: 16px 0 6px 0;
+    padding-bottom: 4px;
     border-bottom: 1px solid #e0e0e0;
   }
 
   .dokument h3 {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     color: #1E2F45;
-    margin: 20px 0 8px 0;
+    margin: 12px 0 4px 0;
   }
 
   .dokument p {
-    margin: 0 0 12px 0;
+    margin: 0 0 6px 0;
   }
 
   .dokument strong {
@@ -55,13 +55,13 @@ export const DOKUMENT_CSS = `
   }
 
   .dokument ul, .dokument ol {
-    margin: 8px 0 16px 0;
-    padding-left: 24px;
+    margin: 4px 0 8px 0;
+    padding-left: 20px;
   }
 
   .dokument li {
-    margin-bottom: 4px;
-    padding-left: 4px;
+    margin-bottom: 2px;
+    padding-left: 2px;
   }
 
   .dokument li::marker {
@@ -71,14 +71,14 @@ export const DOKUMENT_CSS = `
   .dokument hr {
     border: none;
     border-top: 1px solid #e0e0e0;
-    margin: 24px 0;
+    margin: 12px 0;
   }
 
   .dokument table {
     width: 100%;
     border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 13px;
+    margin: 8px 0;
+    font-size: 11px;
   }
 
   .dokument thead th {
@@ -86,9 +86,9 @@ export const DOKUMENT_CSS = `
     color: #fff;
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 9px;
     letter-spacing: 0.05em;
-    padding: 10px 14px;
+    padding: 6px 10px;
     text-align: left;
     border: none;
   }
@@ -100,7 +100,7 @@ export const DOKUMENT_CSS = `
   }
 
   .dokument tbody td {
-    padding: 9px 14px;
+    padding: 5px 10px;
     border-bottom: 1px solid #eef0f2;
     vertical-align: top;
   }

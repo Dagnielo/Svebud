@@ -72,15 +72,17 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const [genSteg, setGenSteg] = useState(0)
   const [kundFrågor, setKundFrågor] = useState<string[] | null>(null)
   const [nyFråga, setNyFråga] = useState('')
+  const KALKYL_MARKÖR = '[📊 KALKYL — infogas automatiskt från steg 2]'
   const KONTAKT_MARKÖR = '<!-- SVEBUD_KONTAKT -->'
   const kontaktInfogad = utkast.includes(KONTAKT_MARKÖR)
   const [följebrev, setFöljebrev] = useState<string | null>(null)
   const [följebrevLaddat, setFöljebrevLaddat] = useState(false)
   const [sparar, setSparar] = useState(false)
   const [kalkylMoment, setKalkylMoment] = useState<KalkylMoment[] | null>(null)
-  const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number; aktiverat: boolean }>({ rotBelopp: 0, kundBetalar: 0, aktiverat: false })
+  const [rotData, setRotData] = useState<{ rotBelopp: number; kundBetalar: number; aktiverat: boolean; typ?: string }>({ rotBelopp: 0, kundBetalar: 0, aktiverat: false })
   const [analysTyp, setAnalysTyp] = useState<'formell' | 'snabb' | null>(null)
   const [snabbMoment, setSnabbMoment] = useState<SnabbMoment[] | null>(null)
+  const [föreslagenRotTyp, setFöreslagenRotTyp] = useState<string | null>(null)
   const [expanderadDok, setExpanderadDok] = useState<string | null>(null)
   const [visaHistorik, setVisaHistorik] = useState(false)
   const [skickaKommentar, setSkickaKommentar] = useState('')
@@ -92,17 +94,40 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   const router = useRouter()
   const supabase = createClient()
 
+  // Strippar kalkyl- och prissammanfattningssektioner från markdown-text
+  function strippaMdKalkyl(md: string) {
+    return md
+      .replace(/\n---\n\n##\s*kalkyl[\s\S]*?(?=\n---\n|$)/i, '')
+      .replace(/\n##\s*kalkyl[\s\S]*?(?=\n##\s|$)/i, '')
+      .replace(/\n---\n\n##\s*prissammanfattning[\s\S]*?(?=\n---\n|$)/i, '')
+      .replace(/\n##\s*prissammanfattning[\s\S]*?(?=\n##\s|$)/i, '')
+  }
+
   async function hämta() {
     const { data: p } = await supabase.from('projekt').select('*').eq('id', projektId).single()
     if (p) {
       const pd = p as unknown as ProjektData
       setProjekt(pd)
-      setUtkast(pd.anbudsutkast_redigerat ?? pd.anbudsutkast ?? '')
+      // Strippa AI:ns kalkyl/prissammanfattning + infoga kalkylmarkör
+      let rensat = strippaMdKalkyl(pd.anbudsutkast_redigerat ?? pd.anbudsutkast ?? '')
+      if (rensat && !rensat.includes(KALKYL_MARKÖR)) {
+        const match = rensat.match(/\n##\s*(Betalningsvillkor|Garanti|Standardförbehåll|BETALNINGSVILLKOR|GARANTI)/i)
+        if (match?.index !== undefined) {
+          rensat = rensat.slice(0, match.index) + '\n\n' + KALKYL_MARKÖR + '\n' + rensat.slice(match.index)
+        } else {
+          rensat = rensat + '\n\n' + KALKYL_MARKÖR
+        }
+      }
+      setUtkast(rensat)
       setUtkastLaddat(true)
       // Detektera analystyp
       const jr = (p as Record<string, unknown>).jämförelse_resultat as Record<string, unknown> | null
       if (jr?.analystyp === 'snabb') setAnalysTyp('snabb')
       else if (jr && !jr.analystyp) setAnalysTyp('formell')
+      // Extrahera ROT-förslag från analysresultat
+      if (jr?.rot_tillämpligt !== undefined) {
+        setFöreslagenRotTyp(jr.rot_tillämpligt ? (jr.rot_typ as string ?? 'rot') : 'ej_rot')
+      }
       // Ladda ROT-data från databasen
       const proj = p as Record<string, unknown>
       if (proj.rot_aktiverat && proj.rot_belopp) {
@@ -110,6 +135,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
           rotBelopp: proj.rot_belopp as number,
           kundBetalar: proj.rot_kund_betalar as number ?? 0,
           aktiverat: true,
+          typ: proj.rot_typ as string ?? 'rot',
         })
       }
 
@@ -353,21 +379,31 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
     const totInkl = totExkl + Math.round(totExkl * 0.25)
     const rotBelopp = rotData.rotBelopp
     const kundBetalar = totInkl - rotBelopp
+    const typLabels: Record<string, string> = {
+      rot: 'ROT-avdrag (30%)',
+      gronteknik_laddbox: 'Grön teknik — Laddbox (15%)',
+      gronteknik_solceller: 'Grön teknik — Solceller (20%)',
+      gronteknik_batteri: 'Grön teknik — Batteri (20%)',
+    }
+    const typLabel = typLabels[rotData.typ ?? 'rot'] ?? 'Skattereduktion'
     return `<div style="background:#f0fdf4;border:2px solid #00C67A;border-radius:8px;padding:16px 20px;margin:16px 0">
-<h3 style="margin:0 0 8px;color:#166534">Skattereduktion</h3>
+<h3 style="margin:0 0 8px;color:#166534">${typLabel}</h3>
 <table style="width:100%;border-collapse:collapse">
 <tr><td style="padding:4px 0">Totalt inkl. moms</td><td style="text-align:right;padding:4px 0">${totInkl.toLocaleString('sv-SE')} kr</td></tr>
-<tr><td style="padding:4px 0;color:#166534">Skattereduktion</td><td style="text-align:right;padding:4px 0;color:#166534">-${rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
+<tr><td style="padding:4px 0;color:#166534">${typLabel}</td><td style="text-align:right;padding:4px 0;color:#166534">-${rotBelopp.toLocaleString('sv-SE')} kr</td></tr>
 <tr style="border-top:2px solid #166534"><td style="padding:8px 0;font-weight:800;font-size:16px">Ni betalar</td><td style="text-align:right;padding:8px 0;font-weight:800;font-size:16px">${kundBetalar.toLocaleString('sv-SE')} kr</td></tr>
 </table>
 <p style="margin:8px 0 0;font-size:11px;color:#666"><em>Avdraget begärs av oss hos Skatteverket efter utfört och betalt arbete. Kunden ansvarar för att de uppfyller Skatteverkets villkor.</em></p>
 </div>`
   }
 
+  // Säkerhetsnät — strippar kalkyl/prissammanfattning om det finns kvar i utkastet
+  function utkastUtanKalkyl() {
+    return strippaMdKalkyl(utkast)
+  }
+
   function byggKalkylHtml() {
-    // Undvik dubbel kalkyl — om utkastet redan har en kalkylsektion, lägg inte till en till
-    if (utkast && /##\s*kalkyl/i.test(utkast)) return ''
-    const mom = kalkylMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
+    const mom = kalkylMoment ?? snabbMoment ?? (rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[] ?? []
     if (mom.length === 0) return ''
     const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
     const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
@@ -396,49 +432,49 @@ ${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.ti
     return DOMPurify.sanitize(raw)
   }
 
+  // Bygger komplett anbud-HTML med kalkyl+ROT infogat mitt i dokumentet (före betalningsvillkor/garanti)
+  function byggKompletAnbudHtml() {
+    const textHtml = mdTillHtml(utkastUtanKalkyl())
+    const kalkylRotHtml = byggKalkylHtml() + byggRotBlock()
+    if (!kalkylRotHtml) return textHtml
+    // Ersätt kalkylmarkören med faktisk kalkyl+ROT
+    const markörRegex = /\[📊[^[\]]*steg 2\]/g
+    if (markörRegex.test(textHtml)) {
+      return textHtml.replace(markörRegex, kalkylRotHtml)
+    }
+    // Fallback: infoga före betalningsvillkor/garanti
+    const infogad = textHtml.replace(
+      /(<h[23][^>]*>(?:Betalningsvillkor|Garanti|Standardförbehåll|Förbehåll|BETALNINGSVILLKOR|GARANTI))/i,
+      kalkylRotHtml + '$1'
+    )
+    return infogad !== textHtml ? infogad : textHtml + kalkylRotHtml
+  }
+
   function exporteraSomPdf() {
     const win = window.open('', '_blank')
     if (!win) return
     win.document.write(EXPORT_HTML_HEAD.replace('<title>Anbud</title>', `<title>Anbud - ${projekt?.namn}</title>`))
-    win.document.write(mdTillHtml(utkast))
-    win.document.write(byggKalkylHtml())
+    win.document.write(byggKompletAnbudHtml())
     win.document.write(EXPORT_HTML_FOOT)
     win.document.close()
-    // Infoga ROT efter TOTALT INKL. MOMS via DOM
-    const rotHtml = byggRotBlock()
-    if (rotHtml) {
-      const walker = win.document.createTreeWalker(win.document.body, NodeFilter.SHOW_TEXT)
-      let node: Node | null
-      let targetEl: Element | null = null
-      while ((node = walker.nextNode())) {
-        if (node.textContent && /TOTALT\s+INKL/i.test(node.textContent)) {
-          targetEl = node.parentElement
-        }
-      }
-      if (targetEl) {
-        targetEl.insertAdjacentHTML('afterend', rotHtml)
-      } else {
-        win.document.body.insertAdjacentHTML('beforeend', rotHtml)
-      }
-    }
     setTimeout(() => win.print(), 500)
   }
 
   function exporteraSomWord() {
     const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><style>
-body{font-family:Calibri,sans-serif;line-height:1.6;color:#1a1a2e;max-width:780px;margin:0 auto;padding:40px}
-h1{font-size:18pt;font-weight:800;border-bottom:3pt solid #F5C400;padding-bottom:8pt;color:#0E1B2E}
-h2{font-size:14pt;font-weight:700;border-bottom:1pt solid #e0e0e0;padding-bottom:4pt;margin-top:24pt;color:#0E1B2E}
-h3{font-size:12pt;font-weight:700;color:#1E2F45}
-table{border-collapse:collapse;width:100%;margin:12pt 0}
-th{background:#0E1B2E;color:#fff;font-size:9pt;text-transform:uppercase;letter-spacing:0.5pt;padding:8pt 10pt;text-align:left}
-td{border-bottom:1pt solid #eef0f2;padding:7pt 10pt}
+body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.4;color:#1a1a2e;max-width:780px;margin:0 auto;padding:24px}
+h1{font-size:14pt;font-weight:800;border-bottom:2pt solid #F5C400;padding-bottom:6pt;color:#0E1B2E}
+h2{font-size:12pt;font-weight:700;border-bottom:1pt solid #e0e0e0;padding-bottom:3pt;margin-top:14pt;color:#0E1B2E}
+h3{font-size:11pt;font-weight:700;color:#1E2F45}
+table{border-collapse:collapse;width:100%;margin:6pt 0}
+th{background:#0E1B2E;color:#fff;font-size:8pt;text-transform:uppercase;letter-spacing:0.5pt;padding:5pt 8pt;text-align:left}
+td{border-bottom:1pt solid #eef0f2;padding:4pt 8pt}
 tr:nth-child(even){background:#f8f9fb}
 strong{font-weight:700;color:#0E1B2E}
 hr{border:none;border-top:1pt solid #e0e0e0}
 </style></head>
-<body>${mdTillHtml(utkast)}${byggKalkylHtml()}${byggRotBlock()}</body></html>`
+<body>${byggKompletAnbudHtml()}</body></html>`
 
     const blob = new Blob([html], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
@@ -732,7 +768,8 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       arbeteExMoms={snabbMoment.reduce((s, m) => s + m.timmar * m.timpris, 0)}
                       materialExMoms={snabbMoment.reduce((s, m) => s + m.materialkostnad, 0)}
                       projektId={projektId}
-                      onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar, aktiverat: rotBelopp > 0 })}
+                      onRotChange={(rotBelopp, kundBetalar, typ) => setRotData({ rotBelopp, kundBetalar, aktiverat: rotBelopp > 0, typ })}
+                      föreslagenTyp={föreslagenRotTyp ?? undefined}
                     />
                   )}
 
@@ -916,7 +953,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             .reduce((s, m) => s + m.materialkostnad, 0)
                         }
                         projektId={projektId}
-                        onRotChange={(rotBelopp, kundBetalar) => setRotData({ rotBelopp, kundBetalar, aktiverat: rotBelopp > 0 })}
+                        onRotChange={(rotBelopp, kundBetalar, typ) => setRotData({ rotBelopp, kundBetalar, aktiverat: rotBelopp > 0, typ })}
                       />
                     </>
                   )}
@@ -986,29 +1023,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         style={{ background: '#fff', minHeight: 500 }}
                         ref={(el) => {
                           if (!el) return
-                          // Rendera HTML
-                          el.innerHTML = `<style>${DOKUMENT_CSS}</style><div class="dokument">${mdTillHtml(utkast)}${byggKalkylHtml()}</div>`
-                          // Infoga ROT-block efter TOTALT INKL. MOMS
-                          const rotHtml = byggRotBlock()
-                          if (rotHtml) {
-                            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-                            let node: Node | null
-                            let targetEl: Element | null = null
-                            while ((node = walker.nextNode())) {
-                              if (node.textContent && /TOTALT\s+INKL/i.test(node.textContent)) {
-                                targetEl = node.parentElement
-                              }
-                            }
-                            if (targetEl) {
-                              const rotDiv = document.createElement('div')
-                              rotDiv.innerHTML = rotHtml
-                              targetEl.insertAdjacentElement('afterend', rotDiv)
-                            } else {
-                              // Fallback — lägg till sist i dokument-diven
-                              const dok = el.querySelector('.dokument')
-                              if (dok) dok.insertAdjacentHTML('beforeend', rotHtml)
-                            }
-                          }
+                          el.innerHTML = `<style>${DOKUMENT_CSS}</style><div class="dokument">${byggKompletAnbudHtml()}</div>`
                         }}
                       />
                     ) : (
@@ -1019,6 +1034,60 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       />
                     )}
                   </div>
+
+                  {/* Kalkyl-indikator — visar att kalkyl+ROT infogas automatiskt */}
+                  {(() => {
+                    const mom = kalkylMoment ?? snabbMoment ?? ((rekData?.kalkyl as Record<string, unknown>)?.moment as KalkylMoment[]) ?? []
+                    if (mom.length === 0) return null
+                    const totArbete = mom.reduce((s, m) => s + m.timmar * m.timpris, 0)
+                    const totMaterial = mom.reduce((s, m) => s + m.materialkostnad, 0)
+                    const totExkl = totArbete + totMaterial
+                    const totInkl = totExkl + Math.round(totExkl * 0.25)
+                    return (
+                      <div
+                        style={{
+                          background: 'var(--navy-mid)',
+                          border: '1px dashed rgba(245,196,0,0.4)',
+                          borderRadius: 10,
+                          padding: '14px 20px',
+                        }}
+                      >
+                        <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
+                            📊 Kalkyl infogas automatiskt
+                          </span>
+                          <button
+                            onClick={() => setAktivTab('analys')}
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: 'var(--yellow)',
+                              background: 'var(--yellow-glow)',
+                              border: '1px solid rgba(245,196,0,0.3)',
+                              borderRadius: 6,
+                              padding: '4px 12px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Justera i steg 2 →
+                          </button>
+                        </div>
+                        <p style={{ fontSize: 12, color: 'var(--muted-custom)', margin: 0 }}>
+                          {mom.length} moment · {rotData.aktiverat && rotData.rotBelopp > 0 ? (
+                            <>
+                              <strong style={{ color: 'var(--yellow)' }}>Kunden betalar {(totInkl - rotData.rotBelopp).toLocaleString('sv-SE')} kr</strong>
+                              <span style={{ color: 'var(--green)' }}> · {
+                                { rot: 'ROT-avdrag', gronteknik_laddbox: 'Grön teknik — Laddbox', gronteknik_solceller: 'Grön teknik — Solceller', gronteknik_batteri: 'Grön teknik — Batteri' }[rotData.typ ?? 'rot'] ?? 'Skattereduktion'
+                              } –{rotData.rotBelopp.toLocaleString('sv-SE')} kr</span>
+                              <span> · Totalt {totInkl.toLocaleString('sv-SE')} kr</span>
+                            </>
+                          ) : (
+                            <strong style={{ color: 'var(--white)' }}>Totalt inkl. moms {totInkl.toLocaleString('sv-SE')} kr</strong>
+                          )}
+                        </p>
+                      </div>
+                    )
+                  })()}
 
                   {/* Kontaktperson att infoga i anbudet */}
                   {kontaktpersoner.length > 0 && (

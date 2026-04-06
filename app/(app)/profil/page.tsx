@@ -63,6 +63,19 @@ export default function ProfilPage() {
   const [visaKontaktForm, setVisaKontaktForm] = useState(false)
   const [nyKontakt, setNyKontakt] = useState<Kontaktperson>({ namn: '', roll: '', epost: '', telefon: '' })
 
+  // Anbudsinställningar
+  const [anbudsInst, setAnbudsInst] = useState({
+    betalningsvillkor: '',
+    garanti: '',
+    avtalsvillkor: '',
+    forbehall: [] as string[],
+    ingar_ej: [] as string[],
+    forutsattningar: [] as string[],
+    giltighetstid: '30 dagar',
+    fragor_till_kund: [] as string[],
+    ovriga_instruktioner: '',
+  })
+
   useEffect(() => {
     async function hämta() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -103,6 +116,21 @@ export default function ProfilPage() {
         setTimprisOb((p.timpris_ob as number)?.toString() ?? '')
         setReferensprojekt((p.referensprojekt as Referensprojekt[]) ?? [])
         setKontaktpersoner((p.kontaktpersoner as Kontaktperson[]) ?? [])
+        // Anbudsinställningar
+        const ai = p.anbudsinstallningar as Record<string, unknown> | null
+        if (ai) {
+          setAnbudsInst({
+            betalningsvillkor: (ai.betalningsvillkor as string) ?? '',
+            garanti: (ai.garanti as string) ?? '',
+            avtalsvillkor: (ai.avtalsvillkor as string) ?? '',
+            forbehall: (ai.forbehall as string[]) ?? [],
+            ingar_ej: (ai.ingar_ej as string[]) ?? [],
+            forutsattningar: (ai.forutsattningar as string[]) ?? [],
+            giltighetstid: (ai.giltighetstid as string) ?? '30 dagar',
+            fragor_till_kund: (ai.fragor_till_kund as string[]) ?? [],
+            ovriga_instruktioner: (ai.ovriga_instruktioner as string) ?? '',
+          })
+        }
       }
       setLoading(false)
     }
@@ -135,6 +163,7 @@ export default function ProfilPage() {
         företagsbeskrivning: företagsbeskrivning || null,
         referensprojekt,
         kontaktpersoner,
+        anbudsinstallningar: anbudsInst,
       })
       .eq('id', authUser.id)
 
@@ -558,6 +587,105 @@ export default function ProfilPage() {
                 )}
               </SectionCard>
 
+              {/* Anbudsinställningar */}
+              <SectionCard title="Anbudsinställningar">
+                <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16, lineHeight: 1.5 }}>
+                  Ställ in dina standardvillkor <strong style={{ color: 'var(--yellow)' }}>en gång</strong> — sedan används de automatiskt i alla framtida anbud. Du behöver aldrig fylla i detta igen.
+                </p>
+
+                {/* Betalningsvillkor */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Betalningsvillkor</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 48, resize: 'vertical' }}
+                    value={anbudsInst.betalningsvillkor}
+                    onChange={e => setAnbudsInst(prev => ({ ...prev, betalningsvillkor: e.target.value }))}
+                    placeholder="T.ex. 30 dagar netto, eller 30% vid beställning, 70% vid slutbesiktning"
+                  />
+                </div>
+
+                {/* Garanti */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Garanti</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 48, resize: 'vertical' }}
+                    value={anbudsInst.garanti}
+                    onChange={e => setAnbudsInst(prev => ({ ...prev, garanti: e.target.value }))}
+                    placeholder="T.ex. 2 år på utfört arbete, tillverkarens garanti på material"
+                  />
+                </div>
+
+                {/* Avtalsvillkor */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Avtalsvillkor / standardkontrakt</label>
+                  <input
+                    style={inputStyle}
+                    value={anbudsInst.avtalsvillkor}
+                    onChange={e => setAnbudsInst(prev => ({ ...prev, avtalsvillkor: e.target.value }))}
+                    placeholder="T.ex. AB 04, ABT 06, EL 19 eller AFF 09"
+                  />
+                  <p style={{ fontSize: 10, color: 'var(--slate)', marginTop: 4 }}>
+                    AB 04 (B2B entreprenaD) · ABT 06 (totalentreprenad) · EL 19 (konsument) · AFF 09 (service)
+                  </p>
+                </div>
+
+                {/* Giltighetstid */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Giltighetstid för anbud</label>
+                  <input
+                    style={inputStyle}
+                    value={anbudsInst.giltighetstid}
+                    onChange={e => setAnbudsInst(prev => ({ ...prev, giltighetstid: e.target.value }))}
+                    placeholder="30 dagar"
+                  />
+                </div>
+
+                {/* Listor */}
+                <ListEditor
+                  label="Standardförbehåll"
+                  items={anbudsInst.forbehall}
+                  onChange={v => setAnbudsInst(prev => ({ ...prev, forbehall: v }))}
+                  placeholder="T.ex. Force majeure förlänger leveranstiden"
+                  inputStyle={inputStyle}
+                  labelStyle={labelStyle}
+                />
+                <ListEditor
+                  label="Ingår ej (standard)"
+                  items={anbudsInst.ingar_ej}
+                  onChange={v => setAnbudsInst(prev => ({ ...prev, ingar_ej: v }))}
+                  placeholder="T.ex. Målning/tapetsering efter installation"
+                  inputStyle={inputStyle}
+                  labelStyle={labelStyle}
+                />
+                <ListEditor
+                  label="Förutsättningar (standard)"
+                  items={anbudsInst.forutsattningar}
+                  onChange={v => setAnbudsInst(prev => ({ ...prev, forutsattningar: v }))}
+                  placeholder="T.ex. Normal arbetstid vardagar 07-16"
+                  inputStyle={inputStyle}
+                  labelStyle={labelStyle}
+                />
+                <ListEditor
+                  label="Standardfrågor till kund"
+                  items={anbudsInst.fragor_till_kund}
+                  onChange={v => setAnbudsInst(prev => ({ ...prev, fragor_till_kund: v }))}
+                  placeholder="T.ex. Finns ritningar över befintliga installationer?"
+                  inputStyle={inputStyle}
+                  labelStyle={labelStyle}
+                />
+
+                {/* Övriga instruktioner */}
+                <div style={{ marginBottom: 0 }}>
+                  <label style={labelStyle}>Övriga instruktioner / tonalitet</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }}
+                    value={anbudsInst.ovriga_instruktioner}
+                    onChange={e => setAnbudsInst(prev => ({ ...prev, ovriga_instruktioner: e.target.value }))}
+                    placeholder="T.ex. Vi skriver professionellt men vänligt. Nämn alltid att vi är auktoriserade elinstallatörer."
+                  />
+                </div>
+              </SectionCard>
+
               {/* Spara */}
               <Button
                 onClick={spara}
@@ -570,6 +698,62 @@ export default function ProfilPage() {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ListEditor({ label, items, onChange, placeholder, inputStyle, labelStyle }: {
+  label: string
+  items: string[]
+  onChange: (v: string[]) => void
+  placeholder: string
+  inputStyle: React.CSSProperties
+  labelStyle: React.CSSProperties
+}) {
+  const [nytt, setNytt] = useState('')
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={labelStyle}>{label}</label>
+      {items.map((item, i) => (
+        <div key={i} className="flex items-center gap-2" style={{ marginBottom: 4 }}>
+          <span style={{ flex: 1, fontSize: 12, color: 'var(--soft)', padding: '4px 0' }}>• {item}</span>
+          <button
+            onClick={() => onChange(items.filter((_, j) => j !== i))}
+            style={{ color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '2px 6px' }}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <div className="flex gap-2" style={{ marginTop: 4 }}>
+        <input
+          style={{ ...inputStyle, flex: 1 }}
+          value={nytt}
+          onChange={e => setNytt(e.target.value)}
+          placeholder={placeholder}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && nytt.trim()) {
+              onChange([...items, nytt.trim()])
+              setNytt('')
+            }
+          }}
+        />
+        <button
+          onClick={() => { if (nytt.trim()) { onChange([...items, nytt.trim()]); setNytt('') } }}
+          style={{
+            padding: '6px 14px',
+            borderRadius: 8,
+            background: 'var(--yellow-glow)',
+            border: '1px solid rgba(245,196,0,0.3)',
+            color: 'var(--yellow)',
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          +
+        </button>
       </div>
     </div>
   )
