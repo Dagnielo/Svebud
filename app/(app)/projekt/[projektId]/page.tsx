@@ -394,9 +394,25 @@ ${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.ti
     win.document.write(EXPORT_HTML_HEAD.replace('<title>Anbud</title>', `<title>Anbud - ${projekt?.namn}</title>`))
     win.document.write(mdTillHtml(utkast))
     win.document.write(byggKalkylHtml())
-    win.document.write(byggRotBlock())
     win.document.write(EXPORT_HTML_FOOT)
     win.document.close()
+    // Infoga ROT efter TOTALT INKL. MOMS via DOM
+    const rotHtml = byggRotBlock()
+    if (rotHtml) {
+      const walker = win.document.createTreeWalker(win.document.body, NodeFilter.SHOW_TEXT)
+      let node: Node | null
+      let targetEl: Element | null = null
+      while ((node = walker.nextNode())) {
+        if (node.textContent && /TOTALT\s+INKL/i.test(node.textContent)) {
+          targetEl = node.parentElement
+        }
+      }
+      if (targetEl) {
+        targetEl.insertAdjacentHTML('afterend', rotHtml)
+      } else {
+        win.document.body.insertAdjacentHTML('beforeend', rotHtml)
+      }
+    }
     setTimeout(() => win.print(), 500)
   }
 
@@ -960,13 +976,31 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     {förhandsgranskning ? (
                       <div
                         style={{ background: '#fff', minHeight: 500 }}
-                        dangerouslySetInnerHTML={{
-                          __html: `<style>${DOKUMENT_CSS}</style>
-                          <div class="dokument">
-                            ${mdTillHtml(utkast)}
-                            ${byggRotBlock()}
-                            ${byggKalkylHtml()}
-                          </div>`
+                        ref={(el) => {
+                          if (!el) return
+                          // Rendera HTML
+                          el.innerHTML = `<style>${DOKUMENT_CSS}</style><div class="dokument">${mdTillHtml(utkast)}${byggKalkylHtml()}</div>`
+                          // Infoga ROT-block efter TOTALT INKL. MOMS
+                          const rotHtml = byggRotBlock()
+                          if (rotHtml) {
+                            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+                            let node: Node | null
+                            let targetEl: Element | null = null
+                            while ((node = walker.nextNode())) {
+                              if (node.textContent && /TOTALT\s+INKL/i.test(node.textContent)) {
+                                targetEl = node.parentElement
+                              }
+                            }
+                            if (targetEl) {
+                              const rotDiv = document.createElement('div')
+                              rotDiv.innerHTML = rotHtml
+                              targetEl.insertAdjacentElement('afterend', rotDiv)
+                            } else {
+                              // Fallback — lägg till sist i dokument-diven
+                              const dok = el.querySelector('.dokument')
+                              if (dok) dok.insertAdjacentHTML('beforeend', rotHtml)
+                            }
+                          }
                         }}
                       />
                     ) : (
