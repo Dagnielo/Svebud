@@ -42,6 +42,7 @@ type ProjektData = {
   skickat_datum: string | null
   inskickningar: Inskickning[] | null
   uppdaterad: string | null
+  skapad: string | null
 }
 
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
