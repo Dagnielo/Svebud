@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FORANMALAN_STEG, STEG_ORDNING, FORANMALAN_JOBBTYPER, nästaSteg, stegIndex } from '@/lib/foranmalan-regler'
+import { FORANMALAN_STEG, STEG_ORDNING, FORANMALAN_JOBBTYPER, nästaSteg, stegIndex, REGEL_VERSION, regelÄrGammal } from '@/lib/foranmalan-regler'
 import type { StegId } from '@/lib/foranmalan-regler'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -37,7 +37,6 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
   const [skapaDialogOpen, setSkapaDialogOpen] = useState(false)
   const [kommentar, setKommentar] = useState('')
   const [uppdaterar, setUppdaterar] = useState(false)
-  const [skickaNotis, setSkickaNotis] = useState(true)
   const [valtSteg, setValtSteg] = useState<string | null>(null)
   const [redigeraInfo, setRedigeraInfo] = useState(false)
   const [editNätbolag, setEditNätbolag] = useState('')
@@ -135,7 +134,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
       const res = await fetch(`/api/foranmalan/${fp.id}/steg`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kommentar: kommentar || null, skickaNotis })
+        body: JSON.stringify({ kommentar: kommentar || null })
       })
       const data = await res.json()
       if (data.nyttSteg) {
@@ -518,6 +517,11 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                   Läs mer om ELNÄT 2025 K §5.9 ↗
                 </a>
               )}
+              {regelÄrGammal() && (
+                <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(255,165,0,0.1)', border: '1px solid rgba(255,165,0,0.3)', fontSize: 11, color: 'var(--orange)' }}>
+                  ⚠️ Regelinformationen baseras på {REGEL_VERSION.källa} ({new Date(REGEL_VERSION.datum).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' })}). Kontrollera att reglerna fortfarande gäller.
+                </div>
+              )}
             </div>
           )}
 
@@ -714,43 +718,6 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
               />
             </div>
 
-            {/* Notis-val */}
-            {fp.kund_epost && (
-              <div
-                style={{
-                  background: skickaNotis ? 'rgba(74,158,255,0.08)' : 'var(--navy)',
-                  border: `1px solid ${skickaNotis ? 'rgba(74,158,255,0.25)' : 'var(--navy-border)'}`,
-                  borderRadius: 8,
-                  padding: '12px 14px',
-                }}
-              >
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={skickaNotis}
-                    onChange={e => setSkickaNotis(e.target.checked)}
-                    style={{ accentColor: 'var(--blue-accent)', width: 16, height: 16 }}
-                  />
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: skickaNotis ? 'var(--white)' : 'var(--muted-custom)' }}>
-                      Skicka e-postnotis till kunden
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 1 }}>
-                      {skickaNotis
-                        ? `Notis skickas till ${fp.kund_epost}`
-                        : 'Steget markeras som klart utan att kunden notifieras'}
-                    </div>
-                  </div>
-                </label>
-              </div>
-            )}
-
-            {!fp.kund_epost && (
-              <div style={{ fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' }}>
-                Ingen kund-epost angiven — steget markeras utan notis.
-              </div>
-            )}
-
             {/* Knappar */}
             <div className="flex gap-3">
               <Button
@@ -766,11 +733,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                 className="flex-1"
                 style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700 }}
               >
-                {uppdaterar
-                  ? 'Uppdaterar...'
-                  : skickaNotis && fp.kund_epost
-                    ? 'Bekräfta & skicka notis'
-                    : 'Markera som klar'}
+                {uppdaterar ? 'Uppdaterar...' : 'Bekräfta'}
               </Button>
             </div>
           </div>

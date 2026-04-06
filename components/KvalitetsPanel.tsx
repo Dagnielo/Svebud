@@ -40,9 +40,10 @@ interface Props {
   resultat: KvalitetsResultat | null
   onGranska: () => void
   laddar: boolean
+  onGåTillSteg2?: () => void
 }
 
-export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar }: Props) {
+export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar, onGåTillSteg2 }: Props) {
   const [filter, setFilter] = useState<string>('alla')
   const [expanderad, setExpanderad] = useState(true)
 
@@ -257,14 +258,27 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar 
                         💡 <strong>Förslag:</strong> {punkt.åtgärd}
                       </div>
                     )}
+                    {punkt.allvarlighet !== 'bra' && (
+                      <div style={{ marginTop: 4, fontSize: 10, color: 'var(--slate)' }}>
+                        {['pris', 'rot'].includes(punkt.kategori) ? (
+                          onGåTillSteg2 ? (
+                            <button onClick={onGåTillSteg2} style={{ background: 'none', border: 'none', color: 'var(--yellow)', cursor: 'pointer', fontSize: 10, fontWeight: 600, padding: 0 }}>
+                              Ändra priser i steg 2 →
+                            </button>
+                          ) : 'Justeras i steg 2 (Analys & Bedömning)'
+                        ) : (
+                          'Redigera i anbudsutkastet ovan (klicka Redigera)'
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
             })}
           </div>
 
-          {/* Granska om-knapp */}
-          <div className="flex justify-center" style={{ marginTop: 16 }}>
+          {/* Granska om + stäng */}
+          <div className="flex justify-center gap-2" style={{ marginTop: 16 }}>
             <Button
               onClick={onGranska}
               disabled={laddar}
@@ -272,6 +286,13 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar 
               style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
             >
               🔄 Granska igen
+            </Button>
+            <Button
+              onClick={() => setExpanderad(false)}
+              variant="outline"
+              style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
+            >
+              ▲ Stäng
             </Button>
           </div>
         </div>

@@ -1,3 +1,14 @@
+export const REGEL_VERSION = {
+  datum: '2026-01-01',
+  källa: 'ELNÄT 2025 K §5.9',
+  beskrivning: 'Gäller fr.o.m. 1 januari 2026',
+}
+
+export function regelÄrGammal(): boolean {
+  const sexMån = 6 * 30 * 24 * 60 * 60 * 1000
+  return Date.now() - new Date(REGEL_VERSION.datum).getTime() > sexMån
+}
+
 // Källreferenser:
 // ELNÄT 2025 K punkt 5.9 (gäller fr.o.m. 1 januari 2026)
 // https://www.elinstallatoren.se/2026/01/nu-behover-laddbox-och-varmepump-foranmalas-och-godkannas/

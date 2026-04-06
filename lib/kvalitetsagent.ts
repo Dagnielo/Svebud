@@ -38,7 +38,8 @@ VIKTIGT — FLAGGA INTE dessa saker (de hanteras automatiskt av systemet):
 - Timmar, material och totalsummor — dessa hanteras av kalkyltabellen
 - Beställarens kontaktuppgifter — dessa läggs till separat av användaren
 - Elfirmans e-postadress och kontaktperson — det är deras verkliga uppgifter, inte ett "fel"
-- ROT-avdrag — hanteras av en separat ROT-modul, inte i anbudstexten
+- Signatur och avslutning — kontaktperson med namn, titel och kontaktuppgifter läggs till SEPARAT av en kontaktperson-modul. Flagga ALDRIG att dokumentet slutar abrupt, saknar signatur eller kontaktperson. Det hanteras automatiskt.
+- ROT-avdrag — hanteras HELT av en separat ROT-modul som infogar korrekt ROT/Grön teknik-information automatiskt i det färdiga dokumentet. Flagga ALDRIG att ROT-info saknas i anbudstexten. Det är utföraren (elfirman) som begär avdraget hos Skatteverket på kundens räkning — kunden ansöker aldrig själv.
 
 GRANSKA FÖLJANDE OMRÅDEN:
 
@@ -67,10 +68,10 @@ GRANSKA FÖLJANDE OMRÅDEN:
 - Är "ingår inte"-listan tillräckligt tydlig för att undvika missförstånd?
 - Bör ansvarsbegränsning övervägas för projektets storlek?
 
-5. ROT/GRÖN TEKNIK (om tillämpligt)
-- Om ROT/Grön teknik nämns i texten, stämmer procentsatserna?
-- Finns disclaimer om kundens ansvar vid avdrag?
-- Om det INTE nämns trots att det borde (BRF + privatperson) — ge tips
+5. ROT/GRÖN TEKNIK
+- ROT/Grön teknik-information infogas AUTOMATISKT av systemet i det färdiga dokumentet. Flagga INTE att det saknas i anbudstexten.
+- Om ROT/Grön teknik nämns explicit i löptexten, kontrollera att procentsatserna stämmer (ROT 30%, laddbox 15%, solceller 20%, batteri 20%).
+- Det är ALLTID utföraren som begär avdraget hos Skatteverket på kundens räkning. Kunden ansöker aldrig själv.
 
 ALLVARLIGHETSGRADER:
 - "bra": Något som är bra gjort och bör behållas

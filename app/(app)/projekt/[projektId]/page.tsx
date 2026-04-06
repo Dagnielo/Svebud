@@ -514,49 +514,72 @@ hr{border:none;border-top:1pt solid #e0e0e0}
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
       {/* Header */}
-      <div className="flex items-center gap-4" style={{ background: 'var(--navy-mid)', borderBottom: '1px solid var(--navy-border)', padding: '20px 32px' }}>
-        <button onClick={() => router.push('/dashboard')} style={{ fontSize: 13, color: 'var(--muted-custom)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>← Pipeline</button>
-        <div className="flex-1">
-          <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>{projekt.namn}</h1>
-          <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 1 }}>{projekt.beskrivning ?? ''}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Deadline */}
-          <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: 12 }}>📅</span>
-            {!projekt.deadline && (
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--yellow)', marginRight: 4 }}>
-                Sätt deadline →
-              </span>
-            )}
-            <input
-              type="date"
-              value={projekt.deadline ?? ''}
-              onChange={async (e) => {
-                const val = e.target.value || null
-                setProjekt(prev => prev ? { ...prev, deadline: val } : prev)
-                await supabase.from('projekt').update({ deadline: val }).eq('id', projektId)
-              }}
-              style={{
-                background: 'var(--navy)',
-                border: projekt.deadline ? '1px solid var(--navy-border)' : '1px dashed var(--yellow)',
-                borderRadius: 6,
-                color: projekt.deadline ? 'var(--white)' : 'var(--yellow)',
-                fontSize: 12,
-                padding: '4px 8px',
-                cursor: 'pointer',
-              }}
-            />
+      <div style={{ background: 'var(--navy-mid)', borderBottom: '3px solid var(--yellow)', padding: '20px 32px' }}>
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.push('/dashboard')} style={{ fontSize: 12, color: 'var(--muted-custom)', fontWeight: 600, background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>← Pipeline</button>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>{projekt.namn}</h1>
+              {(() => {
+                const km = kravmatch as Record<string, unknown> | null
+                const kundtyp = km?.kundtyp as string ?? km?.kund_typ as string
+                if (!kundtyp) return null
+                return (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: 'var(--navy)', border: '1px solid var(--navy-border)', color: 'var(--muted-custom)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {kundtyp}
+                  </span>
+                )
+              })()}
+              {analysTyp === 'snabb' && (
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,198,122,0.1)', border: '1px solid rgba(0,198,122,0.3)', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Snabboffert
+                </span>
+              )}
+              {bedömning && aktivTab !== 'foranmalan' && (
+                <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 5, background: bedömning.bgFärg, color: bedömning.färg }}>
+                  {bedömning.kort} {(kravmatch as Record<string, unknown>)?.match_procent ? `${(kravmatch as Record<string, unknown>).match_procent}%` : ''}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3" style={{ marginTop: 4 }}>
+              {projekt.beskrivning && (
+                <p style={{ fontSize: 12, color: 'var(--muted-custom)', margin: 0 }}>{projekt.beskrivning}</p>
+              )}
+              {projekt.skapad && (
+                <span style={{ fontSize: 11, color: 'var(--slate)' }}>
+                  Skapad {new Date(projekt.skapad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              )}
+            </div>
           </div>
-
-          {bedömning && (
-            <span style={{
-              fontSize: 12, fontWeight: 800, padding: '5px 12px', borderRadius: 6,
-              background: bedömning.bgFärg,
-              color: bedömning.färg,
-            }}>
-              {bedömning.kort} {(kravmatch as Record<string, unknown>)?.match_procent ? `${(kravmatch as Record<string, unknown>).match_procent}%` : ''}
-            </span>
+          {/* Deadline — dölj på föranmälan-fliken */}
+          {aktivTab !== 'foranmalan' && (
+            <div className="flex items-center gap-1.5">
+              <span style={{ fontSize: 12 }}>📅</span>
+              {!projekt.deadline && (
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--yellow)', marginRight: 4 }}>
+                  Sätt deadline →
+                </span>
+              )}
+              <input
+                type="date"
+                value={projekt.deadline ?? ''}
+                onChange={async (e) => {
+                  const val = e.target.value || null
+                  setProjekt(prev => prev ? { ...prev, deadline: val } : prev)
+                  await supabase.from('projekt').update({ deadline: val }).eq('id', projektId)
+                }}
+                style={{
+                  background: 'var(--navy)',
+                  border: projekt.deadline ? '1px solid var(--navy-border)' : '1px dashed var(--yellow)',
+                  borderRadius: 6,
+                  color: projekt.deadline ? 'var(--white)' : 'var(--yellow)',
+                  fontSize: 12,
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -650,7 +673,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
       </div>
 
       {/* Content + sidebar */}
-      <div className="grid" style={{ gridTemplateColumns: '1fr 320px', gap: 0 }}>
+      <div className="grid" style={{ gridTemplateColumns: aktivTab === 'foranmalan' ? '1fr' : '1fr 320px', gap: 0 }}>
         <div style={{ padding: '0 32px 32px', borderRight: '1px solid var(--navy-border)' }}>
           <Tabs value={aktivTab ?? 'dokument'} onValueChange={setAktivTab}>
             <TabsList className="hidden">
@@ -1020,6 +1043,11 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--navy)', color: 'var(--soft)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
                           />
                         )}
+                        <div className="flex justify-center" style={{ padding: '10px 0', borderTop: '1px solid var(--navy-border)' }}>
+                          <Button onClick={() => setUtkastÖppet(false)} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}>
+                            ▲ Minimera
+                          </Button>
+                        </div>
                       </>
                     )}
                   </div>
@@ -1178,6 +1206,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     resultat={kvalitet}
                     onGranska={körGranskning}
                     laddar={kvalitetLaddar}
+                    onGåTillSteg2={() => setAktivTab('analys')}
                   />
 
 
@@ -1477,8 +1506,8 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
           </Tabs>
         </div>
 
-        {/* Sidebar */}
-        <div style={{ padding: 24 }}>
+        {/* Sidebar — dölj på föranmälan-fliken */}
+        <div style={{ padding: 24, display: aktivTab === 'foranmalan' ? 'none' : 'block' }}>
           <SidePanel title={`Dokument (${anbud.length})`}>
             {anbud.length === 0 ? (
               <div style={{ fontSize: 12, color: 'var(--slate)' }}>Inga filer uppladdade</div>
