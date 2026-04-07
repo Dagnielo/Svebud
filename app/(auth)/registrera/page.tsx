@@ -57,7 +57,7 @@ export default function RegistreraPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: '#0E1B2E' }}
+      style={{ backgroundColor: '#0F1C2E' }}
     >
       <Card className="w-full max-w-[400px] border-0" style={{ backgroundColor: '#172233' }}>
         <CardHeader className="text-center pb-2">
@@ -97,7 +97,7 @@ export default function RegistreraPage() {
                   value={fullnamn}
                   onChange={e => setFullnamn(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-md bg-[#0E1B2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
+                  className="w-full px-3 py-2 rounded-md bg-[#0F1C2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
                   placeholder="Anna Andersson"
                 />
               </div>
@@ -108,7 +108,7 @@ export default function RegistreraPage() {
                   type="text"
                   value={företag}
                   onChange={e => setFöretag(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md bg-[#0E1B2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
+                  className="w-full px-3 py-2 rounded-md bg-[#0F1C2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
                   placeholder="Elfirma AB"
                 />
               </div>
@@ -120,7 +120,7 @@ export default function RegistreraPage() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-md bg-[#0E1B2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
+                  className="w-full px-3 py-2 rounded-md bg-[#0F1C2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
                   placeholder="namn@företag.se"
                 />
               </div>
@@ -133,7 +133,7 @@ export default function RegistreraPage() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   minLength={8}
-                  className="w-full px-3 py-2 rounded-md bg-[#0E1B2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
+                  className="w-full px-3 py-2 rounded-md bg-[#0F1C2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
                   placeholder="••••••••"
                 />
               </div>
@@ -146,7 +146,7 @@ export default function RegistreraPage() {
                 type="submit"
                 disabled={loading}
                 className="w-full font-semibold"
-                style={{ backgroundColor: '#F5C400', color: '#0E1B2E' }}
+                style={{ backgroundColor: '#F5C400', color: '#0F1C2E' }}
               >
                 {loading ? 'Skapar konto...' : 'Skapa konto'}
               </Button>

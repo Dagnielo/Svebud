@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [magicLinkSkickad, setMagicLinkSkickad] = useState(false)
   const [fel, setFel] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -34,36 +33,10 @@ export default function LoginPage() {
     router.push('/dashboard')
   }
 
-  async function handleMagicLink() {
-    if (!email) {
-      setFel('Fyll i din e-postadress först')
-      return
-    }
-
-    setLoading(true)
-    setFel(null)
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-      },
-    })
-
-    if (error) {
-      setFel(error.message)
-      setLoading(false)
-      return
-    }
-
-    setMagicLinkSkickad(true)
-    setLoading(false)
-  }
-
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: '#0E1B2E' }}
+      style={{ backgroundColor: '#0F1C2E' }}
     >
       <Card className="w-full max-w-[400px] border-0" style={{ backgroundColor: '#172233' }}>
         <CardHeader className="text-center pb-2">
@@ -79,76 +52,55 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent>
-          {magicLinkSkickad ? (
-            <div className="text-center py-4">
-              <p className="text-white mb-2">Kolla din e-post!</p>
-              <p className="text-sm text-slate-400">
-                Vi har skickat en inloggningslänk till <strong className="text-white">{email}</strong>
-              </p>
-              <Button
-                variant="ghost"
-                className="mt-4 text-slate-400 hover:text-white"
-                onClick={() => setMagicLinkSkickad(false)}
-              >
-                Tillbaka
-              </Button>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="text-sm text-slate-400 block mb-1">E-post</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-md bg-[#0F1C2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
+                placeholder="namn@företag.se"
+              />
             </div>
-          ) : (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="text-sm text-slate-400 block mb-1">E-post</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 rounded-md bg-[#0E1B2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
-                  placeholder="namn@företag.se"
-                />
-              </div>
 
-              <div>
-                <label className="text-sm text-slate-400 block mb-1">Lösenord</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md bg-[#0E1B2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
-                  placeholder="••••••••"
-                />
-              </div>
+            <div>
+              <label className="text-sm text-slate-400 block mb-1">Lösenord</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-3 py-2 rounded-md bg-[#0F1C2E] border border-slate-600 text-white placeholder:text-slate-500 focus:outline-none focus:border-[#F5C400]"
+                placeholder="••••••••"
+              />
+            </div>
 
-              {fel && (
-                <p className="text-sm text-red-400">{fel}</p>
-              )}
+            {fel && (
+              <p className="text-sm text-red-400">{fel}</p>
+            )}
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full font-semibold"
-                style={{ backgroundColor: '#F5C400', color: '#0E1B2E' }}
-              >
-                {loading ? 'Loggar in...' : 'Logga in'}
-              </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full font-semibold"
+              style={{ backgroundColor: '#F5C400', color: '#0F1C2E' }}
+            >
+              {loading ? 'Loggar in...' : 'Logga in'}
+            </Button>
 
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={loading}
-                onClick={handleMagicLink}
-                className="w-full text-slate-400 hover:text-white border border-slate-600"
-              >
-                Skicka Magic Link
-              </Button>
-
-              <p className="text-center text-sm text-slate-400">
-                Inget konto?{' '}
-                <Link href="/registrera" className="hover:underline" style={{ color: '#F5C400' }}>
-                  Registrera dig →
-                </Link>
-              </p>
-            </form>
-          )}
+            <p className="text-center text-sm text-slate-400">
+              Inget konto?{' '}
+              <Link href="/registrera" className="hover:underline" style={{ color: '#F5C400' }}>
+                Registrera dig →
+              </Link>
+            </p>
+            <p className="text-center text-sm">
+              <Link href="/" className="text-slate-500 hover:text-slate-300">
+                ← Tillbaka
+              </Link>
+            </p>
+          </form>
         </CardContent>
       </Card>
     </div>
