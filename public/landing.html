@@ -915,61 +915,81 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
 </section>
 
 
-<!-- ══ PROOF – Svensk, utan påhittade citat (cream) ══ -->
-<section id="proof" class="light-section">
+<!-- ══ PROOF – Produktscreenshots i browser-frames ══ -->
+<section id="proof" style="padding:80px 0;background:var(--dark)">
   <div class="wrap">
-    <div style="text-align:center;margin-bottom:44px" class="rv">
-      <div class="eyebrow" style="justify-content:center">Varför det fungerar</div>
-      <h2 class="h2" style="color:var(--lt1)">Byggt på verkliga insikter<br>från branschen.</h2>
+    <div style="text-align:center;margin-bottom:48px" class="rv">
+      <div class="eyebrow" style="justify-content:center">Se produkten i action</div>
+      <h2 class="h2">Allt du behöver för att<br>vinna fler uppdrag.</h2>
     </div>
 
-    <!-- Three proof cards -->
-    <div class="proof-grid">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-bottom:48px">
 
-      <!-- Branschfakta -->
-      <div class="proof-card rv">
-        <div class="pc-icon">📊</div>
-        <div class="pc-type">Branschdata</div>
-        <h3 class="pc-h">13 arbetsveckor per år på anbudsadministration</h3>
-        <p class="pc-body">En elfirma med 8 montörer lämnar i snitt 4 B2B-anbud per månad. Varje anbud tar 11 timmar manuellt. Det är 528 timmar per år – tid som inte går till installation, kunder eller tillväxt.</p>
-        <div class="pc-source">Källa: Installatörsföretagen branschrapport · SCB företagsstatistik</div>
-      </div>
-
-      <!-- Grundarens röst -->
-      <div class="founder-card rv d1">
-        <div class="pc-type">Från grundaren</div>
-        <p class="founder-quote">Jag var projektledare på en elfirma i fem år. Vi förlorade uppdrag till Bravida – inte för att deras jobb var bättre, utan för att deras anbud såg bättre ut. Det är det vi fixar.</p>
-        <div class="founder-auth">
-          <div class="founder-av">D</div>
-          <div>
-            <div class="founder-name">Dagnielo Sanchez</div>
-            <div class="founder-role">Grundare · SveBud · Stockholm</div>
+      <!-- Pipeline -->
+      <div class="rv">
+        <div style="margin-bottom:12px">
+          <div style="font-size:15px;font-weight:700;color:var(--dt1)">📊 Pipeline-översikt</div>
+          <div style="font-size:13px;color:var(--dt3);margin-top:2px">Alla anbud på ett ställe</div>
+        </div>
+        <div class="bframe">
+          <div class="bbar">
+            <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+            <div class="burl">app.svebud.se/dashboard</div>
+          </div>
+          <div style="background:var(--dark2);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img src="/screenshots/pipeline.png" alt="Pipeline" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'color:var(--dt4);font-size:12px;text-align:center;padding:20px\'>Ta en screenshot av<br>dashboarden och spara som<br><strong>public/screenshots/pipeline.png</strong></div>'" />
           </div>
         </div>
       </div>
 
-      <!-- Beta-program -->
-      <div class="beta-card rv d2">
-        <div class="beta-type">🔥 Betaprogram – begränsat antal platser</div>
-        <h3 class="beta-h" style="color:var(--dt1)">Testa gratis i 3 månader</h3>
-        <p class="beta-body">Vi söker 10 elfirmor som vill vara med och forma produkten. Du får full Pro-access gratis mot ett 30-minuters feedbacksamtal per månad.</p>
-        <div class="spots">
-          <div class="spot"></div>
-          <div class="spot"></div>
-          <div class="spot"></div>
-          <div class="spot"></div>
-          <div class="spot"></div>
-          <div class="spot taken"></div>
-          <div class="spot taken"></div>
-          <div class="spot taken"></div>
-          <div class="spot taken"></div>
-          <div class="spot taken"></div>
-          <span class="spots-lbl">5 av 10 platser kvar</span>
+      <!-- Anbud -->
+      <div class="rv d1">
+        <div style="margin-bottom:12px">
+          <div style="font-size:15px;font-weight:700;color:var(--dt1)">📋 Färdigt anbud</div>
+          <div style="font-size:13px;color:var(--dt3);margin-top:2px">Komplett anbud på 20 minuter</div>
         </div>
-        <a href="#pricing" class="btn-p" style="width:100%;justify-content:center;font-size:14px">Ansök om betaplats →</a>
+        <div class="bframe">
+          <div class="bbar">
+            <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+            <div class="burl">app.svebud.se/projekt/...</div>
+          </div>
+          <div style="background:var(--dark2);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img src="/screenshots/anbud.png" alt="Anbud" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'color:var(--dt4);font-size:12px;text-align:center;padding:20px\'>Ta en screenshot av<br>anbudsvyn och spara som<br><strong>public/screenshots/anbud.png</strong></div>'" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Föranmälan -->
+      <div class="rv d2">
+        <div style="margin-bottom:12px">
+          <div style="font-size:15px;font-weight:700;color:var(--dt1)">⚡ Föranmälan-tracker</div>
+          <div style="font-size:13px;color:var(--dt3);margin-top:2px">Spåra föranmälan steg för steg</div>
+        </div>
+        <div class="bframe">
+          <div class="bbar">
+            <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+            <div class="burl">app.svebud.se/projekt/.../foranmalan</div>
+          </div>
+          <div style="background:var(--dark2);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img src="/screenshots/foranmalan.png" alt="Föranmälan" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'color:var(--dt4);font-size:12px;text-align:center;padding:20px\'>Ta en screenshot av<br>föranmälan-trackern och spara som<br><strong>public/screenshots/foranmalan.png</strong></div>'" />
+          </div>
+        </div>
       </div>
 
     </div>
+
+    <!-- Grundarcitat -->
+    <div style="max-width:680px;margin:0 auto;text-align:center" class="rv">
+      <p style="font-size:18px;font-style:italic;line-height:1.7;color:var(--dt3);margin-bottom:16px">"Vi förlorade uppdrag till Bravida – inte för att deras jobb var bättre, utan för att deras anbud såg bättre ut. Det är det vi fixar."</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--amber);color:var(--dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">D</div>
+        <div style="text-align:left">
+          <span style="font-weight:700;color:var(--dt2);font-size:13px">Dagnielo Sanchez</span>
+          <span style="font-size:12px;color:var(--dt4);margin-left:6px">Grundare · SveBud</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
