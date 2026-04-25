@@ -1,4 +1,16 @@
+
+
+
+
+
 # Svebud – Claude Code Instruktioner
+
+
+## Läsregler för Claude Code
+- Läs ALDRIG filer i `node_modules/`, `.next/`, `.vercel/`, `public/` utan att jag uttryckligen ber om det
+- Läs ALDRIG `package-lock.json` — använd `package.json` istället
+- Vid start: läs BARA denna fil (CLAUDE.md) och `README.md`. Vänta sedan på instruktioner.
+- Arbeta alltid med specifika filer jag pekar ut, inte "hela projektet"
 
 ## Vad är Svebud?
 AI-driven anbudshantering för svenska elinstallationsföretag (elfirmor).
