@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { getPosthog } from '@/lib/posthog-server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -50,6 +51,16 @@ export async function POST(req: NextRequest) {
         metadata: { userId: user.id, tier }
       }
     })
+
+    const ph = getPosthog()
+    if (ph) {
+      ph.capture({
+        distinctId: user.id,
+        event: 'checkout_startad',
+        properties: { tier },
+      })
+      await ph.flush()
+    }
 
     return NextResponse.json({ url: session.url })
 

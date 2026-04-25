@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { analyseraOchMatcha } from '@/lib/extraction-agent'
 import { genereraSnabboffert, detekteraFörfråganTyp } from '@/lib/snabboffert-agent'
 import { samlaFUDokument } from '@/lib/fu-agent'
@@ -9,6 +10,9 @@ export async function POST(request: NextRequest) {
   if (!projektId) {
     return NextResponse.json({ fel: 'projektId krävs' }, { status: 400 })
   }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   try {
     // Samla dokument för att detektera typ
@@ -21,7 +25,7 @@ export async function POST(request: NextRequest) {
       const resultat = await genereraSnabboffert(projektId)
       return NextResponse.json({ resultat, analystyp: 'snabb' })
     } else {
-      const resultat = await analyseraOchMatcha(projektId)
+      const resultat = await analyseraOchMatcha(projektId, user?.id)
       return NextResponse.json({ resultat, analystyp: 'formell' })
     }
   } catch (err) {

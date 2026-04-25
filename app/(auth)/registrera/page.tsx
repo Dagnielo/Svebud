@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { posthog } from '@/lib/posthog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
@@ -48,6 +49,7 @@ export default function RegistreraPage() {
         företag,
         epost: email,
       })
+      posthog.capture('user_signed_up', { tier: 'trial' })
     }
 
     setKlart(true)

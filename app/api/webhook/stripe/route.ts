@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { getPosthog } from '@/lib/posthog-server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -42,6 +43,16 @@ export async function POST(req: NextRequest) {
           .from('projekt')
           .update({ tier, prenumeration_status: 'active' })
           .eq('användar_id', userId)
+
+        const ph = getPosthog()
+        if (ph) {
+          ph.capture({
+            distinctId: userId,
+            event: 'prenumeration_startad',
+            properties: { tier, userId },
+          })
+          await ph.flush()
+        }
       }
     }
 

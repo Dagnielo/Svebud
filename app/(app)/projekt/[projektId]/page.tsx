@@ -17,6 +17,7 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument-style'
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
+import { posthog } from '@/lib/posthog'
 
 type Inskickning = {
   datum: string
@@ -455,6 +456,7 @@ ${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.ti
   function exporteraSomPdf() {
     const win = window.open('', '_blank')
     if (!win) return
+    posthog.capture('anbud_exporterat', { projekt_id: projektId, format: 'pdf' })
     win.document.write(EXPORT_HTML_HEAD.replace('<title>Anbud</title>', `<title>Anbud - ${projekt?.namn}</title>`))
     win.document.write(byggKompletAnbudHtml())
     win.document.write(EXPORT_HTML_FOOT)
@@ -463,6 +465,7 @@ ${mom.map(m => `<tr><td>${m.beskrivning}</td><td style="text-align:right">${m.ti
   }
 
   function exporteraSomWord() {
+    posthog.capture('anbud_exporterat', { projekt_id: projektId, format: 'word' })
     const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><style>
 body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.4;color:#1a1a2e;max-width:780px;margin:0 auto;padding:24px}

@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import { parseClaudeJSON } from '@/lib/utils'
 import type { Anbudsläge } from '@/lib/verdict'
+import { getPosthog } from '@/lib/posthog-server'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 const supabase = createClient(
@@ -121,7 +122,7 @@ Returnera ENDAST giltig JSON:
 /**
  * Analyserar FU OCH matchar krav mot profil i ETT steg.
  */
-export async function analyseraOchMatcha(projektId: string): Promise<AnalysResultat> {
+export async function analyseraOchMatcha(projektId: string, userId?: string): Promise<AnalysResultat> {
   const { samlaFUDokument, byggClaudeContent, samlaFUText } = await import('@/lib/fu-agent')
 
   // Samla alla dokument
@@ -247,6 +248,20 @@ export async function analyseraOchMatcha(projektId: string): Promise<AnalysResul
         tokens_använda: tokens,
         varaktighet_ms: varaktighet,
       })
+    }
+
+    const ph = getPosthog()
+    if (ph && userId) {
+      ph.capture({
+        distinctId: userId,
+        event: 'analys_klar',
+        properties: {
+          projekt_id: projektId,
+          anbudsläge: resultat.anbudsläge,
+          match_procent: resultat.match_procent,
+        },
+      })
+      await ph.flush()
     }
 
     return resultat

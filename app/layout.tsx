@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { PosthogProvider } from '@/components/PosthogProvider'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -26,7 +27,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="sv" className={`${dmSans.variable} ${jetbrainsMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <PosthogProvider>{children}</PosthogProvider>
+      </body>
     </html>
   )
 }

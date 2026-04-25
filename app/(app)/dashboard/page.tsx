@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { posthog } from '@/lib/posthog'
 import Sidebar from '@/components/Sidebar'
 import ProjektKort, { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
 
@@ -62,6 +63,29 @@ export default function DashboardPage() {
     await supabase.from('projekt').update({ deadline: datum }).eq('id', projektId)
   }
 
+  async function uppdateraUtfall(
+    projektId: string,
+    utfall: 'vunnet' | 'förlorat' | 'vantar',
+    extra: { datum?: string; notering?: string; vinnande_pris?: number } = {}
+  ) {
+    const idag = new Date().toISOString().slice(0, 10)
+    const uppdatering: Record<string, unknown> = {
+      tilldelning_status: utfall,
+      pipeline_status: 'tilldelning',
+    }
+    if (utfall === 'vunnet' || utfall === 'förlorat') {
+      uppdatering.tilldelning_datum = extra.datum ?? idag
+      if (extra.notering) uppdatering.tilldelning_notering = extra.notering
+      if (utfall === 'vunnet' && extra.vinnande_pris) {
+        uppdatering.vinnande_pris = extra.vinnande_pris
+      }
+    }
+    await supabase.from('projekt').update(uppdatering).eq('id', projektId)
+    setProjekt(prev => prev.map(p =>
+      p.id === projektId ? ({ ...p, ...uppdatering } as typeof p) : p
+    ))
+  }
+
   const hämtaData = useCallback(async () => {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) return
@@ -76,13 +100,20 @@ export default function DashboardPage() {
 
       if (profil) {
         const namn = (profil as Record<string, unknown>).fullnamn as string | null
+        const företagNamn = (profil as Record<string, unknown>).företag as string | null
+        const tierVärde = (profil as Record<string, unknown>).tier as string | null
         setUser({
           fullnamn: namn,
-          företag: (profil as Record<string, unknown>).företag as string | null,
-          tier: (profil as Record<string, unknown>).tier as string | null,
+          företag: företagNamn,
+          tier: tierVärde,
           initialer: namn
             ? namn.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
             : '?',
+        })
+        posthog.identify(authUser.id, {
+          email: authUser.email,
+          företag: företagNamn,
+          tier: tierVärde,
         })
       }
     }
@@ -131,9 +162,9 @@ export default function DashboardPage() {
   const inskickat = projekt.filter(p => getPipelineKolumn(p) === 'inskickat')
   const tilldelning = projekt.filter(p => getPipelineKolumn(p) === 'tilldelning')
 
-  // KPI calculations
-  const avslutade = uppföljningar.filter(u => u.utfall === 'vunnet' || u.utfall === 'förlorat')
-  const vunna = uppföljningar.filter(u => u.utfall === 'vunnet')
+  // KPI calculations — läs från projekt.tilldelning_status (single source of truth)
+  const avslutade = projekt.filter(p => p.tilldelning_status === 'vunnet' || p.tilldelning_status === 'förlorat')
+  const vunna = projekt.filter(p => p.tilldelning_status === 'vunnet')
   const winRate = avslutade.length > 0 ? Math.round((vunna.length / avslutade.length) * 100) : 0
 
   const pipelineVärde = anbudData.reduce((sum, a) => {
@@ -393,7 +424,7 @@ export default function DashboardPage() {
                             onDragEnd={() => { setDragProjektId(null); setDragOverKolumn(null) }}
                             style={{ cursor: 'grab', opacity: dragProjektId === p.id ? 0.5 : 1 }}
                           >
-                            <ProjektKort projekt={p} onRadera={raderaProjekt} onDeadlineChange={uppdateraDeadline} />
+                            <ProjektKort projekt={p} onRadera={raderaProjekt} onDeadlineChange={uppdateraDeadline} onUtfallChange={uppdateraUtfall} />
                           </div>
                         ))
                       )}

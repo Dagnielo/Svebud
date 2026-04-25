@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { laddaUppOchLäs } from '@/lib/document-agent'
+import { getPosthog } from '@/lib/posthog-server'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -39,6 +40,19 @@ export async function POST(request: NextRequest) {
         varning: resultat.fel,
         metod: resultat.metod,
       })
+    }
+
+    const ph = getPosthog()
+    if (ph) {
+      ph.capture({
+        distinctId: user.id,
+        event: 'pdf_uploaded',
+        properties: {
+          filtyp: fil.type,
+          storlek_mb: Number((fil.size / 1024 / 1024).toFixed(2)),
+        },
+      })
+      await ph.flush()
     }
 
     return NextResponse.json({
