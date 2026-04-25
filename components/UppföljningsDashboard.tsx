@@ -77,6 +77,8 @@ export default function UppföljningsDashboard() {
   }, [])
 
   const uppdateraUtfall = async (id: string, utfall: string) => {
+    const uppfRow = uppföljningar.find(u => u.id === id)
+
     await supabase
       .from('uppföljning')
       .update({
@@ -84,6 +86,18 @@ export default function UppföljningsDashboard() {
         utfall: utfall === 'avbrutet' ? 'inget_svar' : utfall,
       })
       .eq('id', id)
+
+    // Sync till projekt.tilldelning_status (single source of truth för KPI)
+    if (uppfRow?.projekt_id && (utfall === 'vunnet' || utfall === 'förlorat')) {
+      await supabase
+        .from('projekt')
+        .update({
+          tilldelning_status: utfall,
+          pipeline_status: 'tilldelning',
+          tilldelning_datum: new Date().toISOString(),
+        })
+        .eq('id', uppfRow.projekt_id)
+    }
 
     setUppföljningar(prev =>
       prev.map(u => u.id === id ? { ...u, state: utfall, utfall } : u)
