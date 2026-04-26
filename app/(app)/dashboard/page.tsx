@@ -63,27 +63,8 @@ export default function DashboardPage() {
     await supabase.from('projekt').update({ deadline: datum }).eq('id', projektId)
   }
 
-  async function uppdateraUtfall(
-    projektId: string,
-    utfall: 'vunnet' | 'förlorat' | 'vantar',
-    extra: { datum?: string; notering?: string; vinnande_pris?: number } = {}
-  ) {
-    const idag = new Date().toISOString().slice(0, 10)
-    const uppdatering: Record<string, unknown> = {
-      tilldelning_status: utfall,
-      pipeline_status: 'tilldelning',
-    }
-    if (utfall === 'vunnet' || utfall === 'förlorat') {
-      uppdatering.tilldelning_datum = extra.datum ?? idag
-      if (extra.notering) uppdatering.tilldelning_notering = extra.notering
-      if (utfall === 'vunnet' && extra.vinnande_pris) {
-        uppdatering.vinnande_pris = extra.vinnande_pris
-      }
-    }
-    await supabase.from('projekt').update(uppdatering).eq('id', projektId)
-    setProjekt(prev => prev.map(p =>
-      p.id === projektId ? ({ ...p, ...uppdatering } as typeof p) : p
-    ))
+  function uppdateraUtfall() {
+    hämtaData()
   }
 
   const hämtaData = useCallback(async () => {

@@ -18,6 +18,7 @@ import DOMPurify from 'dompurify'
 import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument-style'
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 import { posthog } from '@/lib/posthog'
+import UtfallsKnappar from '@/components/UtfallsKnappar'
 
 type Inskickning = {
   datum: string
@@ -345,11 +346,6 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
       skickat_datum: nu,
       inskickningar: nyaInskickningar,
     }).eq('id', projektId)
-    await hämta()
-  }
-
-  async function uppdateraTilldelning(status: string) {
-    await supabase.from('projekt').update({ pipeline_status: 'tilldelning', tilldelning_status: status, tilldelning_datum: new Date().toISOString() }).eq('id', projektId)
     await hämta()
   }
 
@@ -1487,15 +1483,13 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                   {/* Tilldelning */}
                   {(projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') && (
                     <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '16px 24px' }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Hur gick det?</div>
-                      <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 10 }}>
-                        Markera utfallet. Vid vunnet anbud aktiveras föranmälan-trackern automatiskt.
-                      </p>
-                      <div className="flex gap-3">
-                        <Button onClick={() => uppdateraTilldelning('vunnet')} style={{ background: projekt.tilldelning_status === 'vunnet' ? 'var(--green)' : 'transparent', color: projekt.tilldelning_status === 'vunnet' ? 'var(--navy)' : 'var(--green)', border: '1px solid var(--green)' }}>✅ Vunnet</Button>
-                        <Button onClick={() => uppdateraTilldelning('forlorat')} style={{ background: projekt.tilldelning_status === 'forlorat' ? 'var(--red)' : 'transparent', color: projekt.tilldelning_status === 'forlorat' ? 'white' : 'var(--red)', border: '1px solid var(--red)' }}>❌ Förlorat</Button>
-                        <Button onClick={() => uppdateraTilldelning('vantar')} style={{ background: projekt.tilldelning_status === 'vantar' ? 'var(--orange)' : 'transparent', color: projekt.tilldelning_status === 'vantar' ? 'var(--navy)' : 'var(--orange)', border: '1px solid var(--orange)' }}>⏳ Väntar</Button>
-                      </div>
+                      <UtfallsKnappar
+                        projekt={{
+                          id: projekt.id,
+                          tilldelning_status: (projekt.tilldelning_status as 'vunnet' | 'förlorat' | 'vantar' | null) ?? null,
+                        }}
+                        onChange={hämta}
+                      />
                     </div>
                   )}
 
