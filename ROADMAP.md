@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 28 april 2026 (efter Landing 2.2 — logo-konsolidering)
+**Senast uppdaterad:** 28 april 2026 (efter Landing 2.3 — Fas 2 KLAR ✅)
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -11,7 +11,7 @@
 
 | Yta | Färdig | Återstår |
 |-----|--------|----------|
-| **Landningssida** | 30% | Fas 2 (design-polish) + Fas 3 (strukturella tillägg) |
+| **Landningssida** | 60% | Fas 3 (strukturella tillägg) — copy-mjukning, FAQ, om oss-sida, beta-formulär |
 | **Dashboard** | 75% | Uppföljnings-banner (#4) |
 | **Statistik-sida** | 100% | — |
 | **Projekt-detaljvy** | 70% | Email-kanal-källa (#5), uppföljnings-knappar (#4) |
@@ -53,27 +53,20 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 - ✅ Landing 2.1 — Standardisera primärknapp + sekundärknapp överallt (`.btn-s` + `.pbtn.sec` enhetliga, ⚡ före text på alla större primär-CTA, Pro-emfas behållen)
 - ✅ Bugfix: horisontell overflow i #proof-sektionen (`.proof-grid` responsive + `.burl` ellipsis)
 - ✅ Landing 2.2 — Logo-konsolidering: footer-logo bytt från inline-stilar till klass-baserad markup. `.logo` + `.logo-bolt` + `.logo-name` med `.sm`-modifier för mindre storlek (28×28 / 20px) i footer.
+- ✅ Landing 2.3 — 10 emoji-ikoner bytta mot Phosphor Bold via CDN. Pain-cards (`ph-files`, `ph-clipboard-text`, `ph-trend-down`), film-slides (`ph-upload-simple`, `ph-check-circle`, `ph-calculator`, `ph-paper-plane-tilt`), proof-cards (`ph-kanban`, `ph-file-text`, `ph-flow-arrow`). **Landing Fas 2 KLAR ✅.**
 
 ---
 
 ## Nästa steg — vart är vi på väg?
 
-### Just nu — Landing Fas 2 (design-polish)
+### Just nu — Copy-mjukning + Uppföljning
 
 | # | Arbete | Fil | Tid |
 |---|--------|-----|-----|
-| 1 | Landing 2.3 — Byt AI-genererade ikoner mot Phosphor | Landing [2.3] | 2 timmar |
-
-**Total: ~2 timmar.** Sista visuella uppgraderingen i Landing Fas 2.
-
-### Veckan därefter — Copy-mjukning + Uppföljning
-
-| # | Arbete | Fil | Tid |
-|---|--------|-----|-----|
-| 4 | Landing 2.4 — Tre copy-mjukningar | Landing [2.4] | 2 timmar |
-| 5 | Landing 2.5 — FAQ utökas med 4 kritiska frågor | Landing [2.5] | 1 timme |
-| 6 | Landing 3.4 — Justera tidsberäkningar i jämförelsetabell | Landing [3.4] | 30 min |
-| 7 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
+| 1 | Landing 2.4 — Tre copy-mjukningar | Landing [2.4] | 2 timmar |
+| 2 | Landing 2.5 — FAQ utökas med 4 kritiska frågor | Landing [2.5] | 1 timme |
+| 3 | Landing 3.4 — Justera tidsberäkningar i jämförelsetabell | Landing [3.4] | 30 min |
+| 4 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
 
 **Total: ~2 dagar.** Landningssidan visuellt komplett. Uppföljning hjälper användare hålla koll på inskickade anbud.
 
@@ -303,5 +296,5 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 28 april 2026 — efter Landing 2.2 (logo-konsolidering).
+*Senast uppdaterad: 28 april 2026 — efter Landing 2.3 (Phosphor-ikoner, Fas 2 KLAR).
 Uppdatera denna fil efter varje slutförd sprint.*
