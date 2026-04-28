@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# IDE — personlig konfiguration, inte i repo
+.vscode/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

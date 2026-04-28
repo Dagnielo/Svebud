@@ -70,6 +70,9 @@ export default function UtfallsKnappar({ projekt, onChange, kompakt = false }: P
 
   async function sparaForlorat() {
     const notering = forloratNotering.trim() || undefined
+    // TODO: nolla vinnande_pris vid förlorat-flöde — annars kan rader bli inkonsekventa
+    // (förlorat status + vinnande_pris kvar från ev. tidigare 'vunnet'-markering).
+    // Statistik-KPI filtrerar idag bort detta, men datan bör städas vid källan.
     await spara('förlorat', { notering })
     posthog.capture('anbud_markerat_forlorat', {
       projekt_id: projekt.id,
