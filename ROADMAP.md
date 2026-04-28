@@ -1,177 +1,209 @@
 # SveBud — ROADMAP
 
-**Syfte:** Detta är indexfilen för SveBuds fortsatta utveckling. Den binder ihop två specifikationer — en för landningssidan och en för produktfeatures — och ger den konsoliderade prioriteringsordningen över båda.
+**Senast uppdaterad:** 28 april 2026 (efter integration av Features #11 — Profil-systemet)
+**Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
 
 ---
 
-## De två spec-filerna
+## Status just nu — var står du?
 
-| Fil | Handlar om | Antal ändringar | Estimerad tid |
-|-----|-----------|----------------|---------------|
-| `PROMPT_landing_v5.md` | Landningssidan (`public/landing.html`) | 14 punkter fördelat på 3 faser | ~4 veckor elapsed, ~5 dagars faktiskt arbete |
-| `svebud-nya-funktioner-prompts.md` | Produktfeatures i appen | 10 prompter fördelat på 4 sprintar | ~8 veckor elapsed, ~15 dagars faktiskt arbete |
+| Yta | Färdig | Återstår |
+|-----|--------|----------|
+| **Landningssida** | 30% | Fas 2 (design-polish) + Fas 3 (strukturella tillägg) |
+| **Dashboard** | 75% | Uppföljnings-banner (#4) |
+| **Statistik-sida** | 100% | — |
+| **Projekt-detaljvy** | 70% | Email-kanal-källa (#5), uppföljnings-knappar (#4) |
+| **Profil-systemet** | 0% | Hela Features #11 — 5 etapper (A–E), 7–8 dagar |
+| **Backend / agenter** | 80% | Firecrawl-scrapers (#6), prisförslag (#9) |
+| **Analytics** | 100% | — |
 
-De är **medvetet separerade**: landningssida och produktfeatures är olika arbeten med olika testflöden. Landning mäts i konvertering (klick → signup → trial), features mäts i användarbeteende (retention, task completion).
-
----
-
-## Kritiska beroenden mellan filerna
-
-Det finns tre punkter där filerna överlappar eller blockerar varandra. Läs dessa innan du börjar planera sprintar.
-
-### Beroende 1: PostHog ska upp **före** Landing Fas 2
-
-**Varför:** När landningssidan polish-ändras (Fas 2 i landing-filen) behöver du kunna mäta om ändringarna förbättrar konvertering. Utan PostHog är det blindflyg.
-
-**Praktisk konsekvens:** Features #1 (PostHog) ska implementeras **innan** Landing Fas 2 börjar. Men Landing Fas 1 (trust-fixarna) kan köras först — de är rena redigeringar och behöver inte mätas, de är rätt oavsett.
-
-### Beroende 2: Features #7 "Uppdatera landningssidan" krockar med Landing v5
-
-**Detta är det viktigaste beroendet att förstå.** Features-filens Sprint 3 innehåller en prompt (#7) som uppdaterar landningssidan med nya feature-kort ("Vet vad som vinner", "Följer upp när du glömmer", etc.). Samtidigt har vi `PROMPT_landing_v5.md` som är en helt annan uppsättning landningssida-ändringar.
-
-**Risk:** Om båda körs parallellt skriver Claude Code över varandras ändringar.
-
-**Lösning:**
-- Kör hela `PROMPT_landing_v5.md` först (alla tre faser)
-- **Sedan** — och bara då — kör Features #7 som LAGER OVANPÅ, inte istället för
-- Features #7 ska uppdateras så att dess "Ändring 3" (nya feature-sektionen) läggs in i den redan polishade landning från v5, inte i den ursprungliga
-
-**Ännu viktigare:** Features #7 marknadsför features som kanske inte finns än. Du får inte lägga till feature-kortet "Vet vad som vinner" på landningssidan förrän Win/Loss-systemet (Features #2 + #3) är live i produktion. Samma för "Följer upp när du glömmer" → kräver Features #4. Annars lovar sidan saker produkten inte gör.
-
-### Beroende 3: Features #9 "Prisförslag historik" kräver Win/Loss-data
-
-Features-filen säger detta explicit, men det är värt att upprepa: #9 fungerar inte utan att #2 och #3 är igång och att användaren markerat minst 3–5 anbud som vunna/förlorade. Detta betyder #9 realistiskt kan gå live först 4–6 veckor efter #2, inte direkt efter.
+**Översättning:**
+Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Tillväxt-features** (uppföljning, email-kanal, prisförslag, referral). Plus landningssida-polering.
 
 ---
 
-## Konsoliderad prioritetsordning
+## Avklarat
 
-Här är planen över båda filerna, vecka för vecka. Siffrorna i hakparenteser pekar på originalfilen så du kan slå upp detaljer.
+### 26 april 2026 — Vecka 1 + Win/Loss-grunden ✅
 
-### Vecka 1 — Trust först, mätning parallellt
+- ✅ Landing 1.1 — Påhittade logotyper borttagna
+- ✅ Landing 1.2 — "4,9/5 från betaanvändare" borttaget
+- ✅ Landing 1.3 — Statistiksiffror redan fixade
+- ✅ Landing 1.4 — "⚡ Analys"-tagg ändrad till "Kalkyl pågår"
+- ✅ Landing 1.5 — Demo-video-sektion redan borttagen
+- ✅ Features #1 — PostHog Analytics live på EU-host (eu.posthog.com), 8 events trackade
+- ✅ Migration 010 körd (Win/Loss-kolumner + stavningsfix + backfill)
+- ✅ Features #2 — Win/Loss UI: knappar, dialoger, PostHog-events
+- ✅ Features #2 Fas 2 — DRY-extraktion till `<UtfallsKnappar>`-komponent
 
-| Arbete | Fil | Tid |
-|--------|-----|-----|
-| Ta bort påhittade logotyper | Landing [1.1] | 30 min |
-| Ta bort "4,9/5 utan källa" | Landing [1.2] | 15 min |
-| Fixa statistiksiffror (38%, "3 dgr") | Landing [1.3] | 30 min |
-| Fixa "⚡ ANALYS"-taggen i hero | Landing [1.4] | 15 min |
-| Ta bort/fixa demo-video-sektionen | Landing [1.5] | 30 min – 1 dag |
-| PostHog-integration | Features [#1] | 4 timmar |
+### 27 april 2026 — Win/Loss Dashboard ✅
 
-**Total:** ~2 dagar. **Utfall:** Inga oärliga element kvar. Mätning på plats.
+- ✅ Migration 011 körd (`ai_insikter_cache`-tabell med RLS)
+- ✅ Features #3 — Win/Loss Dashboard `/statistik`:
+  - 4 KPI-kort, win rate per projekttyp, fördelning per prisnivå
+  - AI-insikter via Claude API med 24h cache + force-rate-limit
+  - Sorterbar tabell över alla avslutade anbud
+- ✅ Bugfix: `parseClaudeJSON` i `lib/utils.ts` generaliserad — hanterar både JSON-objekt OCH JSON-arrays
+- ✅ `PROMPT_profil_v1.md` skapad — komplett spec för Features #11 Profil-systemet
 
-### Vecka 2 — Win/Loss-grunden + landing-polish
+---
 
-| Arbete | Fil | Tid |
-|--------|-----|-----|
-| Win/Loss UI (vunnet/förlorat-knappar) | Features [#2] | 1 dag |
-| Win/Loss Dashboard (`/statistik`) | Features [#3] | 1–2 dagar |
-| Primärknapp standardiseras | Landing [2.1] | 1 timme |
-| Logotyp konsolideras | Landing [2.2] | 2 timmar |
-| Byt ut AI-genererade feature-ikoner | Landing [2.3] | 2 timmar |
+## Nästa steg — vart är vi på väg?
 
-**Total:** ~3 dagar. **Utfall:** Win/Loss-systemet börjar samla data. Landning ser polerad ut.
+### Just nu — Landing Fas 2 (design-polish)
 
-### Vecka 3 — Copy-mjukning och FAQ
+| # | Arbete | Fil | Tid |
+|---|--------|-----|-----|
+| 1 | Landing 2.1 — Standardisera primärknapp överallt | Landing [2.1] | 1 timme |
+| 2 | Landing 2.2 — Konsolidera logotyp till en variant | Landing [2.2] | 2 timmar |
+| 3 | Landing 2.3 — Byt AI-genererade ikoner mot Phosphor | Landing [2.3] | 2 timmar |
 
-| Arbete | Fil | Tid |
-|--------|-----|-----|
-| Tre copy-mjukningar (steg 1, kvalitetsgranskning, snabboffert) | Landing [2.4] | 2 timmar |
-| FAQ utökas med 4 kritiska frågor | Landing [2.5] | 1 timme |
-| Justera tidsberäkningar i jämförelsetabellen | Landing [3.4] | 30 min |
-| Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
+**Total: ~1 dag.** Stor visuell uppgradering på landningssidan utan ny funktionalitet.
 
-**Total:** ~2 dagar. **Utfall:** Landningssida helt i mål. Uppföljning börjar hjälpa användare.
+### Veckan därefter — Copy-mjukning + Uppföljning
 
-### Vecka 4 — Strukturella tillägg på landning
+| # | Arbete | Fil | Tid |
+|---|--------|-----|-----|
+| 4 | Landing 2.4 — Tre copy-mjukningar | Landing [2.4] | 2 timmar |
+| 5 | Landing 2.5 — FAQ utökas med 4 kritiska frågor | Landing [2.5] | 1 timme |
+| 6 | Landing 3.4 — Justera tidsberäkningar i jämförelsetabell | Landing [3.4] | 30 min |
+| 7 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
 
-| Arbete | Fil | Tid |
-|--------|-----|-----|
-| Om oss-sida | Landing [3.1] | 1 dag |
-| Trial-längd → 30 dagar från första uppladdning | Landing [3.3] | 4 timmar |
-| Beta-ansökningsformulär | Landing [3.2] | 1 dag |
-| Email-kanal (Resend Inbound) | Features [#5] | 2 dagar |
+**Total: ~2 dagar.** Landningssidan visuellt komplett. Uppföljning hjälper användare hålla koll på inskickade anbud.
 
-**Total:** ~4 dagar. **Utfall:** Landning komplett. Email-kanalen öppen.
+### Vecka därefter — Strukturella tillägg + Email-kanal
 
-### Vecka 5–6 — Infrastruktur
+| # | Arbete | Fil | Tid |
+|---|--------|-----|-----|
+| 8 | Landing 3.1 — Om oss-sida | Landing [3.1] | 1 dag |
+| 9 | Landing 3.3 — Trial-längd 30 dagar från första uppladdning | Landing [3.3] | 4 timmar |
+| 10 | Landing 3.2 — Beta-ansökningsformulär | Landing [3.2] | 1 dag |
+| 11 | Features #5 — Email-kanal (Resend Inbound) | Features [#5] | 2 dagar |
 
-| Arbete | Fil | Tid |
-|--------|-----|-----|
-| Firecrawl-scrapers (om ej körda) | Features [#6] | 1 dag |
-| Verifiera 1–2 veckors Win/Loss-data | — | Kontinuerligt |
+**Total: ~4 dagar.** Landningssidan komplett (alla tre faser). Email-kanalen öppen.
 
-**Total:** Lugnare vecka. Samla data från vecka 1–4. Intervjua betakunder.
+### Senare — Infrastruktur + tillväxt
 
-### Vecka 7–8 — Integration + marknadsföring av nya features
+| # | Arbete | Fil | Tid |
+|---|--------|-----|-----|
+| 12 | Features #6 — Firecrawl-scrapers (verifiera/bygg) | Features [#6] | 1 dag |
+| 13 | Features #8 — SEO-landningssidor (4 st) | Features [#8] | 2–3 dagar |
+| 14 | Features #7 — Uppdatera landning med nya feature-kort | Features [#7] | 1 dag |
 
-| Arbete | Fil | Tid |
-|--------|-----|-----|
-| Uppdatera landning med nya feature-kort (**ENBART för features som är live**) | Features [#7] | 1 dag |
-| SEO-landningssidor (4 st) | Features [#8] | 2–3 dagar |
-| Prisförslag baserat på historik | Features [#9] | 1–2 dagar |
+**Kritiskt:** Features #7 får ENDAST marknadsföra features som faktiskt är live.
 
-**Total:** ~1 vecka. **Kritiskt:** Features #7 får bara marknadsföra det som fungerar. Kolla av mot faktisk produkt innan copy läggs på sidan.
+### Vecka 6–7 — Profil-systemet (Features #11)
 
-### Vecka 9+ — Tillväxt
+**Detta är en stor pelare — 7–8 dagar fokus, 5 migrationer, ny vy med 6 tabbar.**
 
-| Arbete | Fil | Tid |
-|--------|-----|-----|
-| Referral-program | Features [#10] | 2–3 dagar |
+| # | Arbete | Fil | Tid |
+|---|--------|-----|-----|
+| 11a | Etapp A — DB-grund + Företaget-tabben + Bolagsverket-hämtning | PROMPT_profil_v1.md | 2 dagar |
+| 11b | Etapp B — Behörigheter + AI-extraktion av certifikat | PROMPT_profil_v1.md | 2 dagar |
+| 11c | Etapp C — Team + Referenser auto-länkade till vunna anbud | PROMPT_profil_v1.md | 1 dag |
+| 11d | Etapp D — AI-lärda benchmarks | PROMPT_profil_v1.md | 2 dagar |
+| 11e | Etapp E — Mallar med versionshantering | PROMPT_profil_v1.md | 1 dag |
+
+**Total: ~7–8 dagar.** Varje etapp är självständig och kan deployas separat. Migration 012–016.
+
+**Filosofin är kritisk:** Profil-systemet ska INTE vara ett formulär eller en wizard. Profilen byggs av sig själv från riktigt arbete. Läs filosofi-sektionen i `PROMPT_profil_v1.md` innan etapp A startas.
+
+**Förberedelse innan vecka 6 startar:**
+- Registrera Bolagsverket Näringslivsregistret API (bolagsverket.se) — kan ta dagar att få igenom. Starta processen redan nu.
+- Reservplan: använd Firecrawl mot allabolag.se som fallback. Profilen fungerar lika bra.
+
+### Efter Profil-systemet
+
+| # | Arbete | Fil | Tid |
+|---|--------|-----|-----|
+| 15 | Features #9 — Prisförslag baserat på Win/Loss + benchmarks | Features [#9] | 1–2 dagar |
+| 16 | Features #10 — Referral-program | Features [#10] | 2–3 dagar |
+
+**Notera:** #9 är nu efter #11. Anledning: #9 läser från `firma_benchmarks`-tabellen som skapas i #11 Etapp D. Att bygga #9 först innebär dubbel logik som behöver refaktoreras.
+
+---
+
+## Fyra kritiska beroenden
+
+### Beroende 1: PostHog före Landing Fas 2 ✅
+**Status:** Löst. PostHog är live, Landing Fas 2 kan köras.
+
+### Beroende 2: Features #7 krockar med PROMPT_landing_v5.md
+Lösning: Kör hela `PROMPT_landing_v5.md` först (alla tre faser), **sedan** Features #7 som lager ovanpå. Och #7 får inte marknadsföra features som inte är byggda. Just nu kan #7 nämna Win/Loss + Statistik (klara), men inte uppföljning, email-kanal eller profil förrän #4, #5 och #11 är live.
+
+### Beroende 3: Features #9 (Prisförslag) kräver #11 Etapp D
+**Ändrad ordning:** #9 läser från `firma_benchmarks`-tabellen som skapas i #11 Etapp D. #9 kan inte byggas före #11 Etapp D utan att skapa dubbel logik. Detta är **anledningen** till att #11 prioriteras före #9 i nuvarande roadmap.
+
+### Beroende 4: Features #11 Etapp D kräver Win/Loss-data
+Win/Loss UI är live (Features #2). Etapp D (AI-lärda benchmarks) ger värde först vid **≥10 markerade anbud** med utfall. Du har 5 testanbud idag → Etapp A–C kan köras direkt, Etapp D bör vänta tills produktionsdata finns (alternativt skapa fler testanbud).
+
+Etapp E (Mallar) behöver **minst 1 genererat anbud** med fullständig text för att första mall-extraktionen ska fungera.
+
+---
+
+## Realistisk tidslinje framåt
+
+Med dagens tempo:
+
+- **Slut nästa vecka:** Landningssidan polerad visuellt + Uppföljning klar
+- **Om 2 veckor:** Landningssidan i mål + Email-kanal öppen
+- **Om 3–4 veckor:** Alla "Om oss" + beta-ansökan på plats, SEO-sidor publicerade
+- **Om 4–5 veckor:** Profil-systemet etapp A–C i mål (grund, cert-extraktion, team/referenser)
+- **Om 5–6 veckor:** Profil etapp D + E i mål, prisförslag (#9) byggt ovanpå benchmarks
+- **Om 6–7 veckor:** Första riktiga kunder med komplett profil-system
+- **Om 7–8 veckor:** Referral-program
+
+Du har redan investerat ~2 dagar som motsvarar ungefär 2.5 veckor av planen.
 
 ---
 
 ## Vad som inte är med i denna roadmap
 
-Följande är **medvetet utanför** de här två filerna och ska inte blandas in:
+Följande är **medvetet utanför** och ska inte blandas in:
 
-- **Bas+ mellanvariant (890 kr/mån)** — rekommenderas uppskjuten tills minst 3 beta-kunder explicit frågar efter den (se landing-fil sektion "DETTA SKA INTE BYGGAS NU")
-- **Tre demo-val** på landningssidan — ersatt med enkel textrad, inte produktförändring
-- **ÄTA-modul, tilldelning-kolumn med ÄTA, nätbolagsintegration, Fortnox-integration** — hör hemma i separat produkt-roadmap, inte landningssida-arbete
-- **Demo-video** — behåll borttagen tills video är helt produktionsklar
+- **Bas+ mellanvariant (890 kr/mån)** — vänta tills minst 3 beta-kunder explicit frågar
+- **Tre demo-val** på landningssidan — ersatt med enkel textrad
+- **ÄTA-modul, nätbolagsintegration, Fortnox-integration** — separat produkt-roadmap
+- **Demo-video** — behåll borttagen tills video är helt klar
+- **Onboarding-wizard / kom-igång-flöde** — Profil-systemet ersätter detta. Profilen byggs av sig själv från arbete, inte från ett formulär.
+- **Multi-firma per användare** — en användare = ett företag. Inte i scope för MVP.
+- **Behörighetsroller inom team-modulen** — Business-tier-feature, separat sprint.
+- **Export av profil till PDF** — vänta till feedback finns från riktiga användare.
+
+Tekniska skulder att åtgärda när tid finns:
+
+- **Optimering av polling i `projekt/[projektId]/page.tsx`** — `hämta()` gör 5 sekventiella queries. Inte akut.
+- **Förlorat-flödet i `<UtfallsKnappar>`** — nollar inte `vinnande_pris` när status ändras från vunnet → förlorat. TODO-kommentar tillagd. Inte akut, KPI-queryn skyddar.
 
 ---
 
 ## Så använder du denna struktur i Claude Code
 
-När du ska köra en specifik punkt, håll dig på samma nivå. Till exempel:
-
 ```
-Jag kör nu Landing-fil punkt 1.1 (ta bort påhittade logotyper)
-enligt PROMPT_landing_v5.md.
+Jag kör nu [Landing-fil punkt X.Y / Features-fil prompt #N / Profil etapp X]
+enligt [PROMPT_landing_v5.md / svebud-nya-funktioner-prompts.md / PROMPT_profil_v1.md].
 
-[Klistra in punkt 1.1]
+[Klistra in punkten/prompten/etappen]
 
 Kör Plan mode först.
 ```
 
-Eller:
-
-```
-Jag kör nu Features-fil prompt #2 (Win/Loss UI)
-enligt svebud-nya-funktioner-prompts.md.
-
-[Klistra in hela prompt #2]
-
-Kör Plan mode först.
-```
-
-**Kör aldrig två prompter parallellt som rör samma fil** — landing-punkterna rör `public/landing.html`, vilket betyder att du kör dem sekventiellt även om de är oberoende i teorin. Samma för features som rör samma tabeller (t.ex. #2 och #3 både rör `projekt`-tabellen).
+**Kör aldrig två prompter parallellt som rör samma fil eller samma vy.**
 
 ---
 
-## Valideringsflöde (gäller båda filerna)
+## Valideringsflöde (gäller alla tre filerna)
 
 Innan varje sprint-avslut:
 
-1. **Kör `npm run build`** — inga TypeScript-fel.
-2. **Testa flödet end-to-end** — inte bara att det kompilerar.
-3. **Kolla mot acceptanskriterierna** i originalfilen — inte minnesbaserat.
-4. **PostHog-check** (från och med vecka 2): loggas rätt events?
-5. **Kvalitetsgate: "vän-check"** — visa sidan/featuren för någon utanför projektet. Vad minns de efter 60 sekunder?
+1. **`npm run build`** — inga TypeScript-fel
+2. **Live-test** end-to-end — inte bara att det kompilerar
+3. **Kolla mot acceptanskriterierna** i originalfilen — inte minnesbaserat
+4. **PostHog-check** — loggas rätt events?
+5. **"Vän-check"** — visa featuren för någon utanför projektet. Vad minns de efter 60 sekunder?
+6. **Mockup-jämförelse** (för Features #11) — öppna `mockups/4_profil.html` parallellt med live-vyn. Identifiera 3 visuella avvikelser och åtgärda eller dokumentera bort.
 
 ---
 
@@ -181,32 +213,90 @@ Innan varje sprint-avslut:
 SveBud/
 ├── ROADMAP.md                           ← du är här (öppna först)
 ├── PROMPT_landing_v5.md                 ← detaljspec landningssida
+├── PROMPT_profil_v1.md                  ← NY (27 april) — Features #11 megaprompt
 ├── svebud-nya-funktioner-prompts.md     ← detaljspec produktfeatures
 ├── CLAUDE.md                            ← befintlig projektkontext
+├── components/
+│   ├── UtfallsKnappar.tsx               ← Win/Loss UI (26 april)
+│   ├── ProjektKort.tsx                  ← använder UtfallsKnappar (kompakt)
+│   ├── Sidebar.tsx                      ← med 📊 Statistik-länk (27 april)
+│   └── Profil/                          ← NY (etapp A+)
+│       ├── Företaget.tsx
+│       ├── Behörigheter.tsx
+│       ├── Team.tsx
+│       ├── Referenser.tsx
+│       ├── Benchmarks.tsx
+│       └── Mallar.tsx
+├── lib/
+│   ├── posthog.ts                       ← PostHog client (26 april)
+│   ├── posthog-server.ts                ← PostHog server (26 april)
+│   ├── utils.ts                         ← parseClaudeJSON med array-stöd (27 april)
+│   ├── bolagsverket-agent.ts            ← NY (etapp A)
+│   ├── cert-extraction-agent.ts         ← NY (etapp B)
+│   ├── benchmark-agent.ts               ← NY (etapp D)
+│   └── profilstyrka.ts                  ← NY (etapp A)
+├── app/(app)/
+│   ├── statistik/
+│   │   └── page.tsx                     ← Win/Loss Dashboard (27 april)
+│   └── profil/                          ← NY (etapp A)
+│       └── page.tsx
+├── app/api/
+│   ├── statistik/
+│   │   └── insikter/
+│   │       └── route.ts                 ← AI-insikter med cache (27 april)
+│   └── profil/                          ← NY
+│       ├── hämta-bolagsverket/route.ts  ← (etapp A)
+│       ├── cert/ladda-upp/route.ts      ← (etapp B)
+│       └── benchmarks/räkna-om/route.ts ← (etapp D)
 ├── public/
-│   ├── landing.html                     ← målfil för landing-spec
-│   └── images/                          ← 5 JPG-filer från senaste sessionen
+│   ├── landing.html                     ← Fas 1 färdig, Fas 2-3 kvar
+│   └── images/                          ← 5 JPG-filer
+├── mockups/
+│   ├── 1_landing.html
+│   ├── 2_dashboard.html
+│   ├── 3_projekt_detalj.html
+│   └── 4_profil.html                    ← NY (designreferens för Features #11)
 └── supabase/
     └── migrations/
-        └── 00X_*.sql                    ← nya migrationer per prompt
+        ├── 010_winloss_kompletta_kolumner.sql   ← körd 26 april
+        ├── 011_ai_insikter_cache.sql            ← körd 27 april
+        ├── 012_firma_profil.sql                 ← NY (etapp A)
+        ├── 013_certifikat.sql                   ← NY (etapp B)
+        ├── 014_team_och_referenser.sql          ← NY (etapp C)
+        ├── 015_firma_benchmarks.sql             ← NY (etapp D)
+        └── 016_anbudsmallar.sql                 ← NY (etapp E)
 ```
+
+---
+
+## Avklarade migrationer (för referens)
+
+| # | Vad | Datum |
+|---|-----|-------|
+| 010 | Win/Loss kompletta kolumner + stavningsfix + backfill | 26 april 2026 |
+| 011 | AI-insikter cache-tabell med RLS + rate limiting | 27 april 2026 |
+| 012 | firma_profil + firma_egenskap_källa | (etapp A) |
+| 013 | certifikat + storage-bucket firma-certifikat | (etapp B) |
+| 014 | team_person + referensprojekt + auto-länk till anbud | (etapp C) |
+| 015 | firma_benchmarks + benchmark_lärningslogg | (etapp D) |
+| 016 | anbudsmall med versionshantering | (etapp E) |
 
 ---
 
 ## Sist men viktigt — fokusdisciplin
 
-Den här roadmapen är ~9 veckors arbete om allt går utan friktion. I verkligheten kommer det ta 12–14 veckor. Det är OK.
+Det som **inte är OK** att göra härifrån:
 
-Det som **inte är OK** är att:
-- Hoppa över Fas 1 på landningssidan ("trust-fixarna kan vi göra senare")
-- Köra Landing Fas 2 innan PostHog är på plats
-- Lansera Features #7 innan features #2, #3 och #4 är i produktion
-- Skriva upp nya features i ROADMAP som inte är validerade av kundintervjuer
+- Hoppa över Landing Fas 2 ("ser ju OK ut redan")
+- Köra Features #7 innan #4, #5 och #11 är i produktion
+- Bygga Features #9 (Prisförslag) innan Features #11 Etapp D (Benchmarks)
+- Skapa ett "fyll i din firma-profil"-formulär eller en "kom igång"-wizard i Features #11
+- Lägga till nya features i ROADMAP utan kundintervjuer
+- Refaktorera prematurt utan ny bugg som motiverar det
 
-Om någon av de här frestelserna uppstår — stanna, öppna denna fil, påminn dig om varför ordningen är som den är.
+Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig om varför ordningen är som den är.
 
 ---
 
-*Dokumenterat: april 2026.
-Uppdatera denna ROADMAP efter varje slutförd sprint — stryk klara punkter, lägg till nya insikter.
-Denna fil är levande, spec-filerna är stabila.*
+*Senast uppdaterad: 28 april 2026 — efter integration av Features #11 (Profil-systemet).
+Uppdatera denna fil efter varje slutförd sprint.*
