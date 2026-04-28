@@ -17,6 +17,7 @@ const navItems = [
   { href: '/dashboard', icon: '⚡', label: 'Pipeline' },
   { href: '/nytt-projekt', icon: '➕', label: 'Nytt projekt' },
   { href: '/alla-projekt', icon: '📁', label: 'Alla projekt' },
+  { href: '/statistik', icon: '📊', label: 'Statistik' },
   { href: '/profil', icon: '🏢', label: 'Företagsprofil' },
   { href: '/certifikat', icon: '📜', label: 'Certifikat' },
   { href: '/installningar', icon: '⚙️', label: 'Inställningar' },
