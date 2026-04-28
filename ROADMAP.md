@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 28 april 2026 (efter Landing 2.1 + #proof-fix)
+**Senast uppdaterad:** 28 april 2026 (efter Landing 2.2 — logo-konsolidering)
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -52,6 +52,7 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 
 - ✅ Landing 2.1 — Standardisera primärknapp + sekundärknapp överallt (`.btn-s` + `.pbtn.sec` enhetliga, ⚡ före text på alla större primär-CTA, Pro-emfas behållen)
 - ✅ Bugfix: horisontell overflow i #proof-sektionen (`.proof-grid` responsive + `.burl` ellipsis)
+- ✅ Landing 2.2 — Logo-konsolidering: footer-logo bytt från inline-stilar till klass-baserad markup. `.logo` + `.logo-bolt` + `.logo-name` med `.sm`-modifier för mindre storlek (28×28 / 20px) i footer.
 
 ---
 
@@ -61,10 +62,9 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 
 | # | Arbete | Fil | Tid |
 |---|--------|-----|-----|
-| 1 | Landing 2.2 — Konsolidera logotyp till en variant | Landing [2.2] | 2 timmar |
-| 2 | Landing 2.3 — Byt AI-genererade ikoner mot Phosphor | Landing [2.3] | 2 timmar |
+| 1 | Landing 2.3 — Byt AI-genererade ikoner mot Phosphor | Landing [2.3] | 2 timmar |
 
-**Total: ~½ dag.** Återstående visuell uppgradering på landningssidan utan ny funktionalitet.
+**Total: ~2 timmar.** Sista visuella uppgraderingen i Landing Fas 2.
 
 ### Veckan därefter — Copy-mjukning + Uppföljning
 
@@ -95,6 +95,7 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 | 12 | Features #6 — Firecrawl-scrapers (verifiera/bygg) | Features [#6] | 1 dag |
 | 13 | Features #8 — SEO-landningssidor (4 st) | Features [#8] | 2–3 dagar |
 | 14 | Features #7 — Uppdatera landning med nya feature-kort | Features [#7] | 1 dag |
+| 15 | Landing 3.5 — Brand assets (favicon, OG-image, social-share) | Landing [3.5] | 1–2 dagar (kräver designat SVG först) |
 
 **Kritiskt:** Features #7 får ENDAST marknadsföra features som faktiskt är live.
 
@@ -302,5 +303,5 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 28 april 2026 — efter Landing 2.1 + #proof-fix.
+*Senast uppdaterad: 28 april 2026 — efter Landing 2.2 (logo-konsolidering).
 Uppdatera denna fil efter varje slutförd sprint.*
