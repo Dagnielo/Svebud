@@ -96,10 +96,8 @@ nav {
 .btn-p { display:inline-flex; align-items:center; gap:8px; background:var(--amber); color:var(--dark); font-size:16px; font-weight:600; font-family:'DM Sans',sans-serif; border:none; padding:14px 30px; border-radius:10px; cursor:pointer; text-decoration:none; transition:all .2s cubic-bezier(.34,1.56,.64,1); }
 .btn-p:hover { background:var(--amber-dim); transform:translateY(-2px); box-shadow:0 8px 24px rgba(200,150,10,.28); }
 .btn-p.lg { font-size:17px; padding:16px 34px; border-radius:11px; }
-.btn-s-dark { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--dt2); font-size:15px; font-weight:500; font-family:'DM Sans',sans-serif; border:1px solid rgba(255,255,255,.12); padding:14px 22px; border-radius:10px; cursor:pointer; text-decoration:none; transition:all .15s; }
-.btn-s-dark:hover { border-color:var(--dark-border-a); color:var(--dt1); }
-.btn-s-light { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--lt2); font-size:15px; font-weight:500; font-family:'DM Sans',sans-serif; border:1px solid var(--light-border2); padding:14px 22px; border-radius:10px; cursor:pointer; text-decoration:none; transition:all .15s; }
-.btn-s-light:hover { border-color:var(--amber); color:var(--lt1); }
+.btn-s { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--amber); font-size:15px; font-weight:500; font-family:'DM Sans',sans-serif; border:1px solid var(--amber); padding:14px 22px; border-radius:10px; cursor:pointer; text-decoration:none; transition:all .15s; }
+.btn-s:hover { background:var(--amber-glow); color:var(--lt1); }
 
 /* ─── EYEBROWS & TYPE ─── */
 .eyebrow { display:flex; align-items:center; gap:10px; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.12em; color:var(--amber); margin-bottom:18px; }
@@ -143,7 +141,7 @@ nav {
 .bframe { background:var(--dark3); border:1px solid var(--dark-border-a); border-radius:14px; overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,.7),0 0 0 1px rgba(200,150,10,.06); }
 .bbar { background:var(--dark4); border-bottom:1px solid rgba(255,255,255,.06); padding:10px 14px; display:flex; align-items:center; gap:7px; }
 .dot{width:10px;height:10px;border-radius:50%} .dr{background:#FF5F57} .dy{background:#FFBD2E} .dg{background:#28C840}
-.burl { flex:1; background:var(--dark); border-radius:5px; padding:3px 10px; font-size:10px; color:var(--dt4); font-family:'JetBrains Mono',monospace; margin-left:8px; }
+.burl { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:var(--dark); border-radius:5px; padding:3px 10px; font-size:10px; color:var(--dt4); font-family:'JetBrains Mono',monospace; margin-left:8px; }
 .bbody { padding:14px; }
 .db-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .db-title { font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:500; color:var(--dt2); }
@@ -324,7 +322,7 @@ nav {
    PROOF – Swedish (cream)
 ════════════════════════ */
 #proof{background:var(--cream);border-top:1px solid var(--light-border)}
-.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-bottom:48px}
 
 /* Stat block */
 .statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-bottom:56px}
@@ -383,7 +381,7 @@ nav {
 .plist li.no{color:var(--lt4)}.plist li.no::before{content:'×';color:var(--lt4)}
 .pbtn{width:100%;padding:12px;border-radius:9px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 .pbtn.pri{background:var(--amber);color:var(--dark);border:none}.pbtn.pri:hover{background:var(--amber-dim)}
-.pbtn.sec{background:transparent;color:var(--lt3);border:1px solid var(--light-border2)}.pbtn.sec:hover{border-color:var(--amber);color:var(--lt1)}
+.pbtn.sec{background:transparent;color:var(--amber);border:1px solid var(--amber)}.pbtn.sec:hover{background:var(--amber-glow);color:var(--lt1)}
 .ptoggle{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:44px}
 .tgl-l{font-size:13px;font-weight:500;color:var(--lt4)}.tgl-l.on{color:var(--lt1)}
 .tgl{width:42px;height:22px;background:var(--light-border);border:1px solid var(--light-border2);border-radius:11px;position:relative;cursor:pointer;transition:all .2s}
@@ -469,8 +467,9 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
       <a href="#faq" class="nlink">FAQ</a>
     </div>
     <div class="nr">
+      <!-- Utility-knapp för befintliga kunder. Annan stil med flit för att inte konkurrera visuellt med primär-CTA "Testa gratis" bredvid. -->
       <a href="/login" class="btn-ng" id="auth-btn">Logga in</a>
-      <a href="#pricing" class="btn-nc" id="cta-btn">Testa gratis ⚡</a>
+      <a href="#pricing" class="btn-nc" id="cta-btn">Testa gratis</a>
     </div>
   </div>
 </nav>
@@ -489,7 +488,7 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
         <p class="body-l" style="max-width:440px;margin-bottom:32px;color:var(--dt3)">SveBud läser ditt förfrågningsunderlag och genererar ett <strong style="color:var(--dt2)">komplett anbud på 20 minuter</strong> – istället för en hel arbetsdag.</p>
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <a href="#pricing" class="btn-p lg">⚡ Testa gratis i 14 dagar</a>
-          <a href="#solution" class="btn-s-dark">Se hur det fungerar →</a>
+          <a href="#solution" class="btn-s">Se hur det fungerar →</a>
         </div>
         <div class="hero-risk">✓ Inget kreditkort &nbsp;·&nbsp; ✓ Klar på 5 min &nbsp;·&nbsp; ✓ Avbryt när som helst</div>
       </div>
@@ -896,7 +895,7 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
       <h2 class="h2">Allt du behöver för att<br>vinna fler uppdrag.</h2>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-bottom:48px">
+    <div class="proof-grid">
 
       <!-- Pipeline -->
       <div class="rv">
@@ -994,7 +993,7 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
         <div class="pprice" id="pp">1 290 <sub>kr/mån</sub></div>
         <div class="pdesc">För firmor med 5–15 montörer</div>
         <ul class="plist"><li>Obegränsade anbud</li><li>Upp till 3 användare</li><li>Allt i Bas</li><li>Mallar per uppdragstyp</li><li>Win/Loss-statistik</li><li>Versionhantering</li><li>Support inom 24h</li></ul>
-        <button class="pbtn pri" onclick="startCheckout('pro')">Starta Pro-trial</button>
+        <button class="pbtn pri" onclick="startCheckout('pro')">⚡ Starta Pro-trial</button>
       </div>
       <div class="pcard">
         <div class="ptier">Business</div>
@@ -1037,7 +1036,7 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
       <p class="cta-sub">Testa SveBud gratis i 14 dagar. Inget kreditkort. Fungerar direkt.</p>
       <div class="cta-btns">
         <a href="#pricing" class="btn-p lg" onclick="event.preventDefault();startCheckout('pro')">⚡ Starta gratis trial</a>
-        <a href="#solution" class="btn-s-dark">Se hur det fungerar →</a>
+        <a href="#solution" class="btn-s">Se hur det fungerar →</a>
       </div>
       <div class="cta-risk">
         <span class="ctar">14 dagars gratis trial</span>
