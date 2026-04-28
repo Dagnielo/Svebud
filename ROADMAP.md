@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 28 april 2026 (efter integration av Features #11 — Profil-systemet)
+**Senast uppdaterad:** 28 april 2026 (efter Landing 2.1 + #proof-fix)
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -48,6 +48,11 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 - ✅ Bugfix: `parseClaudeJSON` i `lib/utils.ts` generaliserad — hanterar både JSON-objekt OCH JSON-arrays
 - ✅ `PROMPT_profil_v1.md` skapad — komplett spec för Features #11 Profil-systemet
 
+### 28 april 2026 — Landing 2.1 + #proof-fix ✅
+
+- ✅ Landing 2.1 — Standardisera primärknapp + sekundärknapp överallt (`.btn-s` + `.pbtn.sec` enhetliga, ⚡ före text på alla större primär-CTA, Pro-emfas behållen)
+- ✅ Bugfix: horisontell overflow i #proof-sektionen (`.proof-grid` responsive + `.burl` ellipsis)
+
 ---
 
 ## Nästa steg — vart är vi på väg?
@@ -56,11 +61,10 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 
 | # | Arbete | Fil | Tid |
 |---|--------|-----|-----|
-| 1 | Landing 2.1 — Standardisera primärknapp överallt | Landing [2.1] | 1 timme |
-| 2 | Landing 2.2 — Konsolidera logotyp till en variant | Landing [2.2] | 2 timmar |
-| 3 | Landing 2.3 — Byt AI-genererade ikoner mot Phosphor | Landing [2.3] | 2 timmar |
+| 1 | Landing 2.2 — Konsolidera logotyp till en variant | Landing [2.2] | 2 timmar |
+| 2 | Landing 2.3 — Byt AI-genererade ikoner mot Phosphor | Landing [2.3] | 2 timmar |
 
-**Total: ~1 dag.** Stor visuell uppgradering på landningssidan utan ny funktionalitet.
+**Total: ~½ dag.** Återstående visuell uppgradering på landningssidan utan ny funktionalitet.
 
 ### Veckan därefter — Copy-mjukning + Uppföljning
 
@@ -298,5 +302,5 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 28 april 2026 — efter integration av Features #11 (Profil-systemet).
+*Senast uppdaterad: 28 april 2026 — efter Landing 2.1 + #proof-fix.
 Uppdatera denna fil efter varje slutförd sprint.*
