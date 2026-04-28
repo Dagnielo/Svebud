@@ -79,10 +79,12 @@ nav {
   display:flex; align-items:center;
 }
 .ni { display:flex; align-items:center; max-width:1120px; margin:0 auto; width:100%; padding:0 28px; }
-.nlogo { display:flex; align-items:center; gap:9px; text-decoration:none; }
-.nbolt { width:30px; height:30px; background:var(--amber); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; }
-.nname { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; color:var(--dt1); letter-spacing:-.01em; }
-.nname span { color:var(--amber); }
+.logo { display:flex; align-items:center; gap:9px; text-decoration:none; }
+.logo-bolt { width:30px; height:30px; background:var(--amber); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.logo-bolt.sm { width:28px; height:28px; border-radius:6px; }
+.logo-name { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; color:var(--dt1); letter-spacing:-.01em; }
+.logo-name.sm { font-size:20px; }
+.logo-name span { color:var(--amber); }
 .nlinks { display:flex; gap:2px; margin-left:36px; }
 .nlink { font-size:13px; color:var(--dt3); padding:6px 13px; border-radius:7px; text-decoration:none; transition:color .15s; }
 .nlink:hover { color:var(--dt1); background:rgba(255,255,255,.05); }
@@ -456,9 +458,9 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
 <!-- NAV -->
 <nav>
   <div class="ni">
-    <a href="#" class="nlogo">
-      <div class="nbolt">⚡</div>
-      <span class="nname">Sve<span>Bud</span></span>
+    <a href="#" class="logo">
+      <div class="logo-bolt">⚡</div>
+      <span class="logo-name">Sve<span>Bud</span></span>
     </a>
     <div class="nlinks">
       <a href="#solution" class="nlink">Hur det fungerar</a>
@@ -1053,9 +1055,9 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
   <div class="wrap">
     <div class="ftgrid">
       <div>
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
-          <div style="width:28px;height:28px;background:var(--amber);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px">⚡</div>
-          <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:-.01em;color:var(--dt1)">Sve<span style="color:var(--amber)">Bud</span></span>
+        <div class="logo" style="margin-bottom:4px">
+          <div class="logo-bolt sm">⚡</div>
+          <span class="logo-name sm">Sve<span>Bud</span></span>
         </div>
         <p style="font-size:13px;color:var(--dt4);margin-top:10px;max-width:240px;line-height:1.7">AI-driven anbudshantering för svenska elfirmor. Spara tid, vinn fler uppdrag.</p>
       </div>
