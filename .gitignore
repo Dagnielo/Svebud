@@ -39,6 +39,9 @@ yarn-error.log*
 # IDE — personlig konfiguration, inte i repo
 .vscode/
 
+# A/B-testfiler i public/ (lokalt bara, inte i prod)
+public/_test-*.html
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
