@@ -295,6 +295,7 @@ nav {
 .vsdiv{display:flex;flex-direction:column;align-items:center;gap:8px}
 .vsline{width:1px;height:40px;background:var(--light-border)}
 .vscircle{width:48px;height:48px;background:var(--white);border:1px solid var(--light-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--lt4)}
+.footnote{margin:24px auto 0;max-width:640px;font-size:12px;color:var(--lt4);text-align:center;line-height:1.5}
 
 /* ════════════════════════
    FEATURES (white)
@@ -550,13 +551,13 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
             <div style="background:var(--white);border:1px solid var(--light-border);border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,.05)">
               <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--lt4);margin-bottom:4px">Tid per anbud</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;color:var(--lt1);letter-spacing:-.03em">~11 tim</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;color:var(--lt1);letter-spacing:-.03em">~12 tim</div>
               <div style="font-size:12px;color:var(--lt4);margin-top:2px">Manuellt idag</div>
             </div>
             <div style="background:var(--amber-glow);border:1px solid var(--amber-border);border-radius:12px;padding:16px 20px">
               <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);margin-bottom:4px">Per år · 4 anbud/mån</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;color:var(--amber);letter-spacing:-.03em">528 tim</div>
-              <div style="font-size:12px;color:var(--lt3);margin-top:2px">= 13 arbetsveckor</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;color:var(--amber);letter-spacing:-.03em">576 tim</div>
+              <div style="font-size:12px;color:var(--lt3);margin-top:2px">= 14 arbetsveckor</div>
             </div>
           </div>
         </div>
@@ -827,13 +828,14 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
       <div class="cmpcol">
         <div class="cmphdr old-hdr"><div class="cmphdr-icon">✗</div><span class="cmphdr-lbl">Utan SveBud</span></div>
         <div class="cmpbody">
-          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Läsa underlag manuellt<br><span>40 sidor PDF</span></div><div class="ctime bad">2–3 tim</div></div>
-          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kontrollera krav<br><span>Manuell checklista</span></div><div class="ctime bad">30 min</div></div>
-          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kalkylera i Excel</div><div class="ctime bad">3–5 tim</div></div>
-          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Skriva anbud i Word</div><div class="ctime bad">2–3 tim</div></div>
-          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Samla certifikat & granska</div><div class="ctime bad">45 min</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Läsa underlag (40 sid)</div><div class="ctime bad">3–4 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kontrollera krav mot profil</div><div class="ctime bad">30 min</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kalkylera + justera</div><div class="ctime bad">3–5 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Skriva + granska anbud</div><div class="ctime bad">2–3 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Samla certifikat (efter uppsättning)</div><div class="ctime bad">45 min</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Föranmälan</div><div class="ctime bad">30 min</div></div>
         </div>
-        <div class="cmpfoot"><span class="cfootle">Total tid</span><span class="cfoottv bad">~11 tim</span></div>
+        <div class="cmpfoot"><span class="cfootle">Total tid</span><span class="cfoottv bad">~12 tim</span></div>
       </div>
 
       <div class="vsdiv"><div class="vsline"></div><div class="vscircle">VS</div><div class="vsline"></div></div>
@@ -841,15 +843,18 @@ footer{background:var(--dark2);border-top:1px solid var(--dark-border-a);padding
       <div class="cmpcol after">
         <div class="cmphdr new-hdr"><div class="cmphdr-icon">✓</div><span class="cmphdr-lbl">Med SveBud</span></div>
         <div class="cmpbody">
-          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI läser och extraherar</strong><br><span>Strukturerad sammanfattning</span></div><div class="ctime good">60 sek</div></div>
-          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Automatisk Go/No-Go</strong><br><span>Matchas mot din profil</span></div><div class="ctime good">10 sek</div></div>
-          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI föreslår kalkyl</strong><br><span>Du justerar</span></div><div class="ctime good">20 min</div></div>
-          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI skriver komplett anbud</strong></div><div class="ctime good">2 min</div></div>
-          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Certifikat bifogas automatiskt</strong></div><div class="ctime good">0 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Läsa underlag (40 sid)</strong></div><div class="ctime good">60 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Kontrollera krav mot profil</strong></div><div class="ctime good">10 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Kalkylera + justera</strong></div><div class="ctime good">20 min</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Skriva + granska anbud</strong></div><div class="ctime good">15 min</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Samla certifikat (efter uppsättning)</strong></div><div class="ctime good">0 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Föranmälan</strong></div><div class="ctime good">5 min</div></div>
         </div>
         <div class="cmpfoot"><span class="cfootle">Total tid</span><span class="cfoottv good">~45 min</span></div>
       </div>
     </div>
+
+    <p class="footnote rv">Första uppsättning av företagsprofil + certifikat tar ~60 min. Därefter sparas tiden på varje anbud.</p>
 
     <!-- Mini mockups below -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px" class="rv">
