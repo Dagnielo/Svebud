@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 28 april 2026 (efter Landing 2.3 — Fas 2 KLAR ✅)
+**Senast uppdaterad:** 29 april 2026 (efter Landing 3.4 — jämförelsetabell synkad)
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -55,20 +55,31 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 - ✅ Landing 2.2 — Logo-konsolidering: footer-logo bytt från inline-stilar till klass-baserad markup. `.logo` + `.logo-bolt` + `.logo-name` med `.sm`-modifier för mindre storlek (28×28 / 20px) i footer.
 - ✅ Landing 2.3 — 10 emoji-ikoner bytta mot Phosphor Bold via CDN. Pain-cards (`ph-files`, `ph-clipboard-text`, `ph-trend-down`), film-slides (`ph-upload-simple`, `ph-check-circle`, `ph-calculator`, `ph-paper-plane-tilt`), proof-cards (`ph-kanban`, `ph-file-text`, `ph-flow-arrow`). **Landing Fas 2 KLAR ✅.**
 
+- ✅ Landing 2.4 — Hoppat över. Specens features (Du behöver inte läsa /
+  AI-betyg 1-10 / Snabboffert) finns inte i nuvarande landing.html.
+  Innehållet städades i tidigare iteration. Specens intent (juridisk
+  träffsäkerhet + integritetsoro) är uppfylld genom frånvaro. Samma
+  mönster som 1.3 och 1.5.
+
+- ✅ Landing 3.4 — Jämförelsetabell uppdaterad: trovärdiga tider
+  (3-4 tim läsning, 15 min skriva istället för 2 min), ny föranmälan-rad
+  (30 min utan / 5 min med), totalsumma ~12 tim, fotnot om första-
+  uppsättning. Hero stat-kort synkat (576 tim/14 v). Sub-texter borttagna
+  i höger kolumn för symmetri. Känd kvarvarande bug: kort-alignment
+  (se Tekniska skulder).
+
 ---
 
 ## Nästa steg — vart är vi på väg?
 
-### Just nu — Copy-mjukning + Uppföljning
+### Just nu — FAQ + Uppföljning
 
 | # | Arbete | Fil | Tid |
 |---|--------|-----|-----|
-| 1 | Landing 2.4 — Tre copy-mjukningar | Landing [2.4] | 2 timmar |
-| 2 | Landing 2.5 — FAQ utökas med 4 kritiska frågor | Landing [2.5] | 1 timme |
-| 3 | Landing 3.4 — Justera tidsberäkningar i jämförelsetabell | Landing [3.4] | 30 min |
-| 4 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
+| 1 | Landing 2.5 — FAQ utökas med 4 kritiska frågor | Landing [2.5] | 1 timme |
+| 2 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
 
-**Total: ~2 dagar.** Landningssidan visuellt komplett. Uppföljning hjälper användare hålla koll på inskickade anbud.
+**Total: ~1–2 dagar.** Landningssidan visuellt komplett. Uppföljning hjälper användare hålla koll på inskickade anbud.
 
 ### Vecka därefter — Strukturella tillägg + Email-kanal
 
@@ -174,6 +185,11 @@ Tekniska skulder att åtgärda när tid finns:
 
 - **Optimering av polling i `projekt/[projektId]/page.tsx`** — `hämta()` gör 5 sekventiella queries. Inte akut.
 - **Förlorat-flödet i `<UtfallsKnappar>`** — nollar inte `vinnande_pris` när status ändras från vunnet → förlorat. TODO-kommentar tillagd. Inte akut, KPI-queryn skyddar.
+- **Compare-tabell höger kort sitter ~10-15px högre än vänster** —
+  orsak: `.cmpgrid` har `align-items:center` (rad 271 i landing.html).
+  Fix: byt till `align-items:start` (alignar topparna) eller
+  `align-items:stretch` (korten fyller samma höjd). Inte showstopper,
+  fixas vid nästa landing-pass.
 
 ---
 
@@ -296,5 +312,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 28 april 2026 — efter Landing 2.3 (Phosphor-ikoner, Fas 2 KLAR).
-Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 29 april 2026 — efter Landing 3.4 (jämförelsetabell + föranmälan-rad + hero-stat synkat). Uppdatera denna fil efter varje slutförd sprint.*
