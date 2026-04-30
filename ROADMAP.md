@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 1 maj 2026 — Etapp A av Profil-systemet komplett (9 commits)
+**Senast uppdaterad:** 1 maj 2026 — Etapp A LIVE på svebud.se (76% profilstyrka)
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -312,6 +312,23 @@ WHERE table_schema = 'public'
 ORDER BY table_name, ordinal_position;
 ```
 
+### Spec-bug, fjärde lager: Vercel env-variabler måste sättas per miljö (1 maj 2026)
+
+När en ny tjänst läggs till lokalt med API-nyckel i .env.local — kom ihåg
+att variabeln ALLTID måste läggas till i Vercel manuellt för Production.
+.env.local är inte synkad med Vercel.
+
+Build kraschade efter Etapp A-deploy med:
+"Error: API key is required for the cloud API. Set FIRECRAWL_API_KEY env"
+
+Roten: FIRECRAWLER_API_KEY fanns lokalt men inte i Vercel Production.
+Variabeln behöver läggas till i ALLA tre miljöer (Production, Preview,
+Development) för att fungera överallt.
+
+**Regel framåt:** När en ny env-variabel läggs i .env.local lokalt —
+lägg DIREKT till den i Vercel också, för alla 3 miljöer. Annars
+kraschar nästa Production-build.
+
 ---
 
 ## Så använder du denna struktur i Claude Code
@@ -435,4 +452,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 1 maj 2026 — Etapp A av Profil-systemet komplett (9 commits f9041aa → 4927bc8: migration 012 + Bolagsverket-agent + API-route + profilstyrka-hero + PostHog-events). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 1 maj 2026 — Etapp A LIVE på svebud.se (76% profilstyrka, FIRECRAWLER_API_KEY satt i Vercel). Uppdatera denna fil efter varje slutförd sprint.*
