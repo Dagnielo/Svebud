@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 30 april 2026 — efter docs/-omstrukturering + Bolagsverket-API-korrigering
+**Senast uppdaterad:** 30 april 2026 — efter Features #4 (Uppföljnings-notifikation) komplett
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -77,17 +77,30 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 - ✅ Compare-tabell alignment-fix — `.cmpgrid` ändrad från
   `align-items:center` till `align-items:start`. Topparna alignar nu.
 
+### 30 april 2026 — Features #4 — Uppföljnings-notifikation ✅
+
+- ✅ Del A — `lib/hooks/useUppföljningar.ts` shared hook med dual-write
+  till `uppföljning` + `projekt.tilldelning_status`. Tre-nivåers
+  sortering (förfallna först, sen kommande kronologiskt, null sist).
+  PostHog-event `uppföljning_utfall_markerat` med `{ utfall, från_state,
+  projektId }`.
+- ✅ Del C — `components/UppföljningsBanner.tsx` på dashboard. Visar
+  antal förfallna åtgärder (`nästa_åtgärd <= NOW()`) med klickbar
+  "Visa →"-länk till `/uppföljning`. Brand-design via CSS-variabler
+  (`var(--yellow-glow)`), inte generic Tailwind. Skeleton-state +
+  null-render vid count=0 eller fel.
+- ✅ Del B — `app/(app)/uppföljning/page.tsx` aktiverad (var stub).
+  Två tabeller: aktiva (med Vunnet/Förlorat/Avbryt-knappar) +
+  avslutade (read-only). State-badges för alla 9 states, relativ
+  tids-rendering ("Förfallen sedan X dagar" / "Idag" / "Om X dagar").
+
 ---
 
 ## Nästa steg — vart är vi på väg?
 
-### Just nu — Copy-mjukning + Uppföljning
+### Just nu — Strukturella tillägg
 
-| # | Arbete | Fil | Tid |
-|---|--------|-----|-----|
-| 1 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
-
-**Total: ~1–2 dagar.** Landningssidan visuellt + textmässigt komplett för Fas 2 + 3.4. Nästa steg: Features #4 (Uppföljning på dashboard).
+Sprint-pipeline tom efter Features #4. Nästa naturliga steg ligger i "Vecka därefter"-blocket nedan. Hoppa direkt dit eller välj nästa arbete baserat på prioritet.
 
 ### Vecka därefter — Strukturella tillägg + Email-kanal
 
@@ -338,4 +351,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 30 april 2026 — efter docs/-omstrukturering + Bolagsverket-API-korrigering (Näringslivsregistret stängde 30 sept 2025, ersatt av API för värdefulla datamängder). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 30 april 2026 — efter Features #4 (Uppföljnings-notifikation: shared hook + dashboard-banner + /uppföljning-sidan, alla tre delar live). Uppdatera denna fil efter varje slutförd sprint.*
