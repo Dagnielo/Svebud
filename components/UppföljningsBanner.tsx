@@ -50,7 +50,7 @@ export default function UppföljningsBanner() {
         </span>
       </div>
       <Link
-        href="/uppföljning"
+        href="/uppfoljning"
         onClick={() => posthog.capture('uppföljning_banner_klickad', { count })}
         style={{
           fontSize: 13,

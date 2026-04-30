@@ -27,7 +27,7 @@ export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // Skyddade routes
-  const skyddade = ['/dashboard', '/projekt', '/uppföljning']
+  const skyddade = ['/dashboard', '/projekt', '/uppfoljning']
   const kräverAuth = skyddade.some(route => path.startsWith(route))
 
   if (kräverAuth && !user) {
