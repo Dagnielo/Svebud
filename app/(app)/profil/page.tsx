@@ -63,6 +63,9 @@ export default function ProfilPage() {
   const [visaKontaktForm, setVisaKontaktForm] = useState(false)
   const [nyKontakt, setNyKontakt] = useState<Kontaktperson>({ namn: '', roll: '', epost: '', telefon: '' })
 
+  const [hämtarBolagsverket, setHämtarBolagsverket] = useState(false)
+  const [bolagsverketMeddelande, setBolagsverketMeddelande] = useState<string | null>(null)
+
   // Anbudsinställningar
   const [anbudsInst, setAnbudsInst] = useState({
     betalningsvillkor: '',
@@ -200,6 +203,43 @@ export default function ProfilPage() {
     display: 'block' as const,
   }
 
+  async function hämtaFrånBolagsverket() {
+    if (!orgNr || orgNr.trim().length < 10) {
+      setBolagsverketMeddelande('Ange organisationsnummer först (10 siffror)')
+      return
+    }
+    setHämtarBolagsverket(true)
+    setBolagsverketMeddelande(null)
+    try {
+      const res = await fetch('/api/profil/hämta-bolagsverket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orgnr: orgNr }),
+      })
+      if (!res.ok) {
+        const fel = await res.json().catch(() => ({ fel: 'Hämtning misslyckades' }))
+        setBolagsverketMeddelande(`❌ ${fel.fel ?? 'Hämtning misslyckades'}`)
+        return
+      }
+      const { profil } = await res.json()
+      let antalIfyllda = 0
+      // Auto-fyll BARA tomma fält — skriv aldrig över ifylld data
+      if (!företag && profil.företagsnamn) { setFöretag(profil.företagsnamn); antalIfyllda++ }
+      if (!adress && profil.adress) { setAdress(profil.adress); antalIfyllda++ }
+      if (!postnr && profil.postnummer) { setPostnr(profil.postnummer); antalIfyllda++ }
+      if (!ort && profil.ort) { setOrt(profil.ort); antalIfyllda++ }
+      setBolagsverketMeddelande(
+        antalIfyllda > 0
+          ? `✓ Hämtade ${antalIfyllda} ${antalIfyllda === 1 ? 'fält' : 'fält'} från allabolag.se. Kom ihåg att spara!`
+          : '✓ Företaget hittades — alla fält är redan ifyllda'
+      )
+    } catch {
+      setBolagsverketMeddelande('❌ Tekniskt fel — försök igen om en stund')
+    } finally {
+      setHämtarBolagsverket(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
       <Sidebar user={user} />
@@ -233,6 +273,51 @@ export default function ProfilPage() {
             </div>
           ) : (
             <div style={{ maxWidth: 700 }}>
+              {/* Profilstyrka-hero — Etapp A */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, var(--navy-mid), var(--navy-light))',
+                  border: '1px solid var(--yellow)',
+                  borderRadius: 12,
+                  padding: '24px 28px',
+                  marginBottom: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 24,
+                }}
+              >
+                <div
+                  style={{
+                    flexShrink: 0,
+                    width: 88,
+                    height: 88,
+                    borderRadius: '50%',
+                    background: 'rgba(245,196,0,0.1)',
+                    border: '3px solid var(--yellow)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 24,
+                    fontWeight: 800,
+                    color: 'var(--yellow)',
+                  }}
+                >
+                  0%
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>
+                    Profilstyrka
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
+                    Bygg upp din profil
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
+                    Ju starkare profil, desto bättre matchning mot upphandlingar.
+                    Kommer beräknas automatiskt i nästa steg.
+                  </div>
+                </div>
+              </div>
+
               {/* Personuppgifter */}
               <SectionCard title="Personuppgifter">
                 <div className="grid grid-cols-2 gap-4">
@@ -345,6 +430,37 @@ export default function ProfilPage() {
 
               {/* Företagsuppgifter */}
               <SectionCard title="Företagsuppgifter">
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 16,
+                    marginTop: -8,
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                    {bolagsverketMeddelande || 'Auto-fyll från allabolag.se via organisationsnummer'}
+                  </div>
+                  <button
+                    onClick={hämtaFrånBolagsverket}
+                    disabled={hämtarBolagsverket || !orgNr}
+                    style={{
+                      background: hämtarBolagsverket ? 'rgba(245,196,0,0.3)' : 'var(--yellow)',
+                      color: 'var(--navy)',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '8px 14px',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: hämtarBolagsverket || !orgNr ? 'not-allowed' : 'pointer',
+                      opacity: !orgNr ? 0.5 : 1,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {hämtarBolagsverket ? 'Hämtar...' : '⚡ Hämta från Bolagsverket'}
+                  </button>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
                     <label style={labelStyle}>Företagsnamn</label>
