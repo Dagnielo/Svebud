@@ -1,7 +1,7 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 30 april 2026 — efter Landing 2.5 + compare-alignment-fix
-**Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
+**Senast uppdaterad:** 30 april 2026 — efter docs/- och mockups/-omstrukturering
+**Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
 
@@ -46,7 +46,7 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
   - AI-insikter via Claude API med 24h cache + force-rate-limit
   - Sorterbar tabell över alla avslutade anbud
 - ✅ Bugfix: `parseClaudeJSON` i `lib/utils.ts` generaliserad — hanterar både JSON-objekt OCH JSON-arrays
-- ✅ `PROMPT_profil_v1.md` skapad — komplett spec för Features #11 Profil-systemet
+- ✅ `docs/PROMPT_profil_v1.md` skapad — komplett spec för Features #11 Profil-systemet
 
 ### 28 april 2026 — Landing 2.1 + #proof-fix ✅
 
@@ -117,15 +117,15 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 
 | # | Arbete | Fil | Tid |
 |---|--------|-----|-----|
-| 11a | Etapp A — DB-grund + Företaget-tabben + Bolagsverket-hämtning | PROMPT_profil_v1.md | 2 dagar |
-| 11b | Etapp B — Behörigheter + AI-extraktion av certifikat | PROMPT_profil_v1.md | 2 dagar |
-| 11c | Etapp C — Team + Referenser auto-länkade till vunna anbud | PROMPT_profil_v1.md | 1 dag |
-| 11d | Etapp D — AI-lärda benchmarks | PROMPT_profil_v1.md | 2 dagar |
-| 11e | Etapp E — Mallar med versionshantering | PROMPT_profil_v1.md | 1 dag |
+| 11a | Etapp A — DB-grund + Företaget-tabben + Bolagsverket-hämtning | docs/PROMPT_profil_v1.md | 2 dagar |
+| 11b | Etapp B — Behörigheter + AI-extraktion av certifikat | docs/PROMPT_profil_v1.md | 2 dagar |
+| 11c | Etapp C — Team + Referenser auto-länkade till vunna anbud | docs/PROMPT_profil_v1.md | 1 dag |
+| 11d | Etapp D — AI-lärda benchmarks | docs/PROMPT_profil_v1.md | 2 dagar |
+| 11e | Etapp E — Mallar med versionshantering | docs/PROMPT_profil_v1.md | 1 dag |
 
 **Total: ~7–8 dagar.** Varje etapp är självständig och kan deployas separat. Migration 012–016.
 
-**Filosofin är kritisk:** Profil-systemet ska INTE vara ett formulär eller en wizard. Profilen byggs av sig själv från riktigt arbete. Läs filosofi-sektionen i `PROMPT_profil_v1.md` innan etapp A startas.
+**Filosofin är kritisk:** Profil-systemet ska INTE vara ett formulär eller en wizard. Profilen byggs av sig själv från riktigt arbete. Läs filosofi-sektionen i `docs/PROMPT_profil_v1.md` innan etapp A startas.
 
 **Förberedelse innan vecka 6 startar:**
 - Registrera Bolagsverket Näringslivsregistret API (bolagsverket.se) — kan ta dagar att få igenom. Starta processen redan nu.
@@ -147,8 +147,8 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 ### Beroende 1: PostHog före Landing Fas 2 ✅
 **Status:** Löst. PostHog är live, Landing Fas 2 kan köras.
 
-### Beroende 2: Features #7 krockar med PROMPT_landing_v5.md
-Lösning: Kör hela `PROMPT_landing_v5.md` först (alla tre faser), **sedan** Features #7 som lager ovanpå. Och #7 får inte marknadsföra features som inte är byggda. Just nu kan #7 nämna Win/Loss + Statistik (klara), men inte uppföljning, email-kanal eller profil förrän #4, #5 och #11 är live.
+### Beroende 2: Features #7 krockar med docs/PROMPT_landing_v5.md
+Lösning: Kör hela `docs/PROMPT_landing_v5.md` först (alla tre faser), **sedan** Features #7 som lager ovanpå. Och #7 får inte marknadsföra features som inte är byggda. Just nu kan #7 nämna Win/Loss + Statistik (klara), men inte uppföljning, email-kanal eller profil förrän #4, #5 och #11 är live.
 
 ### Beroende 3: Features #9 (Prisförslag) kräver #11 Etapp D
 **Ändrad ordning:** #9 läser från `firma_benchmarks`-tabellen som skapas i #11 Etapp D. #9 kan inte byggas före #11 Etapp D utan att skapa dubbel logik. Detta är **anledningen** till att #11 prioriteras före #9 i nuvarande roadmap.
@@ -176,6 +176,20 @@ Du har redan investerat ~2 dagar som motsvarar ungefär 2.5 veckor av planen.
 
 ---
 
+## Backlog — dokumenterade specer utan sprint-tid
+
+Specer som ligger i `docs/` men inte är schemalagda i nuvarande plan.
+Hämtas in i en framtida sprint baserat på kundfeedback eller naturligt
+flöde efter Profil-systemet.
+
+- **`docs/PROMPT_foranmalan_tracker.md`** — Föranmälan-tracker till
+  nätbolagen. Dashboard-feature. Komplement till Features #6
+  (Firecrawl-scrapers).
+- **`docs/PROMPT_rot_kalkyl.md`** — ROT-avdragskalkyl. Dashboard-feature.
+  Lyfter ROT-avdrag som första-klass i kalkyl-flödet.
+
+---
+
 ## Vad som inte är med i denna roadmap
 
 Följande är **medvetet utanför** och ska inte blandas in:
@@ -200,7 +214,7 @@ Tekniska skulder att åtgärda när tid finns:
 
 ```
 Jag kör nu [Landing-fil punkt X.Y / Features-fil prompt #N / Profil etapp X]
-enligt [PROMPT_landing_v5.md / svebud-nya-funktioner-prompts.md / PROMPT_profil_v1.md].
+enligt [docs/PROMPT_landing_v5.md / svebud-nya-funktioner-prompts.md / docs/PROMPT_profil_v1.md].
 
 [Klistra in punkten/prompten/etappen]
 
@@ -229,10 +243,12 @@ Innan varje sprint-avslut:
 ```
 SveBud/
 ├── ROADMAP.md                           ← du är här (öppna först)
-├── PROMPT_landing_v5.md                 ← detaljspec landningssida
-├── PROMPT_profil_v1.md                  ← NY (27 april) — Features #11 megaprompt
-├── svebud-nya-funktioner-prompts.md     ← detaljspec produktfeatures
 ├── CLAUDE.md                            ← befintlig projektkontext
+├── docs/                                ← alla aktiva planeringsspecer
+│   ├── PROMPT_landing_v5.md             ← detaljspec landningssida
+│   ├── PROMPT_profil_v1.md              ← Features #11 megaprompt
+│   ├── PROMPT_foranmalan_tracker.md     ← Backlog: föranmälan-tracker
+│   └── PROMPT_rot_kalkyl.md             ← Backlog: ROT-avdragskalkyl
 ├── components/
 │   ├── UtfallsKnappar.tsx               ← Win/Loss UI (26 april)
 │   ├── ProjektKort.tsx                  ← använder UtfallsKnappar (kompakt)
@@ -272,7 +288,7 @@ SveBud/
 │   ├── 1_landing.html
 │   ├── 2_dashboard.html
 │   ├── 3_projekt_detalj.html
-│   └── 4_profil.html                    ← NY (designreferens för Features #11)
+│   └── 4_profil.html                    ← Skapas under Features #11 etapp A
 └── supabase/
     └── migrations/
         ├── 010_winloss_kompletta_kolumner.sql   ← körd 26 april
@@ -315,4 +331,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 30 april 2026 — efter Landing 2.5 + compare-alignment-fix. Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 30 april 2026 — efter omstrukturering: PROMPT-filer flyttade till docs/, mockups/-mapp skapad, backlog tillagd för PROMPT_foranmalan_tracker och PROMPT_rot_kalkyl. Uppdatera denna fil efter varje slutförd sprint.*
