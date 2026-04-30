@@ -4,6 +4,7 @@
     "app/api/anbud/extrahera/route.ts":                         { "maxDuration": 120 },
     "app/api/projekt/[projektId]/jämför/route.ts":              { "maxDuration": 180 },
     "app/api/projekt/[projektId]/rekommendation/route.ts":      { "maxDuration": 120 },
+    "app/api/profil/hämta-bolagsverket/route.ts":               { "maxDuration": 30  },
     "app/api/statistik/insikter/route.ts":                      { "maxDuration": 60  },
     "app/api/agent5/route.ts":                                  { "maxDuration": 300 }
   }
