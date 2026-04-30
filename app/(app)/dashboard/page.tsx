@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { posthog } from '@/lib/posthog'
 import Sidebar from '@/components/Sidebar'
 import ProjektKort, { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
+import UppföljningsBanner from '@/components/UppföljningsBanner'
 
 type UserProfil = {
   fullnamn: string | null
@@ -245,6 +246,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
+              <UppföljningsBanner />
               {/* Välkomstruta för nya användare */}
               {projekt.length === 0 && (
                 <div
