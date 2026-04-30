@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 1 maj 2026 — Features #4 banner verifierad live
+**Senast uppdaterad:** 1 maj 2026 — Etapp A av Profil-systemet komplett (9 commits)
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -98,6 +98,30 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
   med `git mv` (historik bevarad). Banner-länk + proxy.ts-skydd
   uppdaterade. Variabel/types/UI-text oförändrad — endast URL-pathen
   är ASCII (samma konvention som `installningar/`, `alla-projekt/`).
+
+### Etapp A — DB-grund + Företaget-tabben ✅ KLAR (1 maj 2026)
+
+Levererat i 9 commits (f9041aa → 4927bc8) på main:
+
+- Migration 012: firma_profil + firma_egenskap_källa (med RLS, källspårning)
+- Bolagsverket-agent (Firecrawl mot allabolag.se, gratis tier)
+- API-route /api/profil/hamta-bolagsverket
+- Profilstyrka-hero på /profil med dynamisk 21-punkts beräkning
+- 3 PostHog-events: profil_visad, profil_grunddata_hämtad/_misslyckades
+
+Approach: ADDITIV utvidgning av befintlig /profil-sida (777 → 893 rader).
+profiler-tabellen är fortsatt primär källa för formuläret. firma_profil
+används som skugg-tabell för Bolagsverket-data + källspårning.
+
+**Hoppade över i Etapp A (medvetet, additiv approach):**
+
+- Källtaggar bredvid auto-fält (Block C av Steg 5) — kan göras som mini-commit senare
+- Registreringsflöde-uppdatering (org.nr som obligatoriskt fält) — för riskabelt
+  att röra auth-flödet just nu
+- Backfill-migration för befintliga användare — onödigt eftersom profiler-tabellen
+  redan har orgnr/adress för existerande konton
+
+**Nästa: Etapp B — Behörigheter + AI-extraktion av certifikat (redo att starta).**
 
 ---
 
@@ -259,6 +283,35 @@ WHERE table_name = 'X' ORDER BY ordinal_position;
 
 och referera schema-listan i specen.
 
+### Spec-bug, andra lager: ASCII-mappnamn för API-routes (1 maj 2026)
+
+Next.js stöder inte ä/ö i mappnamn för app-router (även för API-routes).
+Detta var samma issue som löstes igår med /uppfoljning. Idag uppstod
+samma bug i /api/profil/hamta-bolagsverket — DevTools Network visade
+404 på encoded URL %C3%A4mta-bolagsverket.
+
+**Regel framåt:** ALLA mappnamn under app/ måste vara ASCII. Variabel-,
+funktions-, kommentar- och stränglitteraler behåller svensk text.
+Logging-prefix (t.ex. `[hämta-bolagsverket]`) bevaras som debug-strängar.
+
+### Spec-bug, tredje lager: Verifiera kolumnnamn ASCII vs svenska tecken (1 maj 2026)
+
+Migration 006 använder ASCII-kolumnnamn (`antal_montorer`, `omsattning_msek`,
+`postnr`) medan Migration 012 använder svenska tecken (`antal_montörer`,
+`omsättning_senaste_år`, `postnummer`). Båda är giltiga men inte konsekventa
+i schemat.
+
+**Regel framåt:** När en hook eller funktion läser från MULTIPLA tabeller
+eller migrations — kontrollera kolumnnamnen i VARJE migrationsfil
+INNAN spec skrivs. Använd:
+
+```sql
+SELECT table_name, column_name
+FROM information_schema.columns
+WHERE table_schema = 'public'
+ORDER BY table_name, ordinal_position;
+```
+
 ---
 
 ## Så använder du denna struktur i Claude Code
@@ -382,4 +435,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 1 maj 2026 — Features #4 banner verifierad live (kolumnnamn-buggar i hook fixade, banner renderar korrekt på dashboard). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 1 maj 2026 — Etapp A av Profil-systemet komplett (9 commits f9041aa → 4927bc8: migration 012 + Bolagsverket-agent + API-route + profilstyrka-hero + PostHog-events). Uppdatera denna fil efter varje slutförd sprint.*
