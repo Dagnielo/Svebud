@@ -38,6 +38,7 @@ yarn-error.log*
 
 # IDE — personlig konfiguration, inte i repo
 .vscode/
+.claude/
 
 # A/B-testfiler i public/ (lokalt bara, inte i prod)
 public/_test-*.html
