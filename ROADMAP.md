@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 30 april 2026 — efter docs/- och mockups/-omstrukturering
+**Senast uppdaterad:** 30 april 2026 — efter docs/-omstrukturering + Bolagsverket-API-korrigering
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -128,8 +128,11 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 **Filosofin är kritisk:** Profil-systemet ska INTE vara ett formulär eller en wizard. Profilen byggs av sig själv från riktigt arbete. Läs filosofi-sektionen i `docs/PROMPT_profil_v1.md` innan etapp A startas.
 
 **Förberedelse innan vecka 6 startar:**
-- Registrera Bolagsverket Näringslivsregistret API (bolagsverket.se) — kan ta dagar att få igenom. Starta processen redan nu.
-- Reservplan: använd Firecrawl mot allabolag.se som fallback. Profilen fungerar lika bra.
+- **Bolagsverket-API uppdaterat 2025:** Näringslivsregistret stängde 30 september 2025. Idag finns två API:er:
+  - **API för värdefulla datamängder** (gratis, inget avtal) — täcker grunddata: namn, adress, organisationsform, status, registreringsdatum. Räcker för Profil-systemets etapp A.
+  - **API för företagsinformation** (anslutningsavgift + månadsavgift, papper i posten) — djupare data som verksamhetsbeskrivning, styrelse, aktiekapital. Behövs INTE för MVP.
+- **Plan när Etapp A startar:** ansök gratis-API (5 min, nycklar via mejl/SMS samma dag). Om blockerat — Firecrawl mot allabolag.se/orgnr/{orgnr} som fallback (redan inbyggt i `lib/bolagsverket-agent.ts`).
+- **Inget brådskar.** Tidigare antagande att processen tar dagar gällde det gamla betal-API:et.
 
 ### Efter Profil-systemet
 
@@ -187,6 +190,10 @@ flöde efter Profil-systemet.
   (Firecrawl-scrapers).
 - **`docs/PROMPT_rot_kalkyl.md`** — ROT-avdragskalkyl. Dashboard-feature.
   Lyfter ROT-avdrag som första-klass i kalkyl-flödet.
+
+**Spec-uppdateringar att göra vid Etapp A-start:**
+
+- **`docs/PROMPT_profil_v1.md` rad 49 + 51 + 134-141** — uppdatera referenser till "Bolagsverket Näringslivsregistret API" till "API för värdefulla datamängder" (gratis-API:et som ersatte Näringslivsregistret 30 sept 2025). Funktionsnamn `hämtaFöretagsdata()` och fallback-logik mot allabolag.se är OK som de är.
 
 ---
 
@@ -331,4 +338,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 30 april 2026 — efter omstrukturering: PROMPT-filer flyttade till docs/, mockups/-mapp skapad, backlog tillagd för PROMPT_foranmalan_tracker och PROMPT_rot_kalkyl. Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 30 april 2026 — efter docs/-omstrukturering + Bolagsverket-API-korrigering (Näringslivsregistret stängde 30 sept 2025, ersatt av API för värdefulla datamängder). Uppdatera denna fil efter varje slutförd sprint.*
