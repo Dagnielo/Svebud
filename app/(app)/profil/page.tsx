@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/Sidebar'
 import { Button } from '@/components/ui/button'
+import { beräknaProfilstyrka } from '@/lib/profilstyrka'
 
 type UserProfil = {
   fullnamn: string | null
@@ -274,49 +275,81 @@ export default function ProfilPage() {
           ) : (
             <div style={{ maxWidth: 700 }}>
               {/* Profilstyrka-hero — Etapp A */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, var(--navy-mid), var(--navy-light))',
-                  border: '1px solid var(--yellow)',
-                  borderRadius: 12,
-                  padding: '24px 28px',
-                  marginBottom: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 24,
-                }}
-              >
-                <div
-                  style={{
-                    flexShrink: 0,
-                    width: 88,
-                    height: 88,
-                    borderRadius: '50%',
-                    background: 'rgba(245,196,0,0.1)',
-                    border: '3px solid var(--yellow)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 24,
-                    fontWeight: 800,
-                    color: 'var(--yellow)',
-                  }}
-                >
-                  0%
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>
-                    Profilstyrka
+              {(() => {
+                const { procent, poäng, maxPoäng, saknadeKategorier } = beräknaProfilstyrka({
+                  företag,
+                  org_nr: orgNr,
+                  adress,
+                  postnr,
+                  ort,
+                  telefon,
+                  antal_montorer: antalMontorer ? parseInt(antalMontorer, 10) : null,
+                  omsattning_msek: omsattning ? parseFloat(omsattning) : null,
+                  region,
+                  timpris_standard: timprisStandard ? parseInt(timprisStandard, 10) : null,
+                  timpris_jour: timprisJour ? parseInt(timprisJour, 10) : null,
+                  timpris_ob: timprisOb ? parseInt(timprisOb, 10) : null,
+                  webbadress,
+                  företagsbeskrivning,
+                  kontaktpersoner,
+                  referensprojekt,
+                  anbudsinstallningar: {
+                    betalningsvillkor: anbudsInst.betalningsvillkor,
+                    garanti: anbudsInst.garanti,
+                    avtalsvillkor: anbudsInst.avtalsvillkor,
+                  },
+                })
+
+                const färg = procent >= 70 ? 'var(--green)' : procent >= 40 ? 'var(--yellow)' : 'var(--orange)'
+                const tip = saknadeKategorier.length > 0
+                  ? `Saknas: ${saknadeKategorier.slice(0, 2).join(' · ')}`
+                  : 'Komplett profil! ✨'
+
+                return (
+                  <div
+                    style={{
+                      background: 'linear-gradient(135deg, var(--navy-mid), var(--navy-light))',
+                      border: `1px solid ${färg}`,
+                      borderRadius: 12,
+                      padding: '24px 28px',
+                      marginBottom: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 24,
+                    }}
+                  >
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: 88,
+                        height: 88,
+                        borderRadius: '50%',
+                        background: 'rgba(245,196,0,0.1)',
+                        border: `3px solid ${färg}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 22,
+                        fontWeight: 800,
+                        color: färg,
+                      }}
+                    >
+                      {procent}%
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, color: 'var(--soft)', fontWeight: 600, marginBottom: 4 }}>
+                        Profilstyrka — {poäng}/{maxPoäng} poäng
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
+                        {procent >= 70 ? 'Stark profil' : procent >= 40 ? 'Bygg vidare' : 'Bygg upp din profil'}
+                      </div>
+                      <div style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.5 }}>
+                        {tip}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
-                    Bygg upp din profil
-                  </div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
-                    Ju starkare profil, desto bättre matchning mot upphandlingar.
-                    Kommer beräknas automatiskt i nästa steg.
-                  </div>
-                </div>
-              </div>
+                )
+              })()}
 
               {/* Personuppgifter */}
               <SectionCard title="Personuppgifter">
