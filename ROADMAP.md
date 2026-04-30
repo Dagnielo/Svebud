@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 30 april 2026 (efter Landing 2.5 — FAQ utökad till 8 frågor)
+**Senast uppdaterad:** 30 april 2026 — efter Landing 2.5 + compare-alignment-fix
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -73,6 +73,9 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
   foranmalan/nätbolag-integration tillagda med ärlig roadmap (Q3-Q4
   2026), uppsägningsfrågan ersatt med rikare version (bindningstid
   + dataexport).
+
+- ✅ Compare-tabell alignment-fix — `.cmpgrid` ändrad från
+  `align-items:center` till `align-items:start`. Topparna alignar nu.
 
 ---
 
@@ -190,11 +193,6 @@ Tekniska skulder att åtgärda när tid finns:
 
 - **Optimering av polling i `projekt/[projektId]/page.tsx`** — `hämta()` gör 5 sekventiella queries. Inte akut.
 - **Förlorat-flödet i `<UtfallsKnappar>`** — nollar inte `vinnande_pris` när status ändras från vunnet → förlorat. TODO-kommentar tillagd. Inte akut, KPI-queryn skyddar.
-- **Compare-tabell höger kort sitter ~10-15px högre än vänster** —
-  orsak: `.cmpgrid` har `align-items:center` (rad 271 i landing.html).
-  Fix: byt till `align-items:start` (alignar topparna) eller
-  `align-items:stretch` (korten fyller samma höjd). Inte showstopper,
-  fixas vid nästa landing-pass.
 
 ---
 
@@ -317,4 +315,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 30 april 2026 — efter Landing 2.5 (FAQ utökad till 8 frågor). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 30 april 2026 — efter Landing 2.5 + compare-alignment-fix. Uppdatera denna fil efter varje slutförd sprint.*
