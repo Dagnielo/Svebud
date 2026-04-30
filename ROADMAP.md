@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 29 april 2026 (efter Landing 3.4 — jämförelsetabell + föranmälan-rad)
+**Senast uppdaterad:** 30 april 2026 (efter Landing 2.5 — FAQ utökad till 8 frågor)
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -68,6 +68,12 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
   i höger kolumn för symmetri. Känd kvarvarande bug: kort-alignment
   (se Tekniska skulder).
 
+- ✅ Landing 2.5 — FAQ utökad från 5 till 8 frågor: ny ansvarsfråga
+  som plats 1 (yrkesansvar förtydligat), Fortnox/Visma-export och
+  foranmalan/nätbolag-integration tillagda med ärlig roadmap (Q3-Q4
+  2026), uppsägningsfrågan ersatt med rikare version (bindningstid
+  + dataexport).
+
 ---
 
 ## Nästa steg — vart är vi på väg?
@@ -76,10 +82,9 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
 
 | # | Arbete | Fil | Tid |
 |---|--------|-----|-----|
-| 1 | Landing 2.5 — FAQ utökas med 4 kritiska frågor | Landing [2.5] | 1 timme |
-| 2 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
+| 1 | Features #4 — Uppföljnings-notifikation på dashboard | Features [#4] | 1–2 dagar |
 
-**Total: ~1.5 dagar kvar.** 2.5 (FAQ) återstår på landningssidan, sen Features #4 (Uppföljning).
+**Total: ~1–2 dagar.** Landningssidan visuellt + textmässigt komplett för Fas 2 + 3.4. Nästa steg: Features #4 (Uppföljning på dashboard).
 
 ### Vecka därefter — Strukturella tillägg + Email-kanal
 
@@ -312,4 +317,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 29 april 2026 — efter Landing 3.4 (jämförelsetabell + föranmälan-rad + hero-stat synkat). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 30 april 2026 — efter Landing 2.5 (FAQ utökad till 8 frågor). Uppdatera denna fil efter varje slutförd sprint.*
