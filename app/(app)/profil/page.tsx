@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Sidebar from '@/components/Sidebar'
 import { Button } from '@/components/ui/button'
 import { beräknaProfilstyrka } from '@/lib/profilstyrka'
+import { posthog } from '@/lib/posthog'
 
 type UserProfil = {
   fullnamn: string | null
@@ -120,6 +121,7 @@ export default function ProfilPage() {
         setTimprisOb((p.timpris_ob as number)?.toString() ?? '')
         setReferensprojekt((p.referensprojekt as Referensprojekt[]) ?? [])
         setKontaktpersoner((p.kontaktpersoner as Kontaktperson[]) ?? [])
+        posthog.capture('profil_visad')
         // Anbudsinställningar
         const ai = p.anbudsinstallningar as Record<string, unknown> | null
         if (ai) {
@@ -220,6 +222,10 @@ export default function ProfilPage() {
       if (!res.ok) {
         const fel = await res.json().catch(() => ({ fel: 'Hämtning misslyckades' }))
         setBolagsverketMeddelande(`❌ ${fel.fel ?? 'Hämtning misslyckades'}`)
+        posthog.capture('profil_grunddata_misslyckades', {
+          organisationsnummer: orgNr,
+          fel: fel.fel ?? 'okänt',
+        })
         return
       }
       const { profil } = await res.json()
@@ -234,8 +240,16 @@ export default function ProfilPage() {
           ? `✓ Hämtade ${antalIfyllda} ${antalIfyllda === 1 ? 'fält' : 'fält'} från allabolag.se. Kom ihåg att spara!`
           : '✓ Företaget hittades — alla fält är redan ifyllda'
       )
+      posthog.capture('profil_grunddata_hämtad', {
+        antal_fält_ifyllda: antalIfyllda,
+        organisationsnummer: orgNr,
+      })
     } catch {
       setBolagsverketMeddelande('❌ Tekniskt fel — försök igen om en stund')
+      posthog.capture('profil_grunddata_misslyckades', {
+        organisationsnummer: orgNr,
+        fel: 'tekniskt_fel',
+      })
     } finally {
       setHämtarBolagsverket(false)
     }
