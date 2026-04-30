@@ -439,7 +439,17 @@ export default function ProfilPage() {
                     marginTop: -8,
                   }}
                 >
-                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: bolagsverketMeddelande?.startsWith('❌')
+                        ? 'var(--red)'
+                        : bolagsverketMeddelande?.startsWith('✓')
+                        ? 'var(--green)'
+                        : 'var(--soft)',
+                    }}
+                  >
                     {bolagsverketMeddelande || 'Auto-fyll från allabolag.se via organisationsnummer'}
                   </div>
                   <button
