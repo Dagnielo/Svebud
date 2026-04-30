@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 30 april 2026 — efter Features #4 (Uppföljnings-notifikation) komplett
+**Senast uppdaterad:** 30 april 2026 — Features #4 + ASCII route-fix
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -93,6 +93,11 @@ Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Till
   Två tabeller: aktiva (med Vunnet/Förlorat/Avbryt-knappar) +
   avslutade (read-only). State-badges för alla 9 states, relativ
   tids-rendering ("Förfallen sedan X dagar" / "Idag" / "Om X dagar").
+- ✅ Bugfix efter Features #4: Next.js stöder inte ö i App Router
+  mappnamn → `/uppföljning` bytt till `/uppfoljning`. Mappen flyttad
+  med `git mv` (historik bevarad). Banner-länk + proxy.ts-skydd
+  uppdaterade. Variabel/types/UI-text oförändrad — endast URL-pathen
+  är ASCII (samma konvention som `installningar/`, `alla-projekt/`).
 
 ---
 
@@ -351,4 +356,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 30 april 2026 — efter Features #4 (Uppföljnings-notifikation: shared hook + dashboard-banner + /uppföljning-sidan, alla tre delar live). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 30 april 2026 — Features #4 + ASCII route-fix (mappen `/uppföljning` bytt till `/uppfoljning` eftersom Next.js App Router inte stöder ö i mappnamn). Uppdatera denna fil efter varje slutförd sprint.*
