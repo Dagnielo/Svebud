@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SveBud – Dashboard Mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --yellow:#F5C400;--yd:rgba(245,196,0,0.15);--ydd:rgba(245,196,0,0.08);
+  --navy:#0F1C2E;--nm:#1A2E45;--nl:#24405C;--nb:#2E5070;
+  --st:#3D6080;--sl:#5A7FA0;--mu:#8099B5;--so:#B8CCDE;--wh:#F4F8FC;
+  --gr:#00C67A;--gb:rgba(0,198,122,0.1);
+  --re:#FF4D4D;--rb:rgba(255,77,77,0.1);
+  --or:#FF8C42;--ob:rgba(255,140,66,0.1);
+  --bl:#4A9EFF;--bb:rgba(74,158,255,0.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--wh);min-height:100vh;overflow-x:hidden}
+button,input,textarea{font-family:'DM Sans',sans-serif}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;min-height:100vh;background:var(--nm);
+  border-right:1px solid var(--nb);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;z-index:100
+}
+.logo{
+  padding:22px 18px 18px;border-bottom:1px solid var(--nb);
+  display:flex;align-items:center;gap:10px;text-decoration:none
+}
+.logo-bolt{
+  width:34px;height:34px;background:var(--yellow);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0
+}
+.logo-name{font-size:18px;font-weight:800;letter-spacing:-0.03em}
+.logo-name span{color:var(--yellow)}
+.logo-ver{font-size:10px;color:var(--mu);margin-top:1px}
+.nav-sec{padding:14px 10px 6px}
+.nav-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sl);padding:0 8px;margin-bottom:6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--mu);cursor:pointer;
+  margin-bottom:2px;position:relative;transition:all .15s;
+  text-decoration:none;border:none;background:transparent;width:100%;text-align:left
+}
+.nav-item:hover{background:var(--nl);color:var(--wh)}
+.nav-item.active{background:var(--yd);color:var(--yellow)}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:6px;bottom:6px;
+  width:3px;background:var(--yellow);border-radius:0 2px 2px 0
+}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.nav-badge{
+  margin-left:auto;font-size:10px;font-weight:800;
+  padding:2px 6px;border-radius:10px;
+  background:var(--yellow);color:var(--navy)
+}
+.sidebar-bot{margin-top:auto;padding:14px 10px;border-top:1px solid var(--nb)}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px}
+.user-av{
+  width:32px;height:32px;background:var(--yellow);color:var(--navy);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;flex-shrink:0
+}
+.user-name{font-size:13px;font-weight:600}
+.user-co{font-size:11px;color:var(--mu)}
+.plan-badge{
+  margin-left:auto;font-size:9px;font-weight:600;
+  background:var(--yd);color:var(--yellow);
+  padding:2px 6px;border-radius:4px;border:1px solid rgba(245,196,0,.3)
+}
+.logout-btn{
+  width:100%;margin-top:8px;padding:7px 10px;border-radius:8px;
+  border:1px solid var(--nb);background:transparent;color:var(--mu);
+  font-size:12px;cursor:pointer;transition:all .15s
+}
+.logout-btn:hover{border-color:var(--st);color:var(--wh)}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:60px;background:var(--nm);border-bottom:1px solid var(--nb);
+  display:flex;align-items:center;padding:0 28px;gap:14px;
+  position:sticky;top:0;z-index:50
+}
+.page-title{font-size:16px;font-weight:700}
+.topbar-date{font-size:12px;color:var(--mu)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn-primary{
+  background:var(--yellow);color:var(--navy);border:none;
+  padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s
+}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-ghost{
+  background:transparent;color:var(--mu);border:1px solid var(--nb);
+  padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;
+  cursor:pointer;transition:all .15s
+}
+.btn-ghost:hover{border-color:var(--st);color:var(--wh)}
+.notif-btn{
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--nb);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--mu);font-size:16px;position:relative;transition:all .15s
+}
+.notif-btn:hover{border-color:var(--st);color:var(--wh)}
+.notif-dot{
+  position:absolute;top:6px;right:6px;width:7px;height:7px;
+  background:var(--yellow);border-radius:50%
+}
+
+/* ── CONTENT ── */
+.content{padding:26px 28px;flex:1}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi-card{
+  background:var(--nm);border:1px solid var(--nb);border-radius:12px;
+  padding:16px 18px;position:relative;overflow:hidden
+}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-card.c-y::after{background:var(--yellow)}
+.kpi-card.c-g::after{background:var(--gr)}
+.kpi-card.c-b::after{background:var(--bl)}
+.kpi-card.c-o::after{background:var(--or)}
+.kpi-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:8px}
+.kpi-val{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.c-y .kpi-val{color:var(--yellow)}
+.c-g .kpi-val{color:var(--gr)}
+.c-b .kpi-val{color:var(--bl)}
+.c-o .kpi-val{color:var(--or)}
+.kpi-sub{font-size:12px;color:var(--mu);margin-top:6px}
+.kpi-trend{font-size:11px;font-weight:600;color:var(--gr);margin-top:4px}
+
+/* ── PIPELINE ── */
+.pipe-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pipe-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.pipe-count{font-size:11px;font-weight:700;background:var(--nl);color:var(--mu);padding:2px 8px;border-radius:16px}
+.pipe-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.pipe-col{background:var(--nm);border:1px solid var(--nb);border-radius:14px;overflow:hidden}
+.col-head{padding:12px 14px;border-bottom:1px solid var(--nb);display:flex;align-items:center;gap:8px}
+.col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.col-name{font-size:13px;font-weight:700}
+.col-num{margin-left:auto;font-size:11px;font-weight:700;background:var(--nl);color:var(--mu);padding:2px 7px;border-radius:10px}
+.col-body{padding:10px;display:flex;flex-direction:column;gap:9px;min-height:180px}
+
+/* ── PROJEKT KORT ── */
+.proj-card{
+  background:var(--nl);border:1px solid var(--nb);border-radius:10px;
+  padding:13px;cursor:pointer;transition:all .15s
+}
+.proj-card:hover{border-color:var(--yellow);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.proj-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px}
+.proj-client{font-size:14px;font-weight:700;line-height:1.3}
+.proj-type{font-size:11px;color:var(--mu);margin-top:2px}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.chip{
+  font-size:11px;font-weight:600;padding:3px 7px;border-radius:6px;
+  display:flex;align-items:center;gap:3px
+}
+.chip-hot{background:var(--rb);color:var(--re)}
+.chip-ok{background:var(--gb);color:var(--gr)}
+.chip-warn{background:var(--ob);color:var(--or)}
+.chip-val{background:var(--bb);color:var(--bl)}
+.chip-muted{background:var(--navy);color:var(--mu)}
+
+/* Anbudsläge */
+.anlage{
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+  padding:3px 8px;border-radius:5px;display:inline-flex;align-items:center;gap:4px;
+  margin-bottom:7px
+}
+.al-starkt{background:var(--gb);color:var(--gr)}
+.al-bra{background:var(--yd);color:var(--yellow)}
+.al-osaekert{background:var(--ob);color:var(--or)}
+.al-svart{background:var(--rb);color:var(--re)}
+
+/* deadline */
+.deadline-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.deadline-row input[type=date]{
+  background:transparent;border:none;color:var(--mu);
+  font-size:11px;font-weight:600;cursor:pointer;padding:0;width:92px
+}
+.dl-label{font-size:10px;font-weight:700}
+
+/* step progress */
+.proj-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:9px;padding-top:9px;border-top:1px solid var(--nb)
+}
+.step-dots{display:flex;gap:4px}
+.sd{width:22px;height:4px;border-radius:2px}
+.sd-done{background:var(--gr)}
+.sd-active{background:var(--yellow)}
+.sd-pending{background:var(--st)}
+.cta-txt{font-size:12px;color:var(--mu);font-weight:600;transition:color .15s}
+.proj-card:hover .cta-txt{color:var(--yellow)}
+.del-btn{
+  font-size:12px;background:none;border:none;cursor:pointer;
+  padding:2px 6px;border-radius:4px;color:var(--sl);transition:all .15s
+}
+.del-btn:hover{color:var(--re);background:var(--rb)}
+
+/* ── VIEWS ── */
+.view{display:none;flex-direction:column;flex:1}
+.view.active{display:flex}
+
+/* ── PROJEKT DETAIL ── */
+.detail-header{
+  background:var(--nm);border-bottom:1px solid var(--nb);
+  padding:18px 28px;display:flex;align-items:center;gap:14px
+}
+.back-btn{
+  display:flex;align-items:center;gap:6px;font-size:13px;
+  color:var(--mu);font-weight:600;cursor:pointer;background:none;
+  border:none;transition:color .15s;padding:0
+}
+.back-btn:hover{color:var(--wh)}
+.detail-title{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.detail-sub{font-size:13px;color:var(--mu);margin-top:2px}
+.detail-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+.detail-body{display:grid;grid-template-columns:1fr 300px;flex:1}
+.detail-main{padding:24px 28px;border-right:1px solid var(--nb);overflow-y:auto}
+.detail-side{padding:20px;overflow-y:auto}
+
+/* stepper */
+.stepper{display:flex;align-items:stretch;margin-bottom:28px}
+.step-item{flex:1;position:relative}
+.step-inner{display:flex;flex-direction:column;align-items:center;padding:0 6px}
+.step-circle{
+  width:36px;height:36px;border-radius:50%;border:2px solid var(--st);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:var(--mu);background:var(--nm);
+  position:relative;z-index:2;transition:all .2s;cursor:pointer
+}
+.step-circle.done{border-color:var(--gr);background:var(--gr);color:var(--navy)}
+.step-circle.active{border-color:var(--yellow);background:var(--yd);color:var(--yellow);box-shadow:0 0 0 4px var(--yd)}
+.step-lbl{font-size:11px;font-weight:600;color:var(--mu);margin-top:8px;text-align:center}
+.step-lbl.done{color:var(--gr)}
+.step-lbl.active{color:var(--yellow)}
+.step-connector{position:absolute;top:18px;left:calc(50% + 18px);right:calc(-50% + 18px);height:2px;background:var(--st);z-index:1}
+.step-connector.done{background:var(--gr)}
+.step-item:last-child .step-connector{display:none}
+
+/* tabs */
+.tab-bar{display:flex;border-bottom:1px solid var(--nb);margin-bottom:22px}
+.tab{
+  padding:10px 18px;font-size:13px;font-weight:600;color:var(--mu);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s
+}
+.tab:hover{color:var(--wh)}
+.tab.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+
+/* tab content */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* info card */
+.info-card{background:var(--nm);border:1px solid var(--nb);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.info-head{padding:13px 16px;border-bottom:1px solid var(--nb);display:flex;align-items:center;gap:8px}
+.info-head-title{font-size:14px;font-weight:700}
+.ai-badge{margin-left:auto;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:5px;background:var(--yd);color:var(--yellow);border:1px solid rgba(245,196,0,.3)}
+.info-body{padding:14px 16px}
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--nb)}
+.info-row:last-child{border-bottom:none}
+.info-key{font-size:12px;color:var(--mu);font-weight:500}
+.info-val{font-size:13px;font-weight:600;text-align:right;max-width:60%}
+
+/* anlage block */
+.anlage-block{border-radius:12px;border:1px solid;padding:14px 16px;margin-bottom:14px}
+.anlage-block.starkt{background:rgba(0,198,122,.07);border-color:rgba(0,198,122,.3)}
+.anlage-block.bra{background:var(--ydd);border-color:rgba(245,196,0,.3)}
+.anlage-block.osaekert{background:rgba(255,140,66,.07);border-color:rgba(255,140,66,.3)}
+.anlage-title{font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.anlage-block.starkt .anlage-title{color:var(--gr)}
+.anlage-block.bra .anlage-title{color:var(--yellow)}
+.anlage-block.osaekert .anlage-title{color:var(--or)}
+.krav-list{display:flex;flex-direction:column;gap:8px}
+.krav-item{display:flex;align-items:flex-start;gap:10px;font-size:13px}
+.krav-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.krav-text{color:var(--so)}
+
+/* kalkyl */
+.kalkyl-table{width:100%;border-collapse:collapse}
+.kalkyl-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mu);padding:8px 10px;border-bottom:1px solid var(--nb);text-align:left}
+.kalkyl-table td{padding:10px;font-size:13px;border-bottom:1px solid rgba(46,80,112,.5);vertical-align:middle}
+.kalkyl-table tr:last-child td{border-bottom:none}
+.kalkyl-input{
+  background:var(--navy);border:1px solid var(--nb);border-radius:6px;
+  color:var(--wh);font-size:12px;padding:5px 8px;width:70px;text-align:right
+}
+.kalkyl-input:focus{outline:none;border-color:var(--yellow)}
+.kalkyl-total{
+  background:var(--navy);border-radius:10px;padding:14px 16px;
+  margin-top:12px;display:flex;justify-content:space-between;align-items:center
+}
+.total-lbl{font-size:13px;font-weight:700}
+.total-sub{font-size:12px;color:var(--mu);margin-top:2px}
+.total-val{font-size:22px;font-weight:800;color:var(--yellow)}
+
+/* anbud editor */
+.anbud-sec{background:var(--nm);border:1px solid var(--nb);border-radius:10px;overflow:hidden;margin-bottom:8px;transition:border-color .15s}
+.anbud-sec.open{border-color:var(--yellow)}
+.anbud-sec-head{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.sec-num{font-size:11px;color:var(--mu);width:20px}
+.sec-name{font-size:14px;font-weight:600;flex:1}
+.regen-btn{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  padding:3px 8px;border-radius:5px;background:var(--yd);color:var(--yellow);
+  border:1px solid rgba(245,196,0,.3);cursor:pointer;opacity:0;transition:opacity .15s
+}
+.anbud-sec:hover .regen-btn{opacity:1}
+.anbud-sec-body{
+  padding:14px 16px;border-top:1px solid var(--nb);
+  font-size:13px;color:var(--so);line-height:1.7;display:none
+}
+.anbud-sec.open .anbud-sec-body{display:block}
+
+/* ROT kalkyl */
+.rot-block{
+  background:var(--nm);border:1px solid rgba(0,198,122,.3);
+  border-radius:12px;padding:16px;margin-top:14px
+}
+.rot-title{font-size:13px;font-weight:700;color:var(--gr);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.rot-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--nb);font-size:13px}
+.rot-row:last-child{border-bottom:none}
+.rot-key{color:var(--mu)}
+.rot-val{font-weight:700}
+
+/* föranmälan */
+.fp-steps{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.fp-step{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:var(--nm);border:1px solid var(--nb);border-radius:10px;
+  font-size:13px;cursor:pointer;transition:all .15s
+}
+.fp-step:hover{border-color:var(--yellow)}
+.fp-step.done{border-color:rgba(0,198,122,.4);background:rgba(0,198,122,.05)}
+.fp-step.active{border-color:var(--yellow);background:var(--yd)}
+.fp-step-icon{font-size:18px;flex-shrink:0}
+.fp-step-info{flex:1}
+.fp-step-name{font-weight:700;margin-bottom:2px}
+.fp-step-time{font-size:11px;color:var(--mu)}
+.fp-step-status{font-size:11px;font-weight:700}
+
+/* sidebar panel */
+.side-card{background:var(--nm);border:1px solid var(--nb);border-radius:12px;padding:15px;margin-bottom:13px}
+.side-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mu);margin-bottom:12px}
+.dl-big{font-size:24px;font-weight:800;color:var(--or);margin-bottom:3px}
+.dl-date{font-size:12px;color:var(--mu)}
+.cert-item{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:8px}
+.cert-item:last-child{margin-bottom:0}
+.cert-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.act-item{display:flex;gap:10px;margin-bottom:10px;font-size:12px;color:var(--mu)}
+.act-item:last-child{margin-bottom:0}
+.act-time{font-size:10px;white-space:nowrap;padding-top:1px}
+.act-dot{width:6px;height:6px;border-radius:50%;background:var(--st);flex-shrink:0;margin-top:4px}
+
+/* upload zone */
+.upload-zone{
+  border:2px dashed var(--nb);border-radius:16px;padding:50px 40px;
+  text-align:center;cursor:pointer;transition:all .2s;background:var(--nm)
+}
+.upload-zone:hover{border-color:var(--yellow);background:var(--yd)}
+.upload-icon{font-size:40px;margin-bottom:14px}
+.upload-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.upload-sub{font-size:14px;color:var(--mu)}
+.upload-formats{font-size:12px;color:var(--sl);margin-top:10px}
+
+/* toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--nm);border:1px solid var(--gr);color:var(--gr);
+  padding:11px 16px;border-radius:10px;font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+  transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:999
+}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* dialog overlay */
+.overlay{
+  position:fixed;inset:0;background:rgba(15,28,46,.85);z-index:200;
+  display:none;align-items:center;justify-content:center
+}
+.overlay.open{display:flex}
+.dialog{
+  background:var(--nm);border:1px solid var(--nb);border-radius:14px;
+  padding:28px;width:460px;max-width:90vw
+}
+.dialog-title{font-size:18px;font-weight:800;margin-bottom:6px}
+.dialog-sub{font-size:13px;color:var(--mu);margin-bottom:20px}
+.field-label{font-size:12px;font-weight:600;color:var(--so);margin-bottom:6px;display:block}
+.field-input{
+  width:100%;background:var(--navy);border:1px solid var(--nb);border-radius:8px;
+  color:var(--wh);font-size:14px;padding:10px 14px;margin-bottom:14px;transition:border .15s
+}
+.field-input:focus{outline:none;border-color:var(--yellow)}
+.field-textarea{
+  width:100%;background:var(--navy);border:1px solid var(--nb);border-radius:8px;
+  color:var(--wh);font-size:14px;padding:10px 14px;margin-bottom:20px;
+  resize:vertical;min-height:80px;transition:border .15s
+}
+.field-textarea:focus{outline:none;border-color:var(--yellow)}
+.dialog-actions{display:flex;gap:10px;justify-content:flex-end}
+.btn-cancel{background:transparent;color:var(--mu);border:1px solid var(--nb);padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--st);border-radius:3px}
+
+/* animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.view.active{animation:fadeIn .25s ease}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">✓ <span id="toast-msg">Sparat</span></div>
+
+<!-- NY PROJEKT DIALOG -->
+<div class="overlay" id="dialog-overlay">
+  <div class="dialog">
+    <div class="dialog-title">Nytt projekt</div>
+    <div class="dialog-sub">Skapa ett nytt anbudsprojekt</div>
+    <label class="field-label">Projektnamn *</label>
+    <input class="field-input" id="new-namn" placeholder="t.ex. BRF Solbacken — Laddstolpar" />
+    <label class="field-label">Beskrivning (valfritt)</label>
+    <textarea class="field-textarea" id="new-desc" placeholder="Kort beskrivning av uppdraget..."></textarea>
+    <div class="dialog-actions">
+      <button class="btn-cancel" onclick="closeDialog()">Avbryt</button>
+      <button class="btn-primary" onclick="skapaP()">⚡ Skapa projekt</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <a class="logo" onclick="showView('dashboard');return false" href="#">
+    <div class="logo-bolt">⚡</div>
+    <div>
+      <div class="logo-name">Sve<span>Bud</span></div>
+      <div class="logo-ver mono">v1.0 BETA</div>
+    </div>
+  </a>
+
+  <div class="nav-sec">
+    <div class="nav-lbl">Huvud</div>
+    <button class="nav-item active" id="nav-pipeline" onclick="showView('dashboard')">
+      <span class="nav-icon">⚡</span> Pipeline
+      <span class="nav-badge" id="nav-count">6</span>
+    </button>
+    <button class="nav-item" onclick="openDialog()">
+      <span class="nav-icon">➕</span> Nytt projekt
+    </button>
+    <button class="nav-item" onclick="toast('Alla projekt — kommer snart')">
+      <span class="nav-icon">📁</span> Alla projekt
+    </button>
+  </div>
+
+  <div class="nav-sec">
+    <div class="nav-lbl">Mitt företag</div>
+    <button class="nav-item" onclick="toast('Företagsprofil — certifikat, timpris, references')">
+      <span class="nav-icon">🏢</span> Företagsprofil
+    </button>
+    <button class="nav-item" onclick="toast('Certifikat — ladda upp och hantera')">
+      <span class="nav-icon">📜</span> Certifikat
+    </button>
+    <button class="nav-item" onclick="toast('Inställningar — anbudsmall, betalningsvillkor m.m.')">
+      <span class="nav-icon">⚙️</span> Inställningar
+    </button>
+  </div>
+
+  <div class="sidebar-bot">
+    <div class="user-card">
+      <div class="user-av">ME</div>
+      <div>
+        <div class="user-name">Magnus Eriksson</div>
+        <div class="user-co">Eriksson El AB</div>
+      </div>
+      <span class="plan-badge mono">PRO</span>
+    </div>
+    <button class="logout-btn" onclick="toast('Loggar ut...')">Logga ut</button>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+<!-- ══════════════════════════════════════
+     VIEW: DASHBOARD
+══════════════════════════════════════ -->
+<div class="view active" id="view-dashboard">
+  <div class="topbar">
+    <span class="page-title">Anbudspipeline</span>
+    <span class="topbar-date mono">April 2026</span>
+    <div class="topbar-right">
+      <div class="notif-btn" onclick="toast('3 nya händelser')">🔔<div class="notif-dot"></div></div>
+      <button class="btn-ghost" onclick="toast('Filter öppnas...')">Filtrera</button>
+      <button class="btn-primary" onclick="openDialog()">⚡ Nytt projekt</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPI -->
+    <div class="kpi-strip">
+      <div class="kpi-card c-y">
+        <div class="kpi-lbl">Aktiva anbud</div>
+        <div class="kpi-val" id="kpi-aktiva">6</div>
+        <div class="kpi-sub">3 kräver åtgärd</div>
+      </div>
+      <div class="kpi-card c-g">
+        <div class="kpi-lbl">Win rate</div>
+        <div class="kpi-val">67%</div>
+        <div class="kpi-trend">↑ +12% vs förra mån</div>
+      </div>
+      <div class="kpi-card c-b">
+        <div class="kpi-lbl">Pipeline-värde</div>
+        <div class="kpi-val">4,2M</div>
+        <div class="kpi-sub">kr i aktiva anbud</div>
+      </div>
+      <div class="kpi-card c-o">
+        <div class="kpi-lbl">Närmaste deadline</div>
+        <div class="kpi-val" id="kpi-deadline">2 dgr</div>
+        <div class="kpi-sub">BRF Kungsholmen</div>
+      </div>
+    </div>
+
+    <!-- PIPELINE HEADER -->
+    <div class="pipe-header">
+      <div class="pipe-title">
+        Pipeline <span class="pipe-count" id="pipe-count">6 anbud</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-ghost" style="font-size:12px" onclick="toast('Sortera: Deadline')">Sortera: Deadline</button>
+      </div>
+    </div>
+
+    <div class="pipe-grid">
+      <!-- COL: INKORG -->
+      <div class="pipe-col">
+        <div class="col-head">
+          <div class="col-dot" style="background:var(--yellow)"></div>
+          <span class="col-name">📥 Inkorg</span>
+          <span class="col-num">2</span>
+        </div>
+        <div class="col-body" id="col-inkorg">
+          <!-- BRF Kungsholmen -->
+          <div class="proj-card" onclick="showDetail('brf')">
+            <div class="proj-top">
+              <div>
+                <div class="proj-client">BRF Kungsholmen</div>
+                <div class="proj-type">Stamrenovering el · 32 lgh</div>
+              </div>
+              <div class="status-dot" style="background:var(--re)"></div>
+            </div>
+            <div class="chips">
+              <span class="chip chip-hot">🔴 2 dagar kvar</span>
+              <span class="chip chip-val">1,8 MSEK</span>
+            </div>
+            <div class="anlage al-starkt">⚡ Starkt läge · 94%</div>
+            <div class="deadline-row">
+              <span>📅</span>
+              <input type="date" value="2026-04-26" onclick="event.stopPropagation()" onchange="toast('Deadline uppdaterad')">
+              <span class="dl-label" style="color:var(--re)">2d kvar</span>
+            </div>
+            <div class="proj-footer">
+              <div class="step-dots">
+                <div class="sd sd-done"></div>
+                <div class="sd sd-active"></div>
+                <div class="sd sd-pending"></div>
+              </div>
+              <span class="cta-txt">Analys klar →</span>
+            </div>
+          </div>
+
+          <!-- ICA Logistik -->
+          <div class="proj-card" onclick="showDetail('ica')">
+            <div class="proj-top">
+              <div>
+                <div class="proj-client">ICA Logistik Väst</div>
+                <div class="proj-type">Ny elinstallation · Lager</div>
+              </div>
+              <div class="status-dot" style="background:var(--or)"></div>
+            </div>
+            <div class="chips">
+              <span class="chip chip-warn">🟡 7 dagar kvar</span>
+              <span class="chip chip-val">640 KSEK</span>
+            </div>
+            <div class="anlage al-bra">💡 Bra läge · 78%</div>
+            <div class="deadline-row">
+              <span>📅</span>
+              <input type="date" value="2026-05-01" onclick="event.stopPropagation()" onchange="toast('Deadline uppdaterad')">
+              <span class="dl-label" style="color:var(--or)">7d kvar</span>
+            </div>
+            <div class="proj-footer">
+              <div class="step-dots">
+                <div class="sd sd-done"></div>
+                <div class="sd sd-pending"></div>
+                <div class="sd sd-pending"></div>
+              </div>
+              <span class="cta-txt">Starta analys →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL: UNDER ARBETE -->
+      <div class="pipe-col">
+        <div class="col-head">
+          <div class="col-dot" style="background:var(--bl)"></div>
+          <span class="col-name">✏️ Under arbete</span>
+          <span class="col-num">3</span>
+        </div>
+        <div class="col-body">
+          <!-- Hammarby -->
+          <div class="proj-card" onclick="showDetail('hammarby')">
+            <div class="proj-top">
+              <div>
+                <div class="proj-client">Hammarby Fastigheter</div>
+                <div class="proj-type">Laddstolpar · 48 platser</div>
+              </div>
+              <div class="status-dot" style="background:var(--bl)"></div>
+            </div>
+            <div class="chips">
+              <span class="chip chip-ok">🟢 12 dagar kvar</span>
+              <span class="chip chip-val">920 KSEK</span>
+              <span class="chip chip-muted">Kalkyl pågår</span>
+            </div>
+            <div class="anlage al-starkt">⚡ Starkt läge · 91%</div>
+            <div class="deadline-row">
+              <span>📅</span>
+              <input type="date" value="2026-05-06" onclick="event.stopPropagation()" onchange="toast('Deadline uppdaterad')">
+              <span class="dl-label" style="color:var(--gr)">12d kvar</span>
+            </div>
+            <div class="proj-footer">
+              <div class="step-dots">
+                <div class="sd sd-done"></div>
+                <div class="sd sd-done"></div>
+                <div class="sd sd-active"></div>
+              </div>
+              <span class="cta-txt">Slutför kalkyl →</span>
+            </div>
+          </div>
+
+          <!-- Siemens -->
+          <div class="proj-card" onclick="showDetail('siemens')">
+            <div class="proj-top">
+              <div>
+                <div class="proj-client">Siemens Sverige</div>
+                <div class="proj-type">Servicekontrakt · 2 år</div>
+              </div>
+              <div class="status-dot" style="background:var(--bl)"></div>
+            </div>
+            <div class="chips">
+              <span class="chip chip-ok">🟢 14 dagar kvar</span>
+              <span class="chip chip-val">480 KSEK/år</span>
+              <span class="chip chip-muted">Skriver anbud</span>
+            </div>
+            <div class="anlage al-bra">💡 Bra läge · 82%</div>
+            <div class="deadline-row">
+              <span>🔥</span>
+              <input type="date" value="2026-05-08" onclick="event.stopPropagation()" onchange="toast('Deadline uppdaterad')">
+              <span class="dl-label" style="color:var(--gr)">14d kvar</span>
+            </div>
+            <div class="proj-footer">
+              <div class="step-dots">
+                <div class="sd sd-done"></div>
+                <div class="sd sd-done"></div>
+                <div class="sd sd-active"></div>
+              </div>
+              <span class="cta-txt">Granska anbud →</span>
+            </div>
+          </div>
+
+          <!-- Lidl -->
+          <div class="proj-card" onclick="toast('Öppnar Lidl Sverige...')">
+            <div class="proj-top">
+              <div>
+                <div class="proj-client">Lidl Sverige</div>
+                <div class="proj-type">Butiksetablering · Märsta</div>
+              </div>
+              <div class="status-dot" style="background:var(--or)"></div>
+            </div>
+            <div class="chips">
+              <span class="chip chip-warn">🟡 9 dagar kvar</span>
+              <span class="chip chip-val">350 KSEK</span>
+              <span class="chip chip-muted">Kalkyl klar</span>
+            </div>
+            <div class="anlage al-osaekert">⚠️ Osäkert läge · 61%</div>
+            <div class="deadline-row">
+              <span>📅</span>
+              <input type="date" value="2026-05-03" onclick="event.stopPropagation()" onchange="toast('Deadline uppdaterad')">
+              <span class="dl-label" style="color:var(--or)">9d kvar</span>
+            </div>
+            <div class="proj-footer">
+              <div class="step-dots">
+                <div class="sd sd-done"></div>
+                <div class="sd sd-done"></div>
+                <div class="sd sd-active"></div>
+              </div>
+              <span class="cta-txt">Generera anbud →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL: INSKICKAT -->
+      <div class="pipe-col">
+        <div class="col-head">
+          <div class="col-dot" style="background:var(--mu)"></div>
+          <span class="col-name">📤 Inskickat</span>
+          <span class="col-num">1</span>
+        </div>
+        <div class="col-body">
+          <div class="proj-card" onclick="toast('Öppnar BRF Solrosen...')">
+            <div class="proj-top">
+              <div>
+                <div class="proj-client">BRF Solrosen</div>
+                <div class="proj-type">Ominstallation el · 18 lgh</div>
+              </div>
+              <div class="status-dot" style="background:var(--gr)"></div>
+            </div>
+            <div class="chips">
+              <span class="chip chip-ok">✓ Skickat 28 feb</span>
+              <span class="chip chip-val">380 KSEK</span>
+            </div>
+            <div style="font-size:12px;color:var(--mu);margin:4px 0 8px">Väntar på svar · Beslut ~20 maj</div>
+            <div class="proj-footer">
+              <div class="step-dots">
+                <div class="sd sd-done"></div>
+                <div class="sd sd-done"></div>
+                <div class="sd sd-done"></div>
+              </div>
+              <span style="font-size:12px;color:var(--gr);font-weight:600">Komplett ✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL: TILLDELNING -->
+      <div class="pipe-col">
+        <div class="col-head">
+          <div class="col-dot" style="background:var(--gr)"></div>
+          <span class="col-name">🏆 Tilldelning</span>
+          <span class="col-num">0</span>
+        </div>
+        <div class="col-body" style="align-items:center;justify-content:center">
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:28px;margin-bottom:10px">🏆</div>
+            <div style="font-size:12px;color:var(--mu);line-height:1.6">
+              Dra ett inskickat anbud hit<br>när du fått tilldelning
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: PROJEKT DETAIL (BRF)
+══════════════════════════════════════ -->
+<div class="view" id="view-brf" style="flex-direction:column">
+  <div class="topbar">
+    <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+    <div style="width:1px;height:20px;background:var(--nb)"></div>
+    <div>
+      <div style="font-size:16px;font-weight:700">BRF Kungsholmen</div>
+      <div style="font-size:12px;color:var(--mu)">Stamrenovering el · 32 lgh · Deadline 26 april 2026</div>
+    </div>
+    <div class="detail-actions">
+      <span class="anlage al-starkt" style="font-size:11px;padding:5px 12px">⚡ Starkt läge · 94%</span>
+      <button class="btn-ghost" onclick="toast('Exporterar PDF...')">📄 Exportera</button>
+    </div>
+  </div>
+
+  <div class="detail-body">
+    <div class="detail-main">
+      <!-- STEPPER -->
+      <div class="stepper">
+        <div class="step-item">
+          <div class="step-inner">
+            <div class="step-circle done" onclick="setSteg(1,'brf')">✓</div>
+            <div class="step-lbl done">Dokument</div>
+          </div>
+          <div class="step-connector done"></div>
+        </div>
+        <div class="step-item">
+          <div class="step-inner">
+            <div class="step-circle active" onclick="setSteg(2,'brf')">2</div>
+            <div class="step-lbl active">Analys & Bedömning</div>
+          </div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-item">
+          <div class="step-inner">
+            <div class="step-circle" onclick="setSteg(3,'brf')">3</div>
+            <div class="step-lbl">Anbud & Skicka</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-bar" id="tabs-brf">
+        <div class="tab active" onclick="switchTab('brf','dokument')">📋 Dokument</div>
+        <div class="tab" onclick="switchTab('brf','analys')">🔍 Analys</div>
+        <div class="tab" onclick="switchTab('brf','anbud')">📄 Anbud</div>
+        <div class="tab" onclick="switchTab('brf','foranmalan')">⚡ Föranmälan</div>
+      </div>
+
+      <!-- TAB: DOKUMENT -->
+      <div class="tab-content active" id="brf-dokument">
+        <div style="margin-bottom:16px;font-size:13px;color:var(--mu)">Ladda upp förfrågningsunderlaget för att starta AI-analysen.</div>
+        <div class="upload-zone" onclick="simulateUpload()">
+          <div class="upload-icon">⚡</div>
+          <div class="upload-title">Förfrågningsunderlag uppladdad</div>
+          <div class="upload-sub" style="color:var(--gr)">✓ Forfragan_BRF_Kungsholmen.pdf · 34 sidor · 2,4 MB</div>
+          <div class="upload-formats">Klicka för att ersätta · PDF · DOCX · Max 50 MB</div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn-primary" onclick="switchTab('brf','analys');toast('Kör AI-analys...')">⚡ Kör AI-analys</button>
+          <button class="btn-ghost" onclick="toast('Dokument öppnas...')">Visa dokument</button>
+        </div>
+      </div>
+
+      <!-- TAB: ANALYS -->
+      <div class="tab-content" id="brf-analys">
+        <div class="info-card">
+          <div class="info-head">
+            <span>📋</span>
+            <span class="info-head-title">Uppdragsbeskrivning</span>
+            <span class="ai-badge">⚡ AI-extraherat</span>
+          </div>
+          <div class="info-body">
+            <div class="info-row"><span class="info-key">Beställare</span><span class="info-val">BRF Kungsholmen, org. nr 769600-1234</span></div>
+            <div class="info-row"><span class="info-key">Uppdrag</span><span class="info-val">Komplett ominstallation el, 32 lgh + gemensamma utrymmen</span></div>
+            <div class="info-row"><span class="info-key">Prismodell</span><span class="info-val">Fast pris, specificerat per moment</span></div>
+            <div class="info-row"><span class="info-key">Deadline</span><span class="info-val" style="color:var(--re)">26 april 2026 kl 12:00</span></div>
+            <div class="info-row"><span class="info-key">Planerad start</span><span class="info-val">Maj 2026, etappvis</span></div>
+            <div class="info-row"><span class="info-key">Utvärdering</span><span class="info-val">Pris 60% · Metod 30% · Ref. 10%</span></div>
+          </div>
+        </div>
+
+        <div class="anlage-block starkt">
+          <div class="anlage-title">⚡ Starkt läge — Rekommenderas att lämna anbud</div>
+          <div class="krav-list">
+            <div class="krav-item"><span class="krav-icon">✅</span><span class="krav-text">Auktorisation AL (lågspänning) — uppfyllt</span></div>
+            <div class="krav-item"><span class="krav-icon">✅</span><span class="krav-text">Ansvarsförsäkring 10 MSEK — uppfyllt, giltigt t.o.m. dec 2026</span></div>
+            <div class="krav-item"><span class="krav-icon">✅</span><span class="krav-text">F-skattsedel — bifogad i profil</span></div>
+            <div class="krav-item"><span class="krav-icon">✅</span><span class="krav-text">Referensprojekt BRF-typ — 3 st i ditt bibliotek</span></div>
+            <div class="krav-item"><span class="krav-icon">⚠️</span><span class="krav-text">Kapacitet maj 2026 är belagd 60% — planera resursallokering</span></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn-primary" onclick="switchTab('brf','anbud');toast('Genererar anbud med AI...')">Gå vidare till anbud ⚡</button>
+          <button class="btn-ghost" onclick="toast('Laddar ner analys PDF...')">Ladda ner analys</button>
+        </div>
+      </div>
+
+      <!-- TAB: ANBUD -->
+      <div class="tab-content" id="brf-anbud">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:700">Genererat anbudsdokument</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--mu)">Sparad 2 min sedan</span>
+            <span style="font-size:10px;font-weight:800;background:var(--gb);color:var(--gr);padding:2px 7px;border-radius:4px">✓ Sparad</span>
+          </div>
+        </div>
+
+        <!-- Kalkyl -->
+        <div class="info-card" style="margin-bottom:14px">
+          <div class="info-head"><span>🧮</span><span class="info-head-title">Kalkyl</span><span class="ai-badge">⚡ AI-förslag</span></div>
+          <div class="info-body" style="padding:0">
+            <table class="kalkyl-table">
+              <thead><tr><th>Moment</th><th>Timmar</th><th>Material</th><th>Belopp</th></tr></thead>
+              <tbody>
+                <tr><td>Demontering befintlig installation</td><td><input class="kalkyl-input mono" value="80" onchange="toast('Kalkyl uppdaterad')"></td><td><input class="kalkyl-input mono" value="0"></td><td class="mono" style="color:var(--so)">52 000</td></tr>
+                <tr><td>Förläggning nya stigarledningar</td><td><input class="kalkyl-input mono" value="160"></td><td><input class="kalkyl-input mono" value="85000"></td><td class="mono" style="color:var(--so)">189 000</td></tr>
+                <tr><td>Installation el-centraler 32 st</td><td><input class="kalkyl-input mono" value="320"></td><td><input class="kalkyl-input mono" value="320000"></td><td class="mono" style="color:var(--so)">528 000</td></tr>
+                <tr><td>Kabelinstallation lgh</td><td><input class="kalkyl-input mono" value="480"></td><td><input class="kalkyl-input mono" value="240000"></td><td class="mono" style="color:var(--so)">552 000</td></tr>
+                <tr><td>Besiktning &amp; driftsättning</td><td><input class="kalkyl-input mono" value="48"></td><td><input class="kalkyl-input mono" value="12000"></td><td class="mono" style="color:var(--so)">43 200</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="kalkyl-total">
+            <div><div class="total-lbl">Totalt exkl. moms</div><div class="total-sub">650 kr/tim · Inkl. 25% materialpålägg</div></div>
+            <div class="total-val mono">1 364 200 kr</div>
+          </div>
+        </div>
+
+        <!-- ROT -->
+        <div class="rot-block">
+          <div class="rot-title">🌱 Grön teknik — Laddbox 15%</div>
+          <div class="rot-row"><span class="rot-key">Avdragsunderlag (arbete)</span><span class="rot-val" style="color:var(--so)">442 000 kr</span></div>
+          <div class="rot-row"><span class="rot-key">Grön teknik-avdrag (15%)</span><span class="rot-val" style="color:var(--gr)">- 66 300 kr</span></div>
+          <div class="rot-row"><span class="rot-key">Kund betalar (exkl. moms)</span><span class="rot-val" style="color:var(--yellow)">1 297 900 kr</span></div>
+        </div>
+
+        <!-- Anbud sektioner -->
+        <div style="margin-top:16px">
+          <div class="anbud-sec open">
+            <div class="anbud-sec-head" onclick="toggleSec(this)">
+              <span class="sec-num mono">01</span>
+              <span class="sec-name">Företagspresentation</span>
+              <button class="regen-btn" onclick="event.stopPropagation();toast('Regenererar...')">⚡ Regenerera</button>
+              <span>✅</span>
+            </div>
+            <div class="anbud-sec-body">Eriksson El AB grundades 2008 och har sedan dess levererat högkvalitativa elinstallationer till kommersiella fastigheter, industri och bostadsrättsföreningar i Stockholmsregionen. Med ett team om 12 certifierade elektriker och projektledare besitter vi kompetens och kapacitet för både löpande serviceavtal och större ominstallationsprojekt.</div>
+          </div>
+          <div class="anbud-sec">
+            <div class="anbud-sec-head" onclick="toggleSec(this)">
+              <span class="sec-num mono">02</span><span class="sec-name">Förståelse av uppdraget</span>
+              <button class="regen-btn" onclick="event.stopPropagation();toast('Regenererar...')">⚡ Regenerera</button>
+              <span>✅</span>
+            </div>
+            <div class="anbud-sec-body">Vi har tagit del av er förfrågan avseende stamrenovering av elinstallation i fastigheten...</div>
+          </div>
+          <div class="anbud-sec">
+            <div class="anbud-sec-head" onclick="toggleSec(this)">
+              <span class="sec-num mono">03</span><span class="sec-name">Teknisk lösning &amp; metod</span>
+              <button class="regen-btn" onclick="event.stopPropagation();toast('Regenererar...')">⚡ Regenerera</button>
+              <span>✅</span>
+            </div>
+            <div class="anbud-sec-body">Vår metod bygger på etappvis renovering för att minimera störningar för de boende...</div>
+          </div>
+          <div class="anbud-sec">
+            <div class="anbud-sec-head" onclick="toggleSec(this)">
+              <span class="sec-num mono">04</span><span class="sec-name">Prisspecifikation</span>
+              <button class="regen-btn" onclick="event.stopPropagation();toast('Regenererar...')">⚡ Regenerera</button>
+              <span>✅</span>
+            </div>
+            <div class="anbud-sec-body">Total anbudssumma: 1 364 200 kr exkl. moms. Med Grön teknik-avdrag: 1 297 900 kr för kunden.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--nb)">
+          <button class="btn-primary" onclick="toast('PDF exporteras — 8 sidor + certifikat...')">📄 Exportera PDF</button>
+          <button class="btn-ghost" onclick="toast('Markerat som Skickat ✓')">✓ Markera som skickat</button>
+        </div>
+      </div>
+
+      <!-- TAB: FÖRANMÄLAN -->
+      <div class="tab-content" id="brf-foranmalan">
+        <div class="info-card">
+          <div class="info-head"><span>⚡</span><span class="info-head-title">Föranmälan — Laddinfrastruktur</span></div>
+          <div class="info-body">
+            <div class="info-row"><span class="info-key">Jobbtyp</span><span class="info-val">Laddinfrastruktur (laddbox/laddstolpar)</span></div>
+            <div class="info-row"><span class="info-key">Nätbolag</span><span class="info-val">Ellevio</span></div>
+            <div class="info-row"><span class="info-key">Handläggningstid</span><span class="info-val" style="color:var(--or)">6–8 veckor</span></div>
+            <div class="info-row"><span class="info-key">Kund</span><span class="info-val">BRF Kungsholmen</span></div>
+          </div>
+        </div>
+
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--so)">Steg i processen</div>
+        <div class="fp-steps">
+          <div class="fp-step done">
+            <div class="fp-step-icon">✅</div>
+            <div class="fp-step-info">
+              <div class="fp-step-name">Föranmälan skickad</div>
+              <div class="fp-step-time">Skickad 15 april 2026</div>
+            </div>
+            <div class="fp-step-status" style="color:var(--gr)">Klar</div>
+          </div>
+          <div class="fp-step active">
+            <div class="fp-step-icon">⏳</div>
+            <div class="fp-step-info">
+              <div class="fp-step-name">Väntar på medgivande</div>
+              <div class="fp-step-time">Ellevio handlägger · Typisk tid: 6–8 veckor</div>
+            </div>
+            <div class="fp-step-status" style="color:var(--yellow)">Pågår</div>
+          </div>
+          <div class="fp-step">
+            <div class="fp-step-icon">📋</div>
+            <div class="fp-step-info">
+              <div class="fp-step-name">Installation</div>
+              <div class="fp-step-time">Får ej påbörjas innan medgivande</div>
+            </div>
+            <div class="fp-step-status" style="color:var(--mu)">Väntar</div>
+          </div>
+          <div class="fp-step">
+            <div class="fp-step-icon">✅</div>
+            <div class="fp-step-info">
+              <div class="fp-step-name">Färdiganmälan</div>
+              <div class="fp-step-time">Skickas efter godkänd installation</div>
+            </div>
+            <div class="fp-step-status" style="color:var(--mu)">Väntar</div>
+          </div>
+        </div>
+
+        <div style="background:var(--ob);border:1px solid rgba(255,140,66,.3);border-radius:10px;padding:14px;margin-top:14px;font-size:13px;color:var(--so)">
+          ⚠️ <strong style="color:var(--or)">Obs:</strong> Planerad startdatum maj 2026 riskerar försening om medgivande inte kommer i tid. Kontakta Ellevio för status på ärende.
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="detail-side">
+      <div class="side-card">
+        <div class="side-card-title">⏰ Deadline</div>
+        <div class="dl-big">2 dgr</div>
+        <div class="dl-date">26 april 2026 · kl 12:00</div>
+      </div>
+      <div class="side-card">
+        <div class="side-card-title">📎 Underlag</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--so);padding:4px 0">
+          <span>📄</span> Forfragan_BRF_Kungsholmen.pdf
+        </div>
+        <div style="font-size:11px;color:var(--mu);margin-top:4px">Uppladdad 15 april · 2,4 MB · 34 sidor</div>
+      </div>
+      <div class="side-card">
+        <div class="side-card-title">📜 Certifikat (verifierade)</div>
+        <div class="cert-item"><div class="cert-dot" style="background:var(--gr)"></div><span>Auktorisation AL</span></div>
+        <div class="cert-item"><div class="cert-dot" style="background:var(--gr)"></div><span>Ansvarsförsäkring</span></div>
+        <div class="cert-item"><div class="cert-dot" style="background:var(--gr)"></div><span>F-skattsedel</span></div>
+        <div class="cert-item"><div class="cert-dot" style="background:var(--gr)"></div><span>ID06</span></div>
+      </div>
+      <div class="side-card">
+        <div class="side-card-title">📋 Aktivitetslogg</div>
+        <div class="act-item"><span class="act-time mono">idag 09:14</span><div class="act-dot"></div><div>AI-analys slutförd</div></div>
+        <div class="act-item"><span class="act-time mono">idag 09:12</span><div class="act-dot"></div><div>PDF uppladdad och inläst</div></div>
+        <div class="act-item"><span class="act-time mono">15 apr 17:42</span><div class="act-dot"></div><div>Projekt skapat</div></div>
+        <div class="act-item"><span class="act-time mono">15 apr 17:42</span><div class="act-dot"></div><div>Föranmälan skickad till Ellevio</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: ICA (enkel) -->
+<div class="view" id="view-ica" style="flex-direction:column">
+  <div class="topbar">
+    <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+    <div style="width:1px;height:20px;background:var(--nb)"></div>
+    <div><div style="font-size:16px;font-weight:700">ICA Logistik Väst</div><div style="font-size:12px;color:var(--mu)">Ny elinstallation · Lager · Deadline 1 maj 2026</div></div>
+    <div class="detail-actions"><span class="anlage al-bra" style="font-size:11px;padding:5px 12px">💡 Bra läge · 78%</span></div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:40px">
+    <div style="font-size:48px">📄</div>
+    <div style="font-size:18px;font-weight:800">Redo att starta analys</div>
+    <div style="font-size:14px;color:var(--mu);text-align:center;max-width:400px">Förfrågningsunderlaget är uppladdad. Starta AI-analysen för att se kravmatchning och anbudsläge.</div>
+    <button class="btn-primary" onclick="toast('Kör AI-analys...');setTimeout(()=>showView(\'brf\'),1500)">⚡ Starta AI-analys</button>
+  </div>
+</div>
+
+<!-- VIEW: HAMMARBY (enkel) -->
+<div class="view" id="view-hammarby" style="flex-direction:column">
+  <div class="topbar">
+    <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+    <div style="width:1px;height:20px;background:var(--nb)"></div>
+    <div><div style="font-size:16px;font-weight:700">Hammarby Fastigheter</div><div style="font-size:12px;color:var(--mu)">Laddstolpar · 48 platser · Deadline 6 maj 2026</div></div>
+    <div class="detail-actions"><span class="anlage al-starkt" style="font-size:11px;padding:5px 12px">⚡ Starkt läge · 91%</span></div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:40px">
+    <div style="font-size:48px">🧮</div>
+    <div style="font-size:18px;font-weight:800">Kalkyl pågår</div>
+    <div style="font-size:14px;color:var(--mu);text-align:center;max-width:400px">Analysen är klar. Justera kalkylen och generera anbud.</div>
+    <button class="btn-primary" onclick="showView('brf');switchTab('brf','anbud')">Se kalkylexempel (BRF) →</button>
+  </div>
+</div>
+
+<!-- VIEW: SIEMENS (enkel) -->
+<div class="view" id="view-siemens" style="flex-direction:column">
+  <div class="topbar">
+    <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+    <div style="width:1px;height:20px;background:var(--nb)"></div>
+    <div><div style="font-size:16px;font-weight:700">Siemens Sverige</div><div style="font-size:12px;color:var(--mu)">Servicekontrakt · 2 år · Deadline 8 maj 2026</div></div>
+    <div class="detail-actions">
+      <span class="anlage al-bra" style="font-size:11px;padding:5px 12px">💡 Bra läge · 82%</span>
+      <button class="btn-ghost" onclick="toast('Exporterar PDF...')">📄 Exportera PDF</button>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:40px">
+    <div style="font-size:48px">📝</div>
+    <div style="font-size:18px;font-weight:800">Anbudet är klart att granskas</div>
+    <div style="font-size:14px;color:var(--mu);text-align:center;max-width:400px">7 sektioner genererade. Granska och exportera som PDF.</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-primary" onclick="toast('PDF exporteras — 7 sidor...')">📄 Exportera PDF</button>
+      <button class="btn-ghost" onclick="toast('Markerat som Skickat ✓')">✓ Markera som skickat</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+let aktiv = 'dashboard'
+let projekt = [
+  {id:'brf',namn:'BRF Kungsholmen',status:'inkorg'},
+  {id:'ica',namn:'ICA Logistik Väst',status:'inkorg'},
+  {id:'hammarby',namn:'Hammarby Fastigheter',status:'under_arbete'},
+  {id:'siemens',namn:'Siemens Sverige',status:'under_arbete'},
+  {id:'lidl',namn:'Lidl Sverige',status:'under_arbete'},
+  {id:'brf-sol',namn:'BRF Solrosen',status:'inskickat'}
+]
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
+  const el = document.getElementById('view-'+id)
+  if (el) el.classList.add('active')
+  aktiv = id
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  if (id === 'dashboard') document.getElementById('nav-pipeline').classList.add('active')
+}
+
+function showDetail(id) {
+  const viewId = 'view-'+id
+  const el = document.getElementById(viewId)
+  if (el) showView(id)
+  else { toast('Öppnar projekt...'); }
+}
+
+function switchTab(projekt, tab) {
+  const tabBar = document.getElementById('tabs-'+projekt)
+  if (!tabBar) return
+  tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  const idx = ['dokument','analys','anbud','foranmalan'].indexOf(tab)
+  if (tabBar.querySelectorAll('.tab')[idx]) tabBar.querySelectorAll('.tab')[idx].classList.add('active')
+  document.querySelectorAll('#view-'+projekt+' .tab-content').forEach(c => c.classList.remove('active'))
+  const tc = document.getElementById(projekt+'-'+tab)
+  if (tc) tc.classList.add('active')
+}
+
+function setSteg(steg, proj) {
+  const tabs = ['dokument','analys','anbud']
+  switchTab(proj, tabs[steg-1])
+  const circles = document.querySelectorAll('#view-'+proj+' .step-circle')
+  const labels = document.querySelectorAll('#view-'+proj+' .step-lbl')
+  const connectors = document.querySelectorAll('#view-'+proj+' .step-connector')
+  circles.forEach((c,i) => {
+    c.classList.remove('done','active')
+    labels[i].classList.remove('done','active')
+    if (connectors[i]) connectors[i].classList.remove('done')
+    if (i < steg-1) { c.classList.add('done'); c.textContent='✓'; labels[i].classList.add('done'); if(connectors[i]) connectors[i].classList.add('done') }
+    else if (i === steg-1) { c.classList.add('active'); c.textContent=String(i+1); labels[i].classList.add('active') }
+    else { c.textContent=String(i+1) }
+  })
+}
+
+function toggleSec(header) {
+  const sec = header.closest('.anbud-sec')
+  document.querySelectorAll('.anbud-sec').forEach(s => s !== sec && s.classList.remove('open'))
+  sec.classList.toggle('open')
+}
+
+function openDialog() { document.getElementById('dialog-overlay').classList.add('open') }
+function closeDialog() { document.getElementById('dialog-overlay').classList.remove('open') }
+
+function skapaP() {
+  const namn = document.getElementById('new-namn').value.trim()
+  if (!namn) { document.getElementById('new-namn').focus(); return }
+  closeDialog()
+  toast('Projekt "'+namn+'" skapat!')
+  document.getElementById('new-namn').value = ''
+  document.getElementById('new-desc').value = ''
+  const total = projekt.length + 1
+  document.getElementById('kpi-aktiva').textContent = total
+  document.getElementById('pipe-count').textContent = total + ' anbud'
+  document.getElementById('nav-count').textContent = total
+}
+
+function simulateUpload() { toast('Laddar upp... (demo — välj ett projekt i pipeline)') }
+
+let toastTimer
+function toast(msg) {
+  const el = document.getElementById('toast')
+  document.getElementById('toast-msg').textContent = msg
+  el.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800)
+}
+
+document.getElementById('dialog-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeDialog()
+})
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDialog() })
+</script>
+</body>
+</html>

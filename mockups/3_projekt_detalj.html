@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnbudAI – Dashboard Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --yellow: #F5C400;
+    --yellow-dim: #C9A000;
+    --yellow-glow: rgba(245,196,0,0.15);
+    --navy: #0E1B2E;
+    --navy-mid: #172233;
+    --navy-light: #1E2F45;
+    --navy-border: #243650;
+    --steel: #2E4060;
+    --slate: #4A6080;
+    --muted: #8099B5;
+    --soft: #B8CCDE;
+    --white: #F4F8FC;
+    --green: #00C67A;
+    --green-bg: rgba(0,198,122,0.1);
+    --red: #FF4D4D;
+    --red-bg: rgba(255,77,77,0.1);
+    --orange: #FF8C42;
+    --orange-bg: rgba(255,140,66,0.1);
+    --blue-accent: #4A9EFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── VIEWS ─── */
+  .view { display: none; animation: fadeIn 0.25s ease; }
+  .view.active { display: flex; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  .logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--navy-border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-bolt {
+    width: 34px; height: 34px;
+    background: var(--yellow);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; }
+  .logo-text span { color: var(--yellow); }
+  .logo-version { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--muted); margin-top: 1px; }
+
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--slate); padding: 0 8px; margin-bottom: 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 14px; font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    position: relative;
+  }
+  .nav-item:hover { background: var(--navy-light); color: var(--white); }
+  .nav-item.active { background: var(--yellow-glow); color: var(--yellow); }
+  .nav-item.active::before {
+    content: '';
+    position: absolute; left: 0; top: 6px; bottom: 6px;
+    width: 3px; background: var(--yellow); border-radius: 0 2px 2px 0;
+  }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--yellow);
+    color: var(--navy);
+    font-size: 10px; font-weight: 800;
+    padding: 2px 6px; border-radius: 10px;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--navy-border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-card:hover { background: var(--navy-light); }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--yellow);
+    color: var(--navy);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+  }
+  .user-name { font-size: 13px; font-weight: 600; }
+  .user-plan { font-size: 11px; color: var(--muted); }
+  .plan-badge {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    background: var(--yellow-glow);
+    color: var(--yellow);
+    padding: 2px 6px; border-radius: 4px;
+    border: 1px solid rgba(245,196,0,0.3);
+  }
+
+  /* ─── MAIN ─── */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    height: 60px;
+    background: var(--navy-mid);
+    border-bottom: 1px solid var(--navy-border);
+    display: flex; align-items: center;
+    padding: 0 32px;
+    gap: 16px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .page-title { font-size: 16px; font-weight: 700; }
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .btn-primary {
+    background: var(--yellow);
+    color: var(--navy);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+  }
+  .btn-primary:hover { background: var(--yellow-dim); transform: translateY(-1px); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--navy-border);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { border-color: var(--slate); color: var(--white); }
+
+  .topbar-notif {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--navy-border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--muted); font-size: 16px;
+    position: relative; transition: all 0.15s;
+  }
+  .topbar-notif:hover { border-color: var(--slate); color: var(--white); }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px;
+    background: var(--yellow); border-radius: 50%;
+  }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ─── KPI STRIP ─── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kpi-card.yellow::after { background: var(--yellow); }
+  .kpi-card.green::after { background: var(--green); }
+  .kpi-card.blue::after { background: var(--blue-accent); }
+  .kpi-card.orange::after { background: var(--orange); }
+  .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .kpi-value.yellow { color: var(--yellow); }
+  .kpi-value.green { color: var(--green); }
+  .kpi-value.blue { color: var(--blue-accent); }
+  .kpi-value.orange { color: var(--orange); }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .kpi-trend { font-size: 11px; font-weight: 600; margin-top: 4px; }
+  .kpi-trend.up { color: var(--green); }
+  .kpi-trend.down { color: var(--red); }
+
+  /* ─── PIPELINE ─── */
+  .pipeline-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .pipeline-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .pipeline-count {
+    font-size: 11px; font-weight: 700;
+    background: var(--navy-light);
+    color: var(--muted);
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .pipeline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .pipeline-col {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .col-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--navy-border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .col-name { font-size: 13px; font-weight: 700; }
+  .col-num { margin-left: auto; font-size: 11px; font-weight: 700; background: var(--navy-light); color: var(--muted); padding: 2px 7px; border-radius: 10px; }
+  .col-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
+
+  /* BID CARDS */
+  .bid-card {
+    background: var(--navy-light);
+    border: 1px solid var(--navy-border);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .bid-card:hover {
+    border-color: var(--yellow);
+    background: var(--navy-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  .bid-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .bid-client { font-size: 14px; font-weight: 700; line-height: 1.3; }
+  .bid-type { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .bid-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .meta-chip {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 6px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .meta-chip.deadline-urgent { background: var(--red-bg); color: var(--red); }
+  .meta-chip.deadline-ok { background: var(--green-bg); color: var(--green); }
+  .meta-chip.deadline-medium { background: var(--orange-bg); color: var(--orange); }
+  .meta-chip.value { background: rgba(74,158,255,0.1); color: var(--blue-accent); }
+  .meta-chip.step { background: var(--navy); color: var(--muted); }
+  .go-badge {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 5px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .go-green { background: var(--green-bg); color: var(--green); }
+  .go-yellow { background: var(--orange-bg); color: var(--orange); }
+  .go-red { background: var(--red-bg); color: var(--red); }
+  .bid-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--navy-border);
+  }
+  .step-progress { display: flex; gap: 4px; }
+  .step-dot { width: 20px; height: 4px; border-radius: 2px; }
+  .step-dot.done { background: var(--green); }
+  .step-dot.active { background: var(--yellow); }
+  .step-dot.pending { background: var(--steel); }
+  .cta-arrow { font-size: 12px; color: var(--muted); font-weight: 600; transition: color 0.15s; }
+  .bid-card:hover .cta-arrow { color: var(--yellow); }
+
+  /* ─── DETAIL VIEW ─── */
+  .detail-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .detail-header {
+    background: var(--navy-mid);
+    border-bottom: 1px solid var(--navy-border);
+    padding: 20px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--muted); font-weight: 600;
+    cursor: pointer; transition: color 0.15s;
+    background: none; border: none; font-family: 'DM Sans', sans-serif;
+    padding: 0;
+  }
+  .back-btn:hover { color: var(--white); }
+  .detail-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+  .detail-subtitle { font-size: 13px; color: var(--muted); margin-top: 1px; }
+  .detail-actions { margin-left: auto; display: flex; gap: 10px; }
+
+  .detail-body { display: grid; grid-template-columns: 1fr 320px; gap: 0; }
+  .detail-main { padding: 28px 32px; border-right: 1px solid var(--navy-border); }
+  .detail-sidebar-panel { padding: 24px; }
+
+  /* STEPPER */
+  .stepper { display: flex; align-items: stretch; margin-bottom: 32px; }
+  .step-item { flex: 1; position: relative; }
+  .step-inner {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 8px;
+  }
+  .step-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--steel);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    color: var(--muted); background: var(--navy-mid);
+    z-index: 2; position: relative;
+    transition: all 0.2s;
+  }
+  .step-circle.done { border-color: var(--green); background: var(--green); color: var(--navy); }
+  .step-circle.active { border-color: var(--yellow); background: var(--yellow-glow); color: var(--yellow); box-shadow: 0 0 0 4px var(--yellow-glow); }
+  .step-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 8px; text-align: center; }
+  .step-label.active { color: var(--yellow); }
+  .step-label.done { color: var(--green); }
+  .step-connector {
+    position: absolute; top: 18px; left: calc(50% + 18px);
+    right: calc(-50% + 18px);
+    height: 2px; background: var(--steel);
+    z-index: 1;
+  }
+  .step-connector.done { background: var(--green); }
+  .step-item:last-child .step-connector { display: none; }
+
+  /* ANALYSIS CARD */
+  .analysis-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .analysis-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--navy-border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .analysis-header-icon { font-size: 16px; }
+  .analysis-header-title { font-size: 14px; font-weight: 700; }
+  .analysis-header-badge {
+    margin-left: auto;
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 5px;
+  }
+  .badge-ai { background: rgba(245,196,0,0.15); color: var(--yellow); border: 1px solid rgba(245,196,0,0.3); }
+  .analysis-body { padding: 16px 18px; }
+  .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--navy-border); }
+  .info-row:last-child { border-bottom: none; }
+  .info-key { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .info-val { font-size: 13px; font-weight: 600; text-align: right; max-width: 60%; }
+
+  /* GO/NO-GO */
+  .go-nogo-card {
+    border-radius: 12px;
+    border: 1px solid;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .go-nogo-card.green { background: rgba(0,198,122,0.07); border-color: rgba(0,198,122,0.3); }
+  .go-nogo-title { font-size: 15px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .go-nogo-title.green { color: var(--green); }
+  .go-nogo-list { display: flex; flex-direction: column; gap: 8px; }
+  .go-nogo-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
+  .go-nogo-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .go-nogo-text { color: var(--soft); }
+
+  /* CALC TABLE */
+  .calc-table { width: 100%; border-collapse: collapse; }
+  .calc-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--navy-border); text-align: left; }
+  .calc-table td { padding: 10px; font-size: 13px; border-bottom: 1px solid rgba(36,54,80,0.5); vertical-align: middle; }
+  .calc-table tr:last-child td { border-bottom: none; }
+  .calc-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .calc-input {
+    background: var(--navy);
+    border: 1px solid var(--navy-border);
+    border-radius: 6px;
+    color: var(--white);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 5px 8px;
+    width: 70px; text-align: right;
+  }
+  .calc-input:focus { outline: none; border-color: var(--yellow); }
+  .calc-total {
+    background: var(--navy);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .calc-total-label { font-size: 13px; font-weight: 700; }
+  .calc-total-value { font-size: 22px; font-weight: 800; color: var(--yellow); font-family: 'JetBrains Mono', monospace; }
+
+  /* BID EDITOR */
+  .bid-sections { display: flex; flex-direction: column; gap: 8px; }
+  .bid-section {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .bid-section.active-section { border-color: var(--yellow); }
+  .bid-section-header {
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer;
+  }
+  .section-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); width: 20px; }
+  .section-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .section-status { font-size: 16px; }
+  .regen-btn {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 5px;
+    background: var(--yellow-glow); color: var(--yellow);
+    border: 1px solid rgba(245,196,0,0.3);
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .bid-section:hover .regen-btn { opacity: 1; }
+  .bid-section-body {
+    padding: 14px 16px;
+    border-top: 1px solid var(--navy-border);
+    font-size: 13px; color: var(--soft); line-height: 1.7;
+    display: none;
+  }
+  .bid-section.open .bid-section-body { display: block; }
+
+  /* SIDEBAR PANEL */
+  .panel-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .panel-card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 12px; }
+  .deadline-big { font-size: 24px; font-weight: 800; color: var(--orange); margin-bottom: 4px; }
+  .deadline-date { font-size: 12px; color: var(--muted); }
+  .cert-item { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 8px; }
+  .cert-item:last-child { margin-bottom: 0; }
+  .cert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .activity-item { display: flex; gap: 10px; margin-bottom: 10px; font-size: 12px; color: var(--muted); }
+  .activity-item:last-child { margin-bottom: 0; }
+  .activity-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; white-space: nowrap; padding-top: 1px; }
+  .activity-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--slate); flex-shrink: 0; margin-top: 4px; }
+
+  /* UPLOAD VIEW */
+  .upload-zone {
+    border: 2px dashed var(--navy-border);
+    border-radius: 16px;
+    padding: 60px 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--navy-mid);
+  }
+  .upload-zone:hover { border-color: var(--yellow); background: var(--yellow-glow); }
+  .upload-icon { font-size: 40px; margin-bottom: 16px; }
+  .upload-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+  .upload-sub { font-size: 14px; color: var(--muted); }
+  .upload-formats { font-size: 12px; color: var(--slate); margin-top: 12px; font-family: 'JetBrains Mono', monospace; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--steel); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--slate); }
+
+  /* ─── AI SHIMMER ─── */
+  .ai-loading {
+    display: none;
+    align-items: center; gap: 10px;
+    padding: 12px 16px;
+    background: var(--yellow-glow);
+    border: 1px solid rgba(245,196,0,0.2);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 13px; color: var(--yellow); font-weight: 600;
+  }
+  .ai-loading.visible { display: flex; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(245,196,0,0.3);
+    border-top-color: var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TABS */
+  .tab-bar {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 24px;
+  }
+  .tab {
+    padding: 10px 18px;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: all 0.15s;
+  }
+  .tab:hover { color: var(--white); }
+  .tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+
+  /* TAG */
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 7px; border-radius: 5px; }
+
+  /* NOTIFICATION */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--navy-mid);
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ <span id="toast-text">Sparat</span></div>
+
+<!-- ═══ LAYOUT ═══ -->
+<div style="display:flex; min-height:100vh;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-bolt">⚡</div>
+      <div>
+        <div class="logo-text">Anbud<span>AI</span></div>
+        <div class="logo-version">v1.0 MOCKUP</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Huvud</div>
+      <div class="nav-item active" onclick="showView('dashboard')">
+        <span class="nav-icon">⚡</span> Pipeline
+        <span class="nav-badge">6</span>
+      </div>
+      <div class="nav-item" onclick="showUpload()">
+        <span class="nav-icon">➕</span> Nytt anbud
+      </div>
+      <div class="nav-item" onclick="showToast('Alla anbud – kommer snart')">
+        <span class="nav-icon">📁</span> Alla anbud
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Mitt företag</div>
+      <div class="nav-item" onclick="showToast('Företagsprofil – kommer snart')">
+        <span class="nav-icon">🏢</span> Profil
+      </div>
+      <div class="nav-item" onclick="showToast('Certifikat – kommer snart')">
+        <span class="nav-icon">📜</span> Certifikat
+      </div>
+      <div class="nav-item" onclick="showToast('Referensprojekt – kommer snart')">
+        <span class="nav-icon">🏆</span> Referenser
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Konto</div>
+      <div class="nav-item" onclick="showToast('Inställningar – kommer snart')">
+        <span class="nav-icon">⚙️</span> Inställningar
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar">ME</div>
+        <div>
+          <div class="user-name">Magnus Eriksson</div>
+          <div class="user-plan">Eriksson El AB</div>
+        </div>
+        <span class="plan-badge">PRO</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ═══ DASHBOARD VIEW ═══ -->
+    <div class="view active" id="view-dashboard" style="flex-direction:column;">
+      <div class="topbar">
+        <span class="page-title">Anbudspipeline</span>
+        <div style="font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace;">Mars 2026</div>
+        <div class="topbar-actions">
+          <div class="topbar-notif">🔔<div class="notif-dot"></div></div>
+          <button class="btn-primary" onclick="showUpload()">⚡ Nytt anbud</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- KPI STRIP -->
+        <div class="kpi-strip">
+          <div class="kpi-card yellow">
+            <div class="kpi-label">Aktiva anbud</div>
+            <div class="kpi-value yellow">6</div>
+            <div class="kpi-sub">3 kräver åtgärd</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-label">Win rate</div>
+            <div class="kpi-value green">67%</div>
+            <div class="kpi-trend up">↑ +12% vs förra mån</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">Pipeline-värde</div>
+            <div class="kpi-value blue">4,2M</div>
+            <div class="kpi-sub">kr i aktiva anbud</div>
+          </div>
+          <div class="kpi-card orange">
+            <div class="kpi-label">Närmaste deadline</div>
+            <div class="kpi-value orange">2 dgr</div>
+            <div class="kpi-sub">BRF Kungsholmen</div>
+          </div>
+        </div>
+
+        <!-- PIPELINE -->
+        <div class="pipeline-header">
+          <div class="pipeline-title">
+            Pipeline
+            <span class="pipeline-count">6 anbud</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-ghost" style="font-size:12px;">Filtrera</button>
+            <button class="btn-ghost" style="font-size:12px;">Sortera: Deadline</button>
+          </div>
+        </div>
+
+        <div class="pipeline-grid">
+          <!-- COL 1: INKORG -->
+          <div class="pipeline-col">
+            <div class="col-header">
+              <div class="col-dot" style="background:var(--yellow);"></div>
+              <span class="col-name">📥 Inkorg</span>
+              <span class="col-num">2</span>
+            </div>
+            <div class="col-body">
+
+              <div class="bid-card" onclick="showDetail('brf')">
+                <div class="bid-card-top">
+                  <div>
+                    <div class="bid-client">BRF Kungsholmen</div>
+                    <div class="bid-type">Stamrenovering el · 32 lgh</div>
+                  </div>
+                  <div class="status-dot" style="background:var(--red);"></div>
+                </div>
+                <div class="bid-meta">
+                  <span class="meta-chip deadline-urgent">🔴 2 dagar kvar</span>
+                  <span class="meta-chip value">1,8 MSEK</span>
+                </div>
+                <span class="go-badge go-green">🟢 Go</span>
+                <div class="bid-card-footer">
+                  <div class="step-progress">
+                    <div class="step-dot done"></div>
+                    <div class="step-dot active"></div>
+                    <div class="step-dot pending"></div>
+                    <div class="step-dot pending"></div>
+                  </div>
+                  <span class="cta-arrow">Analys klar →</span>
+                </div>
+              </div>
+
+              <div class="bid-card" onclick="showToast('Öppnar ICA Logistik...')">
+                <div class="bid-card-top">
+                  <div>
+                    <div class="bid-client">ICA Logistik Väst</div>
+                    <div class="bid-type">Ny elinstallation · Lager</div>
+                  </div>
+                  <div class="status-dot" style="background:var(--orange);"></div>
+                </div>
+                <div class="bid-meta">
+                  <span class="meta-chip deadline-medium">🟡 7 dagar kvar</span>
+                  <span class="meta-chip value">640 KSEK</span>
+                </div>
+                <span class="go-badge go-yellow">🟡 Kontrollera</span>
+                <div class="bid-card-footer">
+                  <div class="step-progress">
+                    <div class="step-dot done"></div>
+                    <div class="step-dot pending"></div>
+                    <div class="step-dot pending"></div>
+                    <div class="step-dot pending"></div>
+                  </div>
+                  <span class="cta-arrow">Starta analys →</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- COL 2: PÅGÅENDE -->
+          <div class="pipeline-col">
+            <div class="col-header">
+              <div class="col-dot" style="background:var(--blue-accent);"></div>
+              <span class="col-name">✏️ Pågående</span>
+              <span class="col-num">3</span>
+            </div>
+            <div class="col-body">
+
+              <div class="bid-card" onclick="showDetail('hammarby')">
+                <div class="bid-card-top">
+                  <div>
+                    <div class="bid-client">Hammarby Fastigheter</div>
+                    <div class="bid-type">Laddstolpar · 48 platser</div>
+                  </div>
+                  <div class="status-dot" style="background:var(--blue-accent);"></div>
+                </div>
+                <div class="bid-meta">
+                  <span class="meta-chip deadline-ok">🟢 12 dagar kvar</span>
+                  <span class="meta-chip value">920 KSEK</span>
+                  <span class="meta-chip step">Kalkyl pågår</span>
+                </div>
+                <div class="bid-card-footer">
+                  <div class="step-progress">
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                    <div class="step-dot active"></div>
+                    <div class="step-dot pending"></div>
+                  </div>
+                  <span class="cta-arrow">Slutför kalkyl →</span>
+                </div>
+              </div>
+
+              <div class="bid-card" onclick="showDetail('editor')">
+                <div class="bid-card-top">
+                  <div>
+                    <div class="bid-client">Siemens Sverige</div>
+                    <div class="bid-type">Servicekontrakt · 2 år</div>
+                  </div>
+                  <div class="status-dot" style="background:var(--blue-accent);"></div>
+                </div>
+                <div class="bid-meta">
+                  <span class="meta-chip deadline-ok">🟢 14 dagar kvar</span>
+                  <span class="meta-chip value">480 KSEK/år</span>
+                  <span class="meta-chip step">Skriver anbud</span>
+                </div>
+                <div class="bid-card-footer">
+                  <div class="step-progress">
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                    <div class="step-dot active"></div>
+                  </div>
+                  <span class="cta-arrow">Granska anbud →</span>
+                </div>
+              </div>
+
+              <div class="bid-card" onclick="showToast('Öppnar Lidl projekt...')">
+                <div class="bid-card-top">
+                  <div>
+                    <div class="bid-client">Lidl Sverige</div>
+                    <div class="bid-type">Butiksetablering · Märsta</div>
+                  </div>
+                  <div class="status-dot" style="background:var(--orange);"></div>
+                </div>
+                <div class="bid-meta">
+                  <span class="meta-chip deadline-medium">🟡 9 dagar kvar</span>
+                  <span class="meta-chip value">350 KSEK</span>
+                  <span class="meta-chip step">Kalkyl klar</span>
+                </div>
+                <div class="bid-card-footer">
+                  <div class="step-progress">
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                    <div class="step-dot pending"></div>
+                  </div>
+                  <span class="cta-arrow">Generera anbud →</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- COL 3: SKICKADE -->
+          <div class="pipeline-col">
+            <div class="col-header">
+              <div class="col-dot" style="background:var(--muted);"></div>
+              <span class="col-name">📤 Skickade</span>
+              <span class="col-num">1</span>
+            </div>
+            <div class="col-body">
+
+              <div class="bid-card" onclick="showToast('Öppnar BRF Solrosen...')">
+                <div class="bid-card-top">
+                  <div>
+                    <div class="bid-client">BRF Solrosen</div>
+                    <div class="bid-type">Ominstallation el · 18 lgh</div>
+                  </div>
+                  <div class="status-dot" style="background:var(--green);"></div>
+                </div>
+                <div class="bid-meta">
+                  <span class="meta-chip" style="background:var(--green-bg); color:var(--green);">✓ Skickat 28 feb</span>
+                  <span class="meta-chip value">380 KSEK</span>
+                </div>
+                <div style="font-size:12px; color:var(--muted); margin-top:6px;">Väntar på svar · Beslut ~20 mars</div>
+                <div class="bid-card-footer">
+                  <div class="step-progress">
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                    <div class="step-dot done"></div>
+                  </div>
+                  <span style="font-size:12px; color:var(--green); font-weight:600;">Komplett ✓</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+    <!-- ═══ DETAIL VIEW: BRF KUNGSHOLMEN ═══ -->
+    <div class="view" id="view-detail-brf" style="flex-direction:column;">
+      <div class="detail-header">
+        <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+        <div style="width:1px; height:20px; background:var(--navy-border);"></div>
+        <div>
+          <div class="detail-title">BRF Kungsholmen</div>
+          <div class="detail-subtitle">Stamrenovering el · 32 lägenheter · Deadline 19 mars 2026</div>
+        </div>
+        <div class="detail-actions">
+          <span class="go-badge go-green" style="font-size:12px; padding:5px 12px;">🟢 Go – Lämna anbud</span>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-main">
+          <!-- STEPPER -->
+          <div class="stepper">
+            <div class="step-item">
+              <div class="step-inner">
+                <div class="step-circle done">✓</div>
+                <div class="step-label done">Underlag</div>
+              </div>
+              <div class="step-connector done"></div>
+            </div>
+            <div class="step-item">
+              <div class="step-inner">
+                <div class="step-circle active">2</div>
+                <div class="step-label active">Analys</div>
+              </div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-item">
+              <div class="step-inner">
+                <div class="step-circle">3</div>
+                <div class="step-label">Kalkyl</div>
+              </div>
+              <div class="step-connector"></div>
+            </div>
+            <div class="step-item">
+              <div class="step-inner">
+                <div class="step-circle">4</div>
+                <div class="step-label">Anbud</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABS -->
+          <div class="tab-bar">
+            <div class="tab active" onclick="switchTab(this,'tab-analysis')">📋 AI-analys</div>
+            <div class="tab" onclick="switchTab(this,'tab-calc')">🧮 Kalkyl</div>
+            <div class="tab" onclick="showToast('Anbud genereras efter kalkyl är klar')">📄 Anbud</div>
+          </div>
+
+          <!-- TAB: ANALYSIS -->
+          <div id="tab-analysis">
+            <div class="ai-loading visible" id="ai-loader">
+              <div class="spinner"></div>
+              AI analyserar förfrågningsunderlag... (demo)
+            </div>
+
+            <div class="analysis-card">
+              <div class="analysis-header">
+                <span class="analysis-header-icon">📋</span>
+                <span class="analysis-header-title">Uppdragsbeskrivning</span>
+                <span class="analysis-header-badge badge-ai">⚡ AI-extraherat</span>
+              </div>
+              <div class="analysis-body">
+                <div class="info-row">
+                  <span class="info-key">Beställare</span>
+                  <span class="info-val">BRF Kungsholmen, org. nr 769600-1234</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Uppdrag</span>
+                  <span class="info-val">Komplett ominstallation el, 32 lägenheter + gemensamma utrymmen</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Prismodell</span>
+                  <span class="info-val">Fast pris, specificerat per moment</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Anbudssumma max</span>
+                  <span class="info-val" style="color:var(--yellow);">Ej angett</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Deadline</span>
+                  <span class="info-val" style="color:var(--red);">19 mars 2026 kl 12:00</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Planerad start</span>
+                  <span class="info-val">Maj 2026, etappvis</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Utvärderingskriterier</span>
+                  <span class="info-val">Pris 60% · Metod 30% · Ref. 10%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="go-nogo-card green">
+              <div class="go-nogo-title green">🟢 GO – Rekommenderas att lämna anbud</div>
+              <div class="go-nogo-list">
+                <div class="go-nogo-item">
+                  <span class="go-nogo-icon">✅</span>
+                  <span class="go-nogo-text">Auktorisation EL klass 1 – uppfyllt (Eriksson El AB)</span>
+                </div>
+                <div class="go-nogo-item">
+                  <span class="go-nogo-icon">✅</span>
+                  <span class="go-nogo-text">Ansvarsförsäkring 10 MSEK – uppfyllt, giltigt t.o.m. dec 2026</span>
+                </div>
+                <div class="go-nogo-item">
+                  <span class="go-nogo-icon">✅</span>
+                  <span class="go-nogo-text">F-skattsedel – bifogad i profil</span>
+                </div>
+                <div class="go-nogo-item">
+                  <span class="go-nogo-icon">✅</span>
+                  <span class="go-nogo-text">Referensprojekt BRF-typ – 3 st i ditt bibliotek</span>
+                </div>
+                <div class="go-nogo-item">
+                  <span class="go-nogo-icon">⚠️</span>
+                  <span class="go-nogo-text">Kapacitet: Maj 2026 är belagd 60% – planera resursallokering</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+              <button class="btn-primary" onclick="switchToCalc()">Gå vidare till kalkyl ⚡</button>
+              <button class="btn-ghost">Ladda ner analys PDF</button>
+            </div>
+          </div>
+
+          <!-- TAB: CALC (hidden initially) -->
+          <div id="tab-calc" style="display:none;">
+            <div style="margin-bottom:16px; font-size:13px; color:var(--muted);">AI har föreslagit moment baserat på scope. Justera timmar och material efter din bedömning.</div>
+            <div class="analysis-card">
+              <div class="analysis-header">
+                <span class="analysis-header-icon">🧮</span>
+                <span class="analysis-header-title">Kalkylobjekt</span>
+                <span class="analysis-header-badge badge-ai">⚡ AI-förslag</span>
+              </div>
+              <div class="analysis-body" style="padding:0;">
+                <table class="calc-table">
+                  <thead>
+                    <tr>
+                      <th>Moment</th>
+                      <th>Timmar</th>
+                      <th>Material (kr)</th>
+                      <th>Belopp (kr)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Demontering befintlig installation</td>
+                      <td><input class="calc-input" value="80" onchange="updateTotal()"></td>
+                      <td><input class="calc-input" value="0" onchange="updateTotal()"></td>
+                      <td style="color:var(--soft); font-family:'JetBrains Mono',monospace;" id="row0">52 000</td>
+                    </tr>
+                    <tr>
+                      <td>Förläggning nya stigarledningar</td>
+                      <td><input class="calc-input" value="160" onchange="updateTotal()"></td>
+                      <td><input class="calc-input" value="85000" onchange="updateTotal()"></td>
+                      <td style="color:var(--soft); font-family:'JetBrains Mono',monospace;">189 000</td>
+                    </tr>
+                    <tr>
+                      <td>Installation el-centraler, 32 st</td>
+                      <td><input class="calc-input" value="320" onchange="updateTotal()"></td>
+                      <td><input class="calc-input" value="320000" onchange="updateTotal()"></td>
+                      <td style="color:var(--soft); font-family:'JetBrains Mono',monospace;">528 000</td>
+                    </tr>
+                    <tr>
+                      <td>Kabelinstallation lgh</td>
+                      <td><input class="calc-input" value="480" onchange="updateTotal()"></td>
+                      <td><input class="calc-input" value="240000" onchange="updateTotal()"></td>
+                      <td style="color:var(--soft); font-family:'JetBrains Mono',monospace;">552 000</td>
+                    </tr>
+                    <tr>
+                      <td>Elinstallation gemensamma utrymmen</td>
+                      <td><input class="calc-input" value="120" onchange="updateTotal()"></td>
+                      <td><input class="calc-input" value="65000" onchange="updateTotal()"></td>
+                      <td style="color:var(--soft); font-family:'JetBrains Mono',monospace;">143 000</td>
+                    </tr>
+                    <tr>
+                      <td>Besiktning &amp; driftsättning</td>
+                      <td><input class="calc-input" value="48" onchange="updateTotal()"></td>
+                      <td><input class="calc-input" value="12000" onchange="updateTotal()"></td>
+                      <td style="color:var(--soft); font-family:'JetBrains Mono',monospace;">43 200</td>
+                    </tr>
+                    <tr>
+                      <td>Dokumentation &amp; relationshandlingar</td>
+                      <td><input class="calc-input" value="24" onchange="updateTotal()"></td>
+                      <td><input class="calc-input" value="0" onchange="updateTotal()"></td>
+                      <td style="color:var(--soft); font-family:'JetBrains Mono',monospace;">15 600</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="calc-total">
+              <div>
+                <div class="calc-total-label">Totalt exkl. moms</div>
+                <div style="font-size:12px; color:var(--muted); margin-top:2px;">650 kr/tim · Inkl. 25% materialpålägg</div>
+              </div>
+              <div class="calc-total-value" id="total-price">1 522 800 kr</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+              <button class="btn-primary" onclick="showDetail('editor'); showToast('Genererar anbud med AI...')">
+                ⚡ Generera anbud
+              </button>
+              <button class="btn-ghost">+ Lägg till rad</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR PANEL -->
+        <div class="detail-sidebar-panel">
+          <div class="panel-card">
+            <div class="panel-card-title">⏰ Deadline</div>
+            <div class="deadline-big">2 dgr</div>
+            <div class="deadline-date">19 mars 2026 · kl 12:00</div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-card-title">📎 Underlag</div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--soft); padding:4px 0;">
+              <span>📄</span>
+              <span>Forfragan_BRF_Kungsholmen.pdf</span>
+            </div>
+            <div style="font-size:11px; color:var(--muted); margin-top:4px;">Uppladdad 15 mars · 2,4 MB · 34 sidor</div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-card-title">📜 Certifikat (verifierade)</div>
+            <div class="cert-item">
+              <div class="cert-dot" style="background:var(--green);"></div>
+              <span style="font-size:13px;">Auktorisation EL klass 1</span>
+            </div>
+            <div class="cert-item">
+              <div class="cert-dot" style="background:var(--green);"></div>
+              <span style="font-size:13px;">Ansvarsförsäkring</span>
+            </div>
+            <div class="cert-item">
+              <div class="cert-dot" style="background:var(--green);"></div>
+              <span style="font-size:13px;">F-skattsedel</span>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-card-title">📋 Aktivitetslogg</div>
+            <div class="activity-item">
+              <div class="activity-time">idag 09:14</div>
+              <div class="activity-dot"></div>
+              <div>AI-analys slutförd</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-time">idag 09:12</div>
+              <div class="activity-dot"></div>
+              <div>PDF uppladdad</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-time">15 mar 17:42</div>
+              <div class="activity-dot"></div>
+              <div>Anbud skapat</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /detail brf -->
+
+    <!-- ═══ DETAIL VIEW: BID EDITOR ═══ -->
+    <div class="view" id="view-detail-editor" style="flex-direction:column;">
+      <div class="detail-header">
+        <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+        <div style="width:1px; height:20px; background:var(--navy-border);"></div>
+        <div>
+          <div class="detail-title">Siemens Sverige – Anbudseditor</div>
+          <div class="detail-subtitle">Servicekontrakt · 2 år · Deadline 2 april 2026</div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-ghost">Förhandsgranskning</button>
+          <button class="btn-primary" onclick="showToast('PDF exporteras...')">📄 Exportera PDF</button>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-main">
+          <!-- STEPPER -->
+          <div class="stepper">
+            <div class="step-item">
+              <div class="step-inner"><div class="step-circle done">✓</div><div class="step-label done">Underlag</div></div>
+              <div class="step-connector done"></div>
+            </div>
+            <div class="step-item">
+              <div class="step-inner"><div class="step-circle done">✓</div><div class="step-label done">Analys</div></div>
+              <div class="step-connector done"></div>
+            </div>
+            <div class="step-item">
+              <div class="step-inner"><div class="step-circle done">✓</div><div class="step-label done">Kalkyl</div></div>
+              <div class="step-connector done"></div>
+            </div>
+            <div class="step-item">
+              <div class="step-inner"><div class="step-circle active">4</div><div class="step-label active">Anbud</div></div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <div style="font-size:14px; font-weight:700;">Genererat anbudsdokument</div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span style="font-size:11px; color:var(--muted);">Senast sparad 2 min sedan</span>
+              <span class="tag" style="background:var(--green-bg); color:var(--green); font-size:10px;">✓ Sparad</span>
+            </div>
+          </div>
+
+          <div class="bid-sections">
+            <div class="bid-section open active-section">
+              <div class="bid-section-header" onclick="toggleSection(this)">
+                <span class="section-num">01</span>
+                <span class="section-name">Företagspresentation</span>
+                <button class="regen-btn" onclick="event.stopPropagation(); showToast('Regenererar sektion...')">⚡ Regenerera</button>
+                <span class="section-status">✅</span>
+              </div>
+              <div class="bid-section-body">
+                Eriksson El AB grundades 2008 och har sedan dess levererat högkvalitativa elinstallationer till kommersiella fastigheter, industri och bostadsrättsföreningar i Stockholmsregionen. Med ett team om 12 certifierade elektriker och projektledare besitter vi kompetens och kapacitet för både löpande serviceavtal och större ominstallationsprojekt.<br><br>
+                Bolaget innehar auktorisation EL klass 1 och är anslutet till Installatörsföretagen. Vi arbetar systematiskt med kvalitets- och miljöledning enligt ISO 9001 och 14001 och har en beprövad processorienterad leveransmodell.
+              </div>
+            </div>
+
+            <div class="bid-section">
+              <div class="bid-section-header" onclick="toggleSection(this)">
+                <span class="section-num">02</span>
+                <span class="section-name">Förståelse av uppdraget</span>
+                <button class="regen-btn" onclick="event.stopPropagation(); showToast('Regenererar sektion...')">⚡ Regenerera</button>
+                <span class="section-status">✅</span>
+              </div>
+              <div class="bid-section-body">Vi har tagit del av er förfrågan avseende löpande servicekontrakt för era anläggningar i Stockholmsregionen...</div>
+            </div>
+
+            <div class="bid-section">
+              <div class="bid-section-header" onclick="toggleSection(this)">
+                <span class="section-num">03</span>
+                <span class="section-name">Teknisk lösning & metod</span>
+                <button class="regen-btn" onclick="event.stopPropagation(); showToast('Regenererar sektion...')">⚡ Regenerera</button>
+                <span class="section-status">✅</span>
+              </div>
+              <div class="bid-section-body">Vår serviceleverans baseras på ett proaktivt underhållsprotokoll med kvartalsvisa genomgångar...</div>
+            </div>
+
+            <div class="bid-section">
+              <div class="bid-section-header" onclick="toggleSection(this)">
+                <span class="section-num">04</span>
+                <span class="section-name">Tidsplan & tillgänglighet</span>
+                <button class="regen-btn" onclick="event.stopPropagation(); showToast('Regenererar sektion...')">⚡ Regenerera</button>
+                <span class="section-status">✅</span>
+              </div>
+              <div class="bid-section-body">Serviceavtalet kan träda i kraft 1 maj 2026. Dedikerad servicetekniker tillgänglig vardagar 07–17...</div>
+            </div>
+
+            <div class="bid-section">
+              <div class="bid-section-header" onclick="toggleSection(this)">
+                <span class="section-num">05</span>
+                <span class="section-name">Nyckelkompetenser & organisation</span>
+                <button class="regen-btn" onclick="event.stopPropagation(); showToast('Regenererar sektion...')">⚡ Regenerera</button>
+                <span class="section-status">✅</span>
+              </div>
+              <div class="bid-section-body">Ansvarig projektledare: Magnus Eriksson (20 års erfarenhet, aukt. elinstallatör)...</div>
+            </div>
+
+            <div class="bid-section">
+              <div class="bid-section-header" onclick="toggleSection(this)">
+                <span class="section-num">06</span>
+                <span class="section-name">Prisspecifikation</span>
+                <button class="regen-btn" onclick="event.stopPropagation(); showToast('Regenererar sektion...')">⚡ Regenerera</button>
+                <span class="section-status">✅</span>
+              </div>
+              <div class="bid-section-body">
+                Årsavgift servicekontrakt: 480 000 kr exkl. moms<br>
+                Inkluderar: 4 st planerade servicebesök/år, jour 24/7, reservdelslager på site<br>
+                Timpris utöver avtal: 750 kr/tim
+              </div>
+            </div>
+
+            <div class="bid-section">
+              <div class="bid-section-header" onclick="toggleSection(this)">
+                <span class="section-num">07</span>
+                <span class="section-name">Referensprojekt</span>
+                <button class="regen-btn" onclick="event.stopPropagation(); showToast('Regenererar sektion...')">⚡ Regenerera</button>
+                <span class="section-status">✅</span>
+              </div>
+              <div class="bid-section-body">
+                <strong>Atlas Copco, Nacka</strong> – Servicekontrakt el, 2 år, 380 KSEK/år (2023–2025)<br>
+                <strong>BRF Hammarby Sjöstad</strong> – Servicekontrakt 48 månader (2022–2025)<br>
+                <strong>Arlanda flygplats (sektion D)</strong> – Akutservice och planerat underhåll (2024)
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:24px; padding-top:20px; border-top:1px solid var(--navy-border);">
+            <button class="btn-primary" onclick="showToast('PDF exporteras – 8 sidor + certifikat...')">📄 Exportera PDF</button>
+            <button class="btn-ghost" onclick="showToast('Markerat som Skickat')">✓ Markera som skickat</button>
+          </div>
+        </div>
+
+        <!-- SIDEBAR PANEL -->
+        <div class="detail-sidebar-panel">
+          <div class="panel-card">
+            <div class="panel-card-title">📊 Anbudsstatus</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span style="color:var(--muted);">Sektioner klara</span>
+                <span style="color:var(--green); font-weight:700;">7 / 7</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span style="color:var(--muted);">Certifikat bifogade</span>
+                <span style="color:var(--green); font-weight:700;">3 st ✓</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span style="color:var(--muted);">Anbudsvärde</span>
+                <span style="color:var(--yellow); font-weight:700; font-family:'JetBrains Mono',monospace;">480 000 kr/år</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-card-title">⚡ AI-tips</div>
+            <div style="font-size:12px; color:var(--soft); line-height:1.6;">
+              Siemens utvärderar på pris (60%) och metod (30%). Stärk metodbeskrivningen med mer detalj om era SLA-nivåer och responstider för att maximera metodpoängen.
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-card-title">📎 Dokument att bifoga</div>
+            <div class="cert-item"><div class="cert-dot" style="background:var(--green);"></div><span style="font-size:12px;">Auktorisation_EL.pdf</span></div>
+            <div class="cert-item"><div class="cert-dot" style="background:var(--green);"></div><span style="font-size:12px;">Forsäkringsbevis_2026.pdf</span></div>
+            <div class="cert-item"><div class="cert-dot" style="background:var(--green);"></div><span style="font-size:12px;">F-skattsedel.pdf</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /editor -->
+
+    <!-- ═══ DETAIL VIEW: KALKYL (Hammarby) ═══ -->
+    <div class="view" id="view-detail-hammarby" style="flex-direction:column;">
+      <div class="detail-header">
+        <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+        <div style="width:1px; height:20px; background:var(--navy-border);"></div>
+        <div>
+          <div class="detail-title">Hammarby Fastigheter</div>
+          <div class="detail-subtitle">Laddstolpar · 48 platser · Deadline 30 mars 2026</div>
+        </div>
+      </div>
+      <div class="content" style="max-width:600px;">
+        <div style="text-align:center; padding:60px 0;">
+          <div style="font-size:48px; margin-bottom:20px;">🧮</div>
+          <div style="font-size:20px; font-weight:800; margin-bottom:8px;">Kalkyl pågår</div>
+          <div style="font-size:14px; color:var(--muted); margin-bottom:24px;">Klicka på BRF Kungsholmen-anbudet för att se ett fullständigt kalkylexempel</div>
+          <button class="btn-primary" onclick="showDetail('brf'); switchToCalc()">Se kalkylexempel →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ UPLOAD VIEW ═══ -->
+    <div class="view" id="view-upload" style="flex-direction:column;">
+      <div class="topbar">
+        <button class="back-btn" onclick="showView('dashboard')">← Tillbaka</button>
+        <span class="page-title">Nytt anbud</span>
+      </div>
+      <div class="content" style="max-width:640px; margin:0 auto; width:100%;">
+        <div style="margin-bottom:32px;">
+          <div style="font-size:24px; font-weight:800; margin-bottom:8px;">Ladda upp förfrågningsunderlag</div>
+          <div style="font-size:14px; color:var(--muted);">AI:n läser dokumentet och skapar en strukturerad analys inom 60 sekunder.</div>
+        </div>
+
+        <div class="upload-zone" onclick="simulateUpload()">
+          <div class="upload-icon">⚡</div>
+          <div class="upload-title">Dra och släpp ditt underlag här</div>
+          <div class="upload-sub">eller klicka för att välja fil</div>
+          <div class="upload-formats">PDF · DOCX · Max 50 MB</div>
+        </div>
+
+        <div style="margin-top:24px; padding:16px; background:var(--navy-mid); border:1px solid var(--navy-border); border-radius:10px;">
+          <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:12px;">Vad AI:n extraherar automatiskt</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="font-size:13px; color:var(--soft); display:flex; gap:6px;"><span style="color:var(--yellow);">⚡</span> Projektbeskrivning & scope</div>
+            <div style="font-size:13px; color:var(--soft); display:flex; gap:6px;"><span style="color:var(--yellow);">⚡</span> Tekniska krav</div>
+            <div style="font-size:13px; color:var(--soft); display:flex; gap:6px;"><span style="color:var(--yellow);">⚡</span> Certifieringskrav</div>
+            <div style="font-size:13px; color:var(--soft); display:flex; gap:6px;"><span style="color:var(--yellow);">⚡</span> Deadline & tidsplan</div>
+            <div style="font-size:13px; color:var(--soft); display:flex; gap:6px;"><span style="color:var(--yellow);">⚡</span> Utvärderingskriterier</div>
+            <div style="font-size:13px; color:var(--soft); display:flex; gap:6px;"><span style="color:var(--yellow);">⚡</span> Risker & oklarheter</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let activeView = 'dashboard';
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const el = document.getElementById('view-' + id);
+    if (el) el.classList.add('active');
+    activeView = id;
+
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (id === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
+    if (id === 'upload') document.querySelectorAll('.nav-item')[1].classList.add('active');
+  }
+
+  function showUpload() {
+    showView('upload');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item')[1].classList.add('active');
+  }
+
+  function showDetail(type) {
+    showView('detail-' + type);
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    // Hide AI loader after 1.5s (demo)
+    if (type === 'brf') {
+      const loader = document.getElementById('ai-loader');
+      if (loader) {
+        loader.classList.add('visible');
+        setTimeout(() => { loader.classList.remove('visible'); }, 1500);
+      }
+      // Show analysis tab
+      document.getElementById('tab-analysis').style.display = 'block';
+      document.getElementById('tab-calc').style.display = 'none';
+    }
+  }
+
+  function switchTab(el, targetId) {
+    // Update tab styles
+    el.closest('.tab-bar').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    // Show/hide content
+    document.getElementById('tab-analysis').style.display = (targetId === 'tab-analysis') ? 'block' : 'none';
+    document.getElementById('tab-calc').style.display = (targetId === 'tab-calc') ? 'block' : 'none';
+  }
+
+  function switchToCalc() {
+    const tabs = document.querySelectorAll('#view-detail-brf .tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tabs[1]) tabs[1].classList.add('active');
+    document.getElementById('tab-analysis').style.display = 'none';
+    document.getElementById('tab-calc').style.display = 'block';
+  }
+
+  function toggleSection(header) {
+    const section = header.closest('.bid-section');
+    section.classList.toggle('open');
+    // Remove active from others
+    document.querySelectorAll('.bid-section').forEach(s => s.classList.remove('active-section'));
+    if (section.classList.contains('open')) section.classList.add('active-section');
+  }
+
+  function updateTotal() {
+    showToast('Kalkyl uppdaterad');
+  }
+
+  function simulateUpload() {
+    showToast('Laddar upp... Demo – klicka på ett anbudskort istället');
+    setTimeout(() => showDetail('brf'), 1200);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    const text = document.getElementById('toast-text');
+    text.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // Demo: auto-hide AI loader
+  setTimeout(() => {
+    const loader = document.getElementById('ai-loader');
+    if (loader) loader.classList.remove('visible');
+  }, 100);
+</script>
+</body>
+</html>

@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SveBud – Vinn fler el-uppdrag. På halva tiden.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:   #0E1B2E;
+  --navy2:  #1A2E45;
+  --navy3:  #24405C;
+  --amber:  #C8960A;
+  --amber2: #A37A08;
+  --ag:     rgba(200,150,10,.10);
+  --ab:     rgba(200,150,10,.22);
+  --white:  #FFFFFF;
+  --off:    #F8F7F4;
+  --gray:   #F1EFF0;
+  --border: #E5E3E0;
+  --border2:#D4D1CC;
+  --t1:     #0E1B2E;
+  --t2:     #2D3E52;
+  --t3:     #5A6B7D;
+  --t4:     #8A9BAD;
+  --green:  #16A34A;
+  --gbg:    rgba(22,163,74,.08);
+  --red:    #DC2626;
+  --rbg:    rgba(220,38,38,.07);
+  --blue:   #2563EB;
+  --bbg:    rgba(37,99,235,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--white);color:var(--t1);overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1140px;margin:0 auto;padding:0 28px}
+section{padding:96px 0}
+
+/* scroll reveal */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+.rv.up{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:64px;background:rgba(255,255,255,.95);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  transition:box-shadow .2s
+}
+nav.scrolled{box-shadow:0 2px 16px rgba(14,27,46,.08)}
+.ni{display:flex;align-items:center;max-width:1140px;margin:0 auto;width:100%;padding:0 28px}
+.nlogo{display:flex;align-items:center;gap:9px;text-decoration:none}
+.nbolt{width:32px;height:32px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.nname{font-size:20px;font-weight:800;color:var(--navy);letter-spacing:-.03em}
+.nname span{color:var(--amber)}
+.nlinks{display:flex;gap:2px;margin-left:36px}
+.nlink{font-size:14px;font-weight:500;color:var(--t3);padding:6px 14px;border-radius:8px;text-decoration:none;transition:all .15s}
+.nlink:hover{color:var(--t1);background:var(--off)}
+.nr{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn-login{font-size:14px;font-weight:500;color:var(--t2);background:none;border:1px solid var(--border2);padding:8px 18px;border-radius:9px;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;transition:all .15s}
+.btn-login:hover{border-color:var(--navy);color:var(--navy)}
+.btn-cta{font-size:14px;font-weight:600;color:var(--white);background:var(--navy);border:none;padding:9px 20px;border-radius:9px;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;transition:all .15s}
+.btn-cta:hover{background:var(--navy2);transform:translateY(-1px)}
+
+/* ── HERO ── */
+#hero{padding-top:64px;min-height:100vh;display:flex;align-items:center;background:var(--white);position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 70% 50% at 70% 40%,rgba(200,150,10,.06),transparent 70%)}
+
+/* ── FOTO-KORT (generell) ── */
+.foto-kort{border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(14,27,46,.12);position:relative}
+.foto-kort img{width:100%;height:100%;object-fit:cover;display:block}
+.foto-placeholder{
+  background:linear-gradient(135deg,#e8e4dc 0%,#f4f2ed 100%);
+  border:2px dashed #D4D1CC;border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;padding:40px 24px;text-align:center;min-height:280px
+}
+.fp-icon{font-size:40px;opacity:.5}
+.fp-title{font-size:13px;font-weight:700;color:var(--t2)}
+.fp-prompt{font-size:11px;color:var(--t4);line-height:1.5;font-family:'JetBrains Mono',monospace;max-width:280px;background:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-top:4px}
+.foto-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(14,27,46,.65));padding:20px 20px 16px;color:white;font-size:12px;font-weight:500}
+
+/* ── TESTIMONIAL KORTEN ── */
+.testi-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.testi-kort{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.testi-kort:hover{box-shadow:0 8px 28px rgba(14,27,46,.08);border-color:var(--border2)}
+.testi-quote{font-size:14px;color:var(--t2);line-height:1.65;font-style:italic}
+.testi-auth{display:flex;align-items:center;gap:12px}
+.testi-av{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--off);border:1px solid var(--border)}
+.testi-av img{width:100%;height:100%;object-fit:cover}
+.testi-av-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--amber)}
+.testi-name{font-size:13px;font-weight:700;color:var(--navy)}
+.testi-role{font-size:11px;color:var(--t4)}
+.testi-stars{color:var(--amber);font-size:12px;letter-spacing:1px}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;position:relative;z-index:1;padding:80px 0 60px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);background:var(--ag);border:1px solid var(--ab);padding:5px 14px;border-radius:20px;margin-bottom:24px}
+.badge-dot{width:5px;height:5px;background:var(--amber);border-radius:50%;animation:bpulse 2s ease-in-out infinite}
+@keyframes bpulse{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(40px,5vw,62px);font-weight:800;letter-spacing:-.04em;line-height:1.06;color:var(--navy);margin-bottom:22px}
+h1 em{font-style:normal;color:var(--amber)}
+.hero-sub{font-size:18px;color:var(--t3);line-height:1.72;max-width:440px;margin-bottom:36px}
+.hero-sub strong{color:var(--t2);font-weight:600}
+.hero-btns{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bp-lg{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:var(--white);font-size:16px;font-weight:700;font-family:'Inter',sans-serif;border:none;padding:15px 30px;border-radius:10px;cursor:pointer;text-decoration:none;transition:all .2s}
+.bp-lg:hover{background:var(--navy2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(14,27,46,.25)}
+.bs-lg{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--t2);font-size:15px;font-weight:500;font-family:'Inter',sans-serif;border:1px solid var(--border2);padding:14px 22px;border-radius:10px;cursor:pointer;text-decoration:none;transition:all .15s}
+.bs-lg:hover{border-color:var(--navy);color:var(--navy)}
+.hero-trust{display:flex;align-items:center;gap:10px;margin-top:28px;padding-top:24px;border-top:1px solid var(--border)}
+.stars{color:var(--amber);font-size:13px;letter-spacing:2px}
+.trust-txt{font-size:13px;color:var(--t4)}
+.trust-txt strong{color:var(--t3);font-weight:600}
+.hero-risk{font-size:12px;color:var(--t4);margin-top:12px;display:flex;gap:16px}
+.hero-risk span::before{content:'✓ ';color:var(--green);font-weight:700}
+
+/* browser frame */
+.bframe{background:var(--off);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(14,27,46,.12),0 4px 16px rgba(14,27,46,.06)}
+.bbar{background:var(--gray);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:7px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dr{background:#FF5F57}.dy{background:#FFBD2E}.dg{background:#28C840}
+.burl{flex:1;background:var(--white);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:10px;color:var(--t4);font-family:'JetBrains Mono',monospace;margin-left:8px}
+.bbody{padding:16px;background:var(--navy)}
+.dbtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dbtitle{font-size:14px;font-weight:700;color:#F0EBE2}
+.dbbtn{background:var(--amber);color:var(--navy);border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer}
+.krow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.kc{background:#1A2E45;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;text-align:center;position:relative;overflow:hidden}
+.kc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kc.a::after{background:var(--amber)}.kc.g::after{background:#22C55E}.kc.b::after{background:#4A9EFF}
+.kv{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.kv.a{color:var(--amber)}.kv.g{color:#22C55E}.kv.b{color:#4A9EFF}
+.kl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.35);margin-top:3px}
+.brow{background:#1A2E45;border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.brow:last-child{margin-bottom:0}
+.bdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bname{font-size:12px;font-weight:500;color:rgba(240,235,226,.85);flex:1}
+.bval{font-size:10px;color:rgba(255,255,255,.3);font-family:'JetBrains Mono',monospace}
+.btag{font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.tgo{background:rgba(22,163,74,.15);color:#22C55E}
+.tai{background:rgba(200,150,10,.15);color:var(--amber)}
+.tsent{background:rgba(74,158,255,.15);color:#4A9EFF}
+
+/* ── STRIP ── */
+#strip{padding:20px 0;background:var(--off);border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden}
+.strip-lbl{text-align:center;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--t4);margin-bottom:14px}
+.ltrack{display:flex;gap:56px;align-items:center;width:max-content;animation:marquee 30s linear infinite}
+.ltrack:hover{animation-play-state:paused}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.litem{display:flex;align-items:center;gap:8px;opacity:.45;white-space:nowrap;transition:opacity .2s}
+.litem:hover{opacity:.8}
+.lico{width:20px;height:20px;background:var(--ag);border:1px solid var(--ab);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--amber)}
+.lname{font-size:13px;font-weight:500;color:var(--t2)}
+
+/* ── PAIN ── */
+#pain{background:var(--white);border-top:1px solid var(--border)}
+.pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:'';width:24px;height:2px;background:var(--amber);border-radius:1px}
+h2{font-size:clamp(28px,3.5vw,44px);font-weight:800;letter-spacing:-.035em;line-height:1.12;margin-bottom:16px;color:var(--navy)}
+.pain-list{display:flex;flex-direction:column;gap:14px;margin-top:28px}
+.pi{display:flex;gap:14px;align-items:flex-start;padding:18px 20px;background:rgba(220,38,38,.04);border:1px solid rgba(220,38,38,.12);border-radius:12px}
+.piico{font-size:20px;flex-shrink:0;margin-top:1px}
+.pih{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.pip{font-size:13px;color:var(--t3);line-height:1.6}
+.pain-visual{background:var(--off);border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(14,27,46,.06)}
+.time-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.tc{border-radius:12px;padding:18px}
+.tc-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.tc-val{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.tc-sub{font-size:12px;margin-top:4px}
+
+/* ── VIDEO SECTION ── */
+#demo{background:var(--off);border-top:1px solid var(--border)}
+.demo-inner{text-align:center;max-width:800px;margin:0 auto}
+.video-wrap{
+  position:relative;margin-top:48px;border-radius:16px;overflow:hidden;
+  box-shadow:0 24px 64px rgba(14,27,46,.16);
+  background:var(--navy);aspect-ratio:16/9;cursor:pointer
+}
+.video-wrap:hover .play-btn{transform:translate(-50%,-50%) scale(1.08)}
+.video-thumb{
+  position:absolute;inset:0;width:100%;height:100%;
+  background:linear-gradient(135deg,#0E1B2E 0%,#1A2E45 40%,#0E1B2E 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0
+}
+.video-badge{
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--amber);background:var(--ag);border:1px solid var(--ab);
+  padding:5px 14px;border-radius:20px;margin-bottom:24px
+}
+.video-title{font-size:clamp(20px,3vw,32px);font-weight:800;color:#F0EBE2;letter-spacing:-.03em;margin-bottom:8px}
+.video-sub{font-size:15px;color:rgba(240,235,226,.5);margin-bottom:32px}
+.play-btn{
+  position:relative;
+  width:72px;height:72px;
+  background:var(--amber);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 8px 32px rgba(200,150,10,.4)
+}
+.play-arrow{
+  width:0;height:0;
+  border-style:solid;border-width:12px 0 12px 22px;
+  border-color:transparent transparent transparent var(--navy);
+  margin-left:4px
+}
+.play-pulse{
+  position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid rgba(200,150,10,.4);
+  animation:pulse 2s ease-in-out infinite
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.12);opacity:.2}}
+.video-steps{display:flex;justify-content:center;gap:32px;margin-top:32px;flex-wrap:wrap}
+.vstep{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t3)}
+.vstep-num{width:24px;height:24px;background:var(--navy);color:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.vstep-lbl{font-weight:600;color:var(--t2)}
+
+/* ── HOW IT WORKS ── */
+#how{background:var(--white);border-top:1px solid var(--border)}
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s}
+.step:last-child{border-bottom:none}
+.step-num{width:38px;height:38px;border-radius:10px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--t4);flex-shrink:0;transition:all .2s}
+.step.act .step-num{background:var(--navy);color:var(--white);border-color:var(--navy)}
+.step-h{font-size:16px;font-weight:700;color:var(--t3);margin-bottom:4px;transition:color .2s}
+.step.act .step-h{color:var(--navy)}
+.step-p{font-size:13px;color:var(--t4);line-height:1.55}
+.step-time{font-size:11px;font-weight:700;color:var(--amber);font-family:'JetBrains Mono',monospace;margin-top:5px}
+.step-screen{display:none}
+.step.act .step-screen{display:block;animation:ssin .3s ease}
+@keyframes ssin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.scrwrap{background:var(--navy);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin-top:14px}
+.scrbar{background:#1A2E45;border-bottom:1px solid rgba(255,255,255,.07);padding:9px 14px;display:flex;align-items:center;gap:7px}
+.scrlbl{font-size:10px;color:rgba(255,255,255,.3);font-family:'JetBrains Mono',monospace;margin-left:6px}
+
+/* ── FEATURES ── */
+#features{background:var(--off);border-top:1px solid var(--border)}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feat-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .2s}
+.feat-card:hover{border-color:var(--border2);box-shadow:0 8px 32px rgba(14,27,46,.08);transform:translateY(-2px)}
+.feat-icon{width:44px;height:44px;background:var(--off);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+.feat-h{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.feat-p{font-size:13px;color:var(--t3);line-height:1.65}
+.feat-badge{display:inline-block;margin-top:14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:5px;background:var(--ag);color:var(--amber)}
+
+/* ── COMPARE ── */
+#compare{background:var(--white);border-top:1px solid var(--border)}
+.cmp-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;max-width:900px;margin:48px auto 0}
+.cmpcol{background:var(--off);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.cmpcol.after{border-color:rgba(22,163,74,.3);background:rgba(22,163,74,.02)}
+.cmphdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.chico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.old .chico{background:var(--rbg)}.new .chico{background:var(--gbg)}
+.chlbl{font-size:16px;font-weight:700}
+.old .chlbl{color:var(--red)}.new .chlbl{color:var(--green)}
+.cmpbody{padding:14px 20px;background:var(--white)}
+.cmprow{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.cmprow:last-child{border-bottom:none}
+.cico{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.cico.bad{background:var(--rbg);color:var(--red)}.cico.good{background:var(--gbg);color:var(--green)}
+.ctxt{font-size:13px;line-height:1.4;flex:1;color:var(--t2)}
+.ctxt strong{color:var(--t1);font-weight:600}
+.ctxt span{font-size:11px;color:var(--t4)}
+.ctime{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;flex-shrink:0;margin-top:1px}
+.ctime.bad{color:var(--red)}.ctime.good{color:var(--green)}
+.cmpfoot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.cfle{font-size:13px;color:var(--t4);font-weight:500}
+.cftv{font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-.03em}
+.cftv.bad{color:var(--red)}.cftv.good{color:var(--green)}
+.vsdiv{display:flex;flex-direction:column;align-items:center;gap:8px}
+.vsline{width:1px;height:50px;background:var(--border)}
+.vscirc{width:44px;height:44px;background:var(--off);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--t4)}
+
+/* ── PRICING ── */
+#pricing{background:var(--off);border-top:1px solid var(--border)}
+.ptoggle{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:48px}
+.tgl-l{font-size:14px;font-weight:500;color:var(--t4)}
+.tgl-l.on{color:var(--t1);font-weight:600}
+.tgl{width:44px;height:24px;background:var(--border2);border:none;border-radius:12px;position:relative;cursor:pointer;transition:all .2s}
+.tgl.on{background:var(--navy)}
+.tglk{position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--white);border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.tgl.on .tglk{transform:translateX(20px)}
+.savepill{font-size:11px;font-weight:700;background:var(--gbg);color:var(--green);padding:3px 10px;border-radius:6px;border:1px solid rgba(22,163,74,.2);display:none}
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1000px;margin:0 auto}
+.pcard{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;transition:all .2s}
+.pcard:hover{box-shadow:0 12px 40px rgba(14,27,46,.1);transform:translateY(-3px)}
+.pcard.hot{border-color:var(--navy);border-width:2px}
+.pbadge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--white);font-size:11px;font-weight:700;padding:4px 16px;border-radius:20px;white-space:nowrap}
+.ptier{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t4);margin-bottom:8px}
+.pprice{font-size:42px;font-weight:800;letter-spacing:-.04em;margin-bottom:6px;line-height:1;color:var(--navy)}
+.pprice sub{font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:var(--t4)}
+.pdesc{font-size:13px;color:var(--t3);margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border);line-height:1.55}
+.plist{list-style:none;margin-bottom:28px}
+.plist li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--t2);padding:7px 0;border-bottom:1px solid var(--border)}
+.plist li:last-child{border-bottom:none}
+.plist li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.plist li.no{color:var(--t4)}.plist li.no::before{content:'×';color:var(--t4)}
+.pbtn{width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.pbtn.pri{background:var(--navy);color:var(--white);border:none}.pbtn.pri:hover{background:var(--navy2)}
+.pbtn.sec{background:transparent;color:var(--t3);border:1px solid var(--border2)}.pbtn.sec:hover{border-color:var(--navy);color:var(--navy)}
+.pnote{text-align:center;margin-top:24px;font-size:13px;color:var(--t4)}
+.pnote strong{color:var(--green)}
+
+/* ── FAQ ── */
+#faq{background:var(--white);border-top:1px solid var(--border)}
+.faqwrap{max-width:680px;margin:0 auto}
+.fi{background:var(--off);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color .15s}
+.fi:hover,.fi.open{border-color:var(--navy)}
+.fq2{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;cursor:pointer;font-size:15px;font-weight:600;color:var(--navy);gap:16px}
+.fqi{font-size:18px;color:var(--amber);flex-shrink:0;transition:transform .2s;font-weight:300}
+.fi.open .fqi{transform:rotate(45deg)}
+.fa2{padding:0 22px 18px;font-size:14px;color:var(--t3);line-height:1.75;display:none;border-top:1px solid var(--border);padding-top:16px}
+.fi.open .fa2{display:block}
+
+/* ── CTA ── */
+#cta{background:var(--navy);text-align:center;padding:120px 0;position:relative;overflow:hidden}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:500px;pointer-events:none;background:radial-gradient(ellipse,rgba(200,150,10,.10) 0%,transparent 65%)}
+.cta-inner{position:relative;z-index:2}
+.cta-badge{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);background:var(--ag);border:1px solid var(--ab);padding:5px 14px;border-radius:20px;margin-bottom:28px}
+.cta-h{font-size:clamp(36px,5vw,56px);font-weight:800;letter-spacing:-.04em;line-height:1.08;color:#F0EBE2;margin-bottom:18px}
+.cta-h em{font-style:normal;color:var(--amber)}
+.cta-sub{font-size:17px;color:rgba(240,235,226,.55);max-width:460px;margin:0 auto 44px;line-height:1.7}
+.cta-btns{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
+.bp-cta{display:inline-flex;align-items:center;gap:8px;background:var(--amber);color:var(--navy);font-size:16px;font-weight:700;font-family:'Inter',sans-serif;border:none;padding:16px 34px;border-radius:10px;cursor:pointer;text-decoration:none;transition:all .2s}
+.bp-cta:hover{background:var(--amber2);transform:translateY(-2px);box-shadow:0 10px 32px rgba(200,150,10,.35)}
+.bs-cta{display:inline-flex;align-items:center;gap:8px;background:transparent;color:rgba(240,235,226,.65);font-size:15px;font-weight:500;font-family:'Inter',sans-serif;border:1px solid rgba(255,255,255,.15);padding:15px 24px;border-radius:10px;cursor:pointer;text-decoration:none;transition:all .15s}
+.bs-cta:hover{border-color:rgba(255,255,255,.3);color:#F0EBE2}
+.cta-risk{display:flex;justify-content:center;align-items:center;gap:24px;margin-top:20px;flex-wrap:wrap}
+.ctar{font-size:12px;color:rgba(240,235,226,.4);display:flex;align-items:center;gap:5px}
+.ctar::before{content:'✓';color:var(--green);font-weight:700}
+
+/* ── FOOTER ── */
+footer{background:#0A1520;border-top:1px solid rgba(255,255,255,.06);padding:56px 0 28px}
+.ftgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px}
+.ftbrand p{font-size:13px;color:rgba(255,255,255,.3);margin-top:10px;max-width:220px;line-height:1.7}
+.fct{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:14px}
+.flinks{list-style:none;display:flex;flex-direction:column;gap:8px}
+.flinks a{font-size:13px;color:rgba(255,255,255,.4);text-decoration:none;transition:color .15s}
+.flinks a:hover{color:rgba(255,255,255,.8)}
+.ftbot{display:flex;align-items:center;justify-content:space-between;padding-top:28px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:rgba(255,255,255,.25);flex-wrap:wrap;gap:10px}
+
+/* responsive */
+@media(max-width:960px){
+  .hero-grid,.pain-grid,.how-grid,.cmp-grid{grid-template-columns:1fr}
+  .feat-grid{grid-template-columns:1fr 1fr}
+  .pcards{grid-template-columns:1fr}
+  .cmp-grid{display:flex;flex-direction:column}
+  .vsdiv{flex-direction:row;justify-content:center}
+  .vsline{width:50px;height:1px}
+  .ftgrid{grid-template-columns:1fr 1fr}
+  .nlinks{display:none}
+}
+@media(max-width:600px){
+  .feat-grid{grid-template-columns:1fr}
+  .ftgrid{grid-template-columns:1fr}
+  section{padding:72px 0}
+  .hero-btns{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <div class="ni">
+    <a href="#" class="nlogo">
+      <div class="nbolt">⚡</div>
+      <span class="nname">Sve<span>Bud</span></span>
+    </a>
+    <div class="nlinks">
+      <a href="#demo" class="nlink">Se demo</a>
+      <a href="#how" class="nlink">Hur det fungerar</a>
+      <a href="#features" class="nlink">Funktioner</a>
+      <a href="#pricing" class="nlink">Priser</a>
+    </div>
+    <div class="nr">
+      <a href="/login" class="btn-login">Logga in</a>
+      <a href="#pricing" class="btn-cta">⚡ Testa gratis</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-badge"><span class="badge-dot"></span> Byggt för svenska elfirmor</div>
+        <h1>Vinn fler<br>el-uppdrag.<br>På <em>halva tiden.</em></h1>
+        <p class="hero-sub">SveBud läser förfrågningsunderlaget, kontrollerar alla krav mot din profil och skriver anbudet. Du granskar och skickar. <strong>Klart samma dag.</strong></p>
+        <div class="hero-btns">
+          <a href="#pricing" class="bp-lg">⚡ Testa gratis i 14 dagar</a>
+          <a href="#demo" class="bs-lg">Se hur det fungerar →</a>
+        </div>
+        <div class="hero-risk">
+          <span>Inget kreditkort</span>
+          <span>Klar på 5 min</span>
+          <span>Avbryt när som helst</span>
+        </div>
+        <div class="hero-trust">
+          <span class="stars">★★★★★</span>
+          <span class="trust-txt"><strong>4,9/5 från betaanvändare</strong> · Elfirmor i hela Sverige</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="foto-kort" style="height:220px;margin-bottom:0">
+          <img src="images/flatlay.jpg" alt="Laptop på byggarbetsplats med ritningar" width="1200" height="903" loading="eager" fetchpriority="high" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div class="bframe">
+          <div class="bbar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><div class="burl">app.svebud.se/dashboard</div></div>
+          <div class="bbody">
+            <div class="dbtop"><span class="dbtitle">Anbudspipeline</span><button class="dbbtn">⚡ Nytt projekt</button></div>
+            <div class="krow">
+              <div class="kc a"><div class="kv a">6</div><div class="kl">Aktiva</div></div>
+              <div class="kc g"><div class="kv g">67%</div><div class="kl">Win rate</div></div>
+              <div class="kc b"><div class="kv b">4,2M</div><div class="kl">Pipeline</div></div>
+            </div>
+            <div class="brow"><div class="bdot" style="background:#EF4444"></div><span class="bname">BRF Kungsholmen</span><span class="bval">1,8M</span><span class="btag tgo">Starkt läge</span></div>
+            <div class="brow"><div class="bdot" style="background:#4A9EFF"></div><span class="bname">Hammarby Fastigheter</span><span class="bval">920K</span><span class="btag tai">⚡ Analys</span></div>
+            <div class="brow"><div class="bdot" style="background:#22C55E"></div><span class="bname">BRF Solrosen</span><span class="bval">380K</span><span class="btag tsent">Skickat ✓</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STRIP -->
+<div id="strip">
+  <div class="strip-lbl">Används av elfirmor i hela Sverige</div>
+  <div class="ltrack">
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Eriksson El AB</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Lindqvist El &amp; Kraft</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">PHel AB</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Svensson Elektro</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Nordin El &amp; Installation</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Bergström Elteknik</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Johansson El AB</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Magnusson Eltjänst</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Eriksson El AB</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Lindqvist El &amp; Kraft</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">PHel AB</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Svensson Elektro</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Nordin El &amp; Installation</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Bergström Elteknik</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Johansson El AB</span></div>
+    <div class="litem"><div class="lico">⚡</div><span class="lname">Magnusson Eltjänst</span></div>
+  </div>
+</div>
+
+<!-- ═══ PAIN ═══ -->
+<section id="pain">
+  <div class="wrap">
+    <div class="pain-grid">
+      <div>
+        <div class="eyebrow rv">Problemet</div>
+        <h2 class="rv">Anbudsarbetet tar tid<br>du inte har.</h2>
+        <p style="font-size:17px;color:var(--t3);line-height:1.72;max-width:420px" class="rv">Det är inte brist på kompetens. Det är brist på timmar — och för många steg som kräver din uppmärksamhet.</p>
+        <div class="pain-list">
+          <div class="pi rv">
+            <span class="piico">📂</span>
+            <div><div class="pih">Varje anbud börjar med ett tomt Word-dokument</div><div class="pip">Öppnar förra anbudets fil. Byter kundnamn. Uppdaterar datum. Kontrollerar att inget från förra kunden blivit kvar.</div></div>
+          </div>
+          <div class="pi rv d1">
+            <span class="piico">📋</span>
+            <div><div class="pih">Underlaget är 40 sidor — och deadline är om tre dagar</div><div class="pip">Du har ett projekt igång, tre montörer på plats och ett familjeliv. Under tidspress missar du ett intyg och anbudet återsänds.</div></div>
+          </div>
+          <div class="pi rv d2">
+            <span class="piico">📉</span>
+            <div><div class="pih">Presentationen avgör ibland mer än priset</div><div class="pip">Större aktörer har dedikerade anbudsskrivare. Ditt anbud konkurrerar mot deras på lika villkor — oavsett vem som gör det bästa jobbet.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="rv d1">
+        <div class="foto-kort" style="height:380px">
+          <img src="images/el_hander.jpg" alt="Elektriker arbetar med kopplingsskåp" width="1100" height="828" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center top">
+        </div>
+        <div class="time-cards" style="margin-top:14px">
+          <div class="tc" style="background:var(--white);border:1px solid var(--border)">
+            <div class="tc-lbl" style="color:var(--t4)">Tid per anbud idag</div>
+            <div class="tc-val" style="color:var(--navy)">~11 tim</div>
+            <div class="tc-sub" style="color:var(--t4)">Manuellt arbete</div>
+          </div>
+          <div class="tc" style="background:var(--ag);border:1px solid var(--ab)">
+            <div class="tc-lbl" style="color:var(--amber)">Med SveBud</div>
+            <div class="tc-val" style="color:var(--amber)">Samma dag</div>
+            <div class="tc-sub" style="color:var(--t3)">Anbud klart — deadline lugnt uppfyllt</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ VIDEO DEMO ═══ -->
+<section id="demo">
+  <div class="wrap">
+    <div class="demo-inner">
+      <div class="eyebrow rv" style="justify-content:center">Se det i aktion</div>
+      <h2 class="rv" style="text-align:center">Från förfrågningsunderlag<br>till färdigt anbud — samma dag.</h2>
+      <p style="font-size:17px;color:var(--t3);margin-top:12px;line-height:1.7" class="rv">Se hur en elfirma tar emot ett BRF-underlag på 40 sidor och skickar ett komplett, professionellt anbud — utan att ha arbetat hela dagen med det.</p>
+
+      <div class="video-wrap rv d1" onclick="playDemo()">
+        <div class="video-thumb" id="video-thumb">
+          <div class="video-badge">Demo · BRF Solbacken · Laddinfrastruktur</div>
+          <div class="video-title">Så här ser det ut i praktiken</div>
+          <div class="video-sub">Från uppladdning till exporterat anbud</div>
+          <div class="play-btn" id="play-btn">
+            <div class="play-pulse"></div>
+            <div class="play-arrow"></div>
+          </div>
+        </div>
+        <!-- Ersätt med Loom iframe: -->
+        <!-- <iframe src="https://www.loom.com/embed/DIN-LOOM-ID" frameborder="0" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%"></iframe> -->
+        <!-- Eller med MP4: -->
+        <!-- <video src="/demo.mp4" controls autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video> -->
+      </div>
+
+      <div class="video-steps rv d2">
+        <div class="vstep"><div class="vstep-num">1</div><span class="vstep-lbl">Ladda upp underlaget</span></div>
+        <div style="color:var(--border2);font-size:16px">→</div>
+        <div class="vstep"><div class="vstep-num">2</div><span class="vstep-lbl">Granska kravanalysen</span></div>
+        <div style="color:var(--border2);font-size:16px">→</div>
+        <div class="vstep"><div class="vstep-num">3</div><span class="vstep-lbl">Godkänn kalkylen</span></div>
+        <div style="color:var(--border2);font-size:16px">→</div>
+        <div class="vstep"><div class="vstep-num">4</div><span class="vstep-lbl">Skicka anbudet</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section id="how">
+  <div class="wrap">
+    <div class="how-grid">
+      <div>
+        <div class="eyebrow rv">Så fungerar det</div>
+        <h2 class="rv">Du ger oss underlaget.<br>Vi ger dig anbudet.</h2>
+        <div class="steps" id="steps">
+          <div class="step act" onclick="setStep(0)">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-h">Ladda upp förfrågningsunderlaget</div>
+              <div class="step-p">PDF, DOCX eller ett enkelt mail — SveBud hanterar allt från en kort e-postförfrågan till ett 100-sidigt upphandlingsdokument. Du behöver inte läsa igenom det.</div>
+              <div class="step-screen">
+                <div class="scrwrap">
+                  <div class="scrbar"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><span class="scrlbl">Dokument uppladdning</span></div>
+                  <div style="overflow:hidden;border-radius:0 0 10px 10px">
+                    <img src="images/byggarbete.jpg" alt="Laptop på byggarbetsplats" width="1100" height="828" loading="lazy" style="width:100%;display:block;object-fit:cover;height:160px;object-position:center center">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(1)">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-h">Kravanalysen visar hur du ligger till</div>
+              <div class="step-p">Alla ska-krav gås igenom och matchas mot din profil. Du ser direkt vad som uppfylls, vad som behöver bekräftas och om uppdraget är rätt för dig — utan att ha läst en rad.</div>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(2)">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-h">Kalkylen är förberedd — du beslutar</div>
+              <div class="step-p">Alla kalkylobjekt föreslagna baserat på scope. Du justerar timmar och material efter din bedömning. ROT-avdrag och Grön teknik beräknas i bakgrunden.</div>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(3)">
+            <div class="step-num">4</div>
+            <div>
+              <div class="step-h">Anbudet är skrivet och redo att skicka</div>
+              <div class="step-p">Ett komplett anbudsdokument med din logotyp, alla relevanta certifikat och korrekt ROT-specifikation. Du granskar, godkänner och exporterar. Klart.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--off);border:1px solid var(--border);border-radius:16px;padding:28px" class="rv d1">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px">Det är torsdag kväll.</div>
+        <div style="font-size:13px;color:var(--t3);line-height:1.65;margin-bottom:20px">Deadline måndag. Underlaget är 40 sidor. Du har ett projekt igång sedan måndag och tre montörer på plats.</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--t4);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Utan SveBud</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);flex-shrink:0;margin-top:1px">—</span> Läser igenom hela underlaget på kvällen</div>
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);flex-shrink:0;margin-top:1px">—</span> Öppnar förra anbudets Word-fil och börjar byta namn</div>
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);flex-shrink:0;margin-top:1px">—</span> Hoppas att inget certifikat saknas</div>
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);flex-shrink:0;margin-top:1px">—</span> Skickar fredag — och är osäker på om det håller</div>
+            </div>
+          </div>
+          <div style="background:rgba(22,163,74,.04);border:1px solid rgba(22,163,74,.18);border-radius:10px;padding:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Med SveBud</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0;margin-top:1px">✓</span> Laddar upp underlaget — SveBud läser det åt dig</div>
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0;margin-top:1px">✓</span> Ser direkt vilka krav du uppfyller och vilka som kräver åtgärd</div>
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0;margin-top:1px">✓</span> Justerar kalkylen på en halvtimme</div>
+              <div style="font-size:13px;color:var(--t2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0;margin-top:1px">✓</span> Skickar ett professionellt anbud — med god marginal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section id="features">
+  <div class="wrap">
+    <div style="text-align:center;max-width:560px;margin:0 auto 48px" class="rv">
+      <div class="eyebrow" style="justify-content:center">Funktioner</div>
+      <h2>Allt du behöver för att vinna fler anbud</h2>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card rv">
+        <div class="feat-icon">🎯</div>
+        <div class="feat-h">Automatisk kravanalys</div>
+        <p class="feat-p">AI:n läser hela underlaget och matchar varje krav mot din profil. Anbudsläge: Starkt / Bra / Osäkert / Svårt.</p>
+        <span class="feat-badge">Automatisk</span>
+      </div>
+      <div class="feat-card rv d1">
+        <div class="feat-icon">🧮</div>
+        <div class="feat-h">AI-kalkyl med ROT</div>
+        <p class="feat-p">Kalkylobjekt föreslagna baserat på scope. ROT-avdrag och Grön teknik (laddbox 15%, solceller 20%) beräknas automatiskt.</p>
+        <span class="feat-badge">Sparar timmar</span>
+      </div>
+      <div class="feat-card rv d2">
+        <div class="feat-icon">📄</div>
+        <div class="feat-h">Professionellt anbud</div>
+        <p class="feat-p">7 sektioner genererade av AI. Din logotyp och certifikat bifogade. Exportera som PDF eller Word på ett klick.</p>
+        <span class="feat-badge">Imponerar</span>
+      </div>
+      <div class="feat-card rv">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-h">Föranmälan-tracker</div>
+        <p class="feat-p">Steg-för-steg-guide för laddbox, solceller och batterilager. Varnar om startdatum och handläggningstid krockar.</p>
+        <span class="feat-badge">Proaktiv</span>
+      </div>
+      <div class="feat-card rv d1">
+        <div class="feat-icon">✍️</div>
+        <div class="feat-h">Kvalitetsgranskning</div>
+        <p class="feat-p">AI:n granskar ditt anbud och ger betyg 1–10 med konkreta förbättringsförslag för pris, juridik och fullständighet.</p>
+        <span class="feat-badge">AI-driven</span>
+      </div>
+      <div class="feat-card rv d2">
+        <div class="feat-icon">📱</div>
+        <div class="feat-h">Snabboffert</div>
+        <p class="feat-p">Informella förfrågningar via mail eller telefon? SveBud auto-detekterar och skapar en offert direkt — utan formellt FU.</p>
+        <span class="feat-badge">Flexibel</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPARE ═══ -->
+<section id="compare">
+  <div class="wrap">
+    <div style="text-align:center;max-width:480px;margin:0 auto 0" class="rv">
+      <div class="eyebrow" style="justify-content:center">Jämförelse</div>
+      <h2>Samma anbud. Drastiskt olika tid.</h2>
+    </div>
+    <div class="cmp-grid rv">
+      <div class="cmpcol">
+        <div class="cmphdr old"><div class="chico">✗</div><span class="chlbl">Utan SveBud</span></div>
+        <div class="cmpbody">
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Läsa underlag manuellt<br><span>40 sidor PDF</span></div><div class="ctime bad">2–3 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kontrollera krav<br><span>Manuell checklista</span></div><div class="ctime bad">30 min</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Kalkylera i Excel</div><div class="ctime bad">3–5 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Skriva anbud i Word</div><div class="ctime bad">2–3 tim</div></div>
+          <div class="cmprow"><div class="cico bad">✗</div><div class="ctxt">Samla certifikat &amp; granska</div><div class="ctime bad">45 min</div></div>
+        </div>
+        <div class="cmpfoot"><span class="cfle">Total tid</span><span class="cftv bad">~11 tim</span></div>
+      </div>
+      <div class="vsdiv"><div class="vsline"></div><div class="vscirc">VS</div><div class="vsline"></div></div>
+      <div class="cmpcol after">
+        <div class="cmphdr new"><div class="chico">✓</div><span class="chlbl">Med SveBud</span></div>
+        <div class="cmpbody">
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI läser och extraherar</strong><br><span>Strukturerad sammanfattning</span></div><div class="ctime good">60 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Automatisk kravanalys</strong><br><span>Matchas mot din profil</span></div><div class="ctime good">10 sek</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI föreslår kalkyl</strong><br><span>Du justerar</span></div><div class="ctime good">20 min</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>AI skriver komplett anbud</strong></div><div class="ctime good">2 min</div></div>
+          <div class="cmprow"><div class="cico good">✓</div><div class="ctxt"><strong>Certifikat bifogas automatiskt</strong></div><div class="ctime good">0 sek</div></div>
+        </div>
+        <div class="cmpfoot"><span class="cfle">Total tid</span><span class="cftv good">~45 min</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BRANSCHKUNSKAP + FOTO ═══ -->
+<section id="proof" style="background:var(--off);border-top:1px solid var(--border)">
+  <div class="wrap">
+
+    <!-- Grundarens röst — ärlighet istället för fejkade recensioner -->
+    <div style="max-width:720px;margin:0 auto 72px;text-align:center" class="rv">
+      <div class="eyebrow" style="justify-content:center">Varför vi byggde SveBud</div>
+      <h2 style="margin-bottom:20px">Elfirmor förlorar uppdrag<br>de borde ha vunnit.</h2>
+      <p style="font-size:17px;color:var(--t3);line-height:1.78;max-width:560px;margin:0 auto">
+        Inte för att de saknar kompetens eller rätt pris. Utan för att anbudet inte räckte till — för att underlaget var för komplext, för att det saknades ett intyg, för att det inte fanns tid att skriva det ordentligt. Det är det SveBud löser.
+      </p>
+    </div>
+
+    <!-- Vad SveBud faktiskt förstår om branschen -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start" class="rv">
+      <div>
+        <div class="eyebrow">Branschkunskap inbyggd</div>
+        <h2 style="font-size:clamp(24px,3vw,34px);margin-bottom:16px">Byggt specifikt<br>för elfirmor.</h2>
+        <p style="font-size:15px;color:var(--t3);line-height:1.72;margin-bottom:28px">SveBud är inte ett generellt AI-verktyg. Det är tränat på elinstallationsbranschens specifika krav, regler och terminologi.</p>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px">
+            <div style="width:36px;height:36px;background:var(--ag);border:1px solid var(--ab);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📋</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px">AB 04, EL 19 och AFF 09</div>
+              <div style="font-size:13px;color:var(--t3)">SveBud känner igen och hanterar rätt avtalsvillkor beroende på uppdragstyp — B2B-entreprenaد, konsument eller servicekontrakt.</div>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px">
+            <div style="width:36px;height:36px;background:var(--ag);border:1px solid var(--ab);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🌱</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px">Grön teknik och ROT-avdrag</div>
+              <div style="font-size:13px;color:var(--t3)">Laddbox 15%, solceller 20%, batterilager 20%. Reglerna från Skatteverket inbyggda och uppdaterade — du räknar aldrig fel.</div>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px">
+            <div style="width:36px;height:36px;background:var(--ag);border:1px solid var(--ab);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">⚡</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px">Föranmälan enligt ELNÄT 2025 K</div>
+              <div style="font-size:13px;color:var(--t3)">Nya regler från januari 2026. SveBud spårar handläggningstider per nätbolag och varnar om din tidsplan riskerar att försenas.</div>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px">
+            <div style="width:36px;height:36px;background:var(--ag);border:1px solid var(--ab);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📜</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px">Certifikat och behörighetskrav</div>
+              <div style="font-size:13px;color:var(--t3)">AL, A, B, SSG Entre, ID06, BAS-U, ansvarsförsäkring. SveBud vet vilka intyg som krävs och kontrollerar mot din profil.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rv d1">
+        <div class="foto-kort" style="min-height:480px;height:100%">
+          <img src="images/villa.jpg" alt="Elbil laddas i villainfart" width="1200" height="903" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center center">
+        </div>
+      </div>
+    </div>
+
+    <!-- Beta-program -->
+    <div style="margin-top:72px;background:var(--navy);border-radius:16px;padding:48px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center" class="rv">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:16px">Beta-program 2026</div>
+        <h2 style="color:#F0EBE2;font-size:clamp(24px,3vw,36px);margin-bottom:16px">Var med och forma SveBud från start.</h2>
+        <p style="font-size:15px;color:rgba(240,235,226,.55);line-height:1.72;margin-bottom:0">Vi tar in ett begränsat antal elfirmor i vårt beta-program. Du får full tillgång mot att du delar med dig av hur verktyget fungerar i praktiken — vad som saknas, vad som kan bli bättre.</p>
+      </div>
+      <div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px">
+            <div style="width:32px;height:32px;background:rgba(200,150,10,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--amber);font-size:14px;font-weight:700">1</div>
+            <div style="font-size:14px;color:rgba(240,235,226,.8)">Full tillgång till Pro under hela beta-perioden</div>
+          </div>
+          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px">
+            <div style="width:32px;height:32px;background:rgba(200,150,10,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--amber);font-size:14px;font-weight:700">2</div>
+            <div style="font-size:14px;color:rgba(240,235,226,.8)">Direkt kontakt med grundarna — dina synpunkter påverkar produkten</div>
+          </div>
+          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px">
+            <div style="width:32px;height:32px;background:rgba(200,150,10,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--amber);font-size:14px;font-weight:700">3</div>
+            <div style="font-size:14px;color:rgba(240,235,226,.8)">Reducerat pris när produkten lanseras — inlåst för beta-användare</div>
+          </div>
+          <a href="#pricing" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--amber);color:var(--navy);font-size:15px;font-weight:700;padding:14px 24px;border-radius:10px;text-decoration:none;margin-top:4px;transition:all .15s" onmouseover="this.style.background='#A37A08'" onmouseout="this.style.background='var(--amber)'">
+            Ansök om beta-plats →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Branschfakta-raden behålls -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:64px;background:var(--border);border-radius:14px;overflow:hidden" class="rv">
+      <div style="background:var(--white);text-align:center;padding:28px 16px">
+        <div style="font-size:40px;font-weight:800;letter-spacing:-.04em;color:var(--amber)">40 sid.</div>
+        <div style="font-size:13px;color:var(--t3);margin-top:4px">Genomsnittligt förfrågningsunderlag för en BRF-upphandling</div>
+      </div>
+      <div style="background:var(--white);text-align:center;padding:28px 16px">
+        <div style="font-size:40px;font-weight:800;letter-spacing:-.04em;color:var(--amber)">38%</div>
+        <div style="font-size:13px;color:var(--t3);margin-top:4px">Av anbud återsänds på grund av saknade dokument eller certifikat</div>
+      </div>
+      <div style="background:var(--white);text-align:center;padding:28px 16px">
+        <div style="font-size:40px;font-weight:800;letter-spacing:-.04em;color:var(--amber)">3 dgr</div>
+        <div style="font-size:13px;color:var(--t3);margin-top:4px">Typisk svarstid vid en BRF-upphandling om elinstallation</div>
+      </div>
+      <div style="background:var(--white);text-align:center;padding:28px 16px">
+        <div style="font-size:40px;font-weight:800;letter-spacing:-.04em;color:var(--amber)">6–8 v.</div>
+        <div style="font-size:13px;color:var(--t3);margin-top:4px">Handläggningstid för föranmälan hos Ellevio — räknar du med det?</div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="pricing">
+  <div class="wrap">
+    <div style="text-align:center;max-width:480px;margin:0 auto 14px" class="rv">
+      <div class="eyebrow" style="justify-content:center">Priser</div>
+      <h2>Enkla priser. Inga överraskningar.</h2>
+      <p style="font-size:15px;color:var(--t3);margin-top:8px">14 dagars gratis trial. Inget kreditkort krävs.</p>
+    </div>
+    <div class="ptoggle rv">
+      <span class="tgl-l on" id="tlbl-m">Månadsvis</span>
+      <button class="tgl" id="tgl" onclick="toggleP()"><div class="tglk"></div></button>
+      <span class="tgl-l" id="tlbl-y">Årsvis</span>
+      <span class="savepill" id="savepill">Spara 20%</span>
+    </div>
+    <div class="pcards rv">
+      <div class="pcard">
+        <div class="ptier">Bas</div>
+        <div class="pprice" id="p-bas">490 <sub>kr/mån</sub></div>
+        <p class="pdesc">För elfirmor med upp till 5 anbud per månad.</p>
+        <ul class="plist">
+          <li>5 anbud per månad</li>
+          <li>AI-kravanalys &amp; anbudsläge</li>
+          <li>Kalkyl med ROT/Grön teknik</li>
+          <li>AI-genererat anbudsdokument</li>
+          <li>PDF-export</li>
+          <li class="no">Föranmälan-tracker</li>
+          <li class="no">Snabboffert</li>
+        </ul>
+        <button class="pbtn sec" onclick="alert('14 dagars gratis trial — inget kreditkort!')">Starta gratis</button>
+      </div>
+      <div class="pcard hot">
+        <div class="pbadge">Rekommenderas</div>
+        <div class="ptier">Pro</div>
+        <div class="pprice" id="p-pro">1 290 <sub>kr/mån</sub></div>
+        <p class="pdesc">För aktiva elfirmor utan begränsning.</p>
+        <ul class="plist">
+          <li>Obegränsat antal anbud</li>
+          <li>AI-kravanalys &amp; anbudsläge</li>
+          <li>Kalkyl med ROT/Grön teknik</li>
+          <li>AI-genererat anbudsdokument</li>
+          <li>PDF + Word-export</li>
+          <li>Föranmälan-tracker ⚡</li>
+          <li>Snabboffert</li>
+        </ul>
+        <button class="pbtn pri" onclick="alert('14 dagars gratis trial — inget kreditkort!')">⚡ Testa gratis 14 dagar</button>
+      </div>
+      <div class="pcard">
+        <div class="ptier">Business</div>
+        <div class="pprice" id="p-biz">2 990 <sub>kr/mån</sub></div>
+        <p class="pdesc">För etablerade elfirmor med team.</p>
+        <ul class="plist">
+          <li>Allt i Pro</li>
+          <li>Upp till 5 användare</li>
+          <li>Automatisk uppföljning</li>
+          <li>Dedikerad onboarding</li>
+          <li>SLA &amp; prioritetssupport</li>
+          <li>Anpassad anbudsmall</li>
+          <li>Win/loss-statistik</li>
+        </ul>
+        <button class="pbtn sec" onclick="alert('Kontakta oss: hej@svebud.se')">Kontakta oss</button>
+      </div>
+    </div>
+    <p class="pnote rv"><strong>✓ 14 dagars gratis</strong> på alla planer · Ingen bindningstid · Avbryt när som helst · GDPR · EU-data</p>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section id="faq">
+  <div class="wrap">
+    <div style="text-align:center;max-width:480px;margin:0 auto 48px" class="rv">
+      <div class="eyebrow" style="justify-content:center">Vanliga frågor</div>
+      <h2>Allt du undrar</h2>
+    </div>
+    <div class="faqwrap">
+      <div class="fi rv">
+        <div class="fq2" onclick="faq(this)">Hur lång tid tar det att komma igång? <span class="fqi">+</span></div>
+        <div class="fa2">5 minuter. Registrera dig, ladda upp din logotyp och dina certifikat en gång. Sedan laddar du upp ett förfrågningsunderlag och SveBud tar det därifrån. Det första anbudet är klart på under 45 minuter.</div>
+      </div>
+      <div class="fi rv d1">
+        <div class="fq2" onclick="faq(this)">Vilka typer av förfrågningsunderlag fungerar? <span class="fqi">+</span></div>
+        <div class="fa2">SveBud hanterar PDF, DOCX och Excel — allt från enkla e-postförfrågningar till formella upphandlingsdokument på 100+ sidor. AI:n auto-detekterar typ och väljer rätt analysmetod automatiskt.</div>
+      </div>
+      <div class="fi rv d2">
+        <div class="fq2" onclick="faq(this)">Är AI:ns anbud bra nog att skicka? <span class="fqi">+</span></div>
+        <div class="fa2">Ja — med din granskning. AI:n genererar ett komplett professionellt anbud som du granskar och justerar direkt i editorn. En inbyggd kvalitetsgranskning ger betyg 1–10 och flaggar förbättringar.</div>
+      </div>
+      <div class="fi rv">
+        <div class="fq2" onclick="faq(this)">Vad är föranmälan och varför är det viktigt? <span class="fqi">+</span></div>
+        <div class="fa2">Föranmälan är obligatorisk anmälan till elnätsägaren vid elinstallationer som laddboxar och solceller. Handläggningstiden kan vara 4–8 veckor. SveBud spårar stegen och varnar om din startdatum riskerar att försenas.</div>
+      </div>
+      <div class="fi rv d1">
+        <div class="fq2" onclick="faq(this)">Är mina dokument säkra? <span class="fqi">+</span></div>
+        <div class="fa2">Ja. All data lagras i EU (Frankfurt) enligt GDPR. Dina dokument används aldrig för att träna AI-modeller. Du kan radera all data när som helst direkt i appen.</div>
+      </div>
+      <div class="fi rv d2">
+        <div class="fq2" onclick="faq(this)">Kan jag avbryta prenumerationen? <span class="fqi">+</span></div>
+        <div class="fa2">Ja, ingen bindningstid. Avbryt när som helst under Inställningar → Prenumeration. Du behåller tillgången till slutet av betald period.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section id="cta" style="position:relative">
+  <div style="position:absolute;inset:0;overflow:hidden;z-index:0;border-radius:0">
+    <img src="images/handslag.jpg" alt="Handslag framför BRF" width="1456" height="816" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(.35)">
+  </div>
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(14,27,46,.5),rgba(14,27,46,.75));z-index:1"></div>
+  <div class="wrap">
+    <div class="cta-inner" style="position:relative;z-index:2">
+      <div class="cta-badge">Kom igång idag</div>
+      <h2 class="cta-h">Du vet ditt jobb.<br>Låt oss sköta <em>anbudet.</em></h2>
+      <p class="cta-sub">SveBud hanterar underlaget, kravkontrollen, kalkylen och anbudet. Du fokuserar på installationen.</p>
+      <div class="cta-btns">
+        <a href="#pricing" class="bp-cta">⚡ Testa gratis i 14 dagar</a>
+        <a href="#demo" class="bs-cta">Se demo →</a>
+      </div>
+      <div class="cta-risk">
+        <span class="ctar">Inget kreditkort</span>
+        <span class="ctar">Klar på 5 minuter</span>
+        <span class="ctar">Avbryt när som helst</span>
+        <span class="ctar">GDPR · EU-data</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="wrap">
+    <div class="ftgrid">
+      <div class="ftbrand">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:28px;height:28px;background:var(--amber);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px">⚡</div>
+          <span style="font-size:20px;font-weight:800;color:rgba(255,255,255,.85);letter-spacing:-.03em">Sve<span style="color:var(--amber)">Bud</span></span>
+        </div>
+        <p>AI-driven anbudshantering för svenska elfirmor. Från FU till färdigt anbud på 45 minuter.</p>
+      </div>
+      <div>
+        <div class="fct">Produkt</div>
+        <ul class="flinks">
+          <li><a href="#demo">Se demo</a></li>
+          <li><a href="#how">Hur det fungerar</a></li>
+          <li><a href="#features">Funktioner</a></li>
+          <li><a href="#pricing">Priser</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fct">Bransch</div>
+        <ul class="flinks">
+          <li><a href="#">ROT-avdrag elinstallation</a></li>
+          <li><a href="#">Föranmälan guide 2026</a></li>
+          <li><a href="#">Grön teknik regler</a></li>
+          <li><a href="#">Anbudsguide elfirmor</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fct">Företag</div>
+        <ul class="flinks">
+          <li><a href="/integritetspolicy">Integritetspolicy</a></li>
+          <li><a href="/cookiepolicy">Cookiepolicy</a></li>
+          <li><a href="/villkor">Användarvillkor</a></li>
+          <li><a href="mailto:hej@svebud.se">hej@svebud.se</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="ftbot">
+      <span>© 2026 SveBud AB · Stockholm · GDPR-kompatibel</span>
+      <span>Byggd för svenska elfirmor · EU-data (Frankfurt)</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* scroll reveal */
+const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('up'); obs.unobserve(e.target) } }), {threshold:.1})
+document.querySelectorAll('.rv').forEach(el => obs.observe(el))
+
+/* nav scroll */
+window.addEventListener('scroll', () => document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 20))
+
+/* how steps */
+function setStep(n) {
+  document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('act', i === n))
+}
+
+/* video demo */
+function playDemo() {
+  const thumb = document.getElementById('video-thumb')
+  thumb.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.4);gap:12px"><div style="font-size:40px">🎬</div><div style="font-size:14px;font-weight:600">Byt ut mot din Loom-länk eller MP4</div><div style="font-size:12px;font-family:JetBrains Mono,monospace">&lt;iframe src="loom.com/embed/DIN-ID"&gt;</div></div>'
+}
+
+/* pricing toggle */
+let annual = false
+function toggleP() {
+  annual = !annual
+  document.getElementById('tgl').classList.toggle('on', annual)
+  document.getElementById('tlbl-m').classList.toggle('on', !annual)
+  document.getElementById('tlbl-y').classList.toggle('on', annual)
+  document.getElementById('savepill').style.display = annual ? 'inline-flex' : 'none'
+  document.getElementById('p-bas').innerHTML = (annual ? '392' : '490') + ' <sub>kr/mån</sub>'
+  document.getElementById('p-pro').innerHTML = (annual ? '1 032' : '1 290') + ' <sub>kr/mån</sub>'
+  document.getElementById('p-biz').innerHTML = (annual ? '2 392' : '2 990') + ' <sub>kr/mån</sub>'
+}
+
+/* FAQ */
+function faq(el) {
+  const fi = el.closest('.fi'), open = fi.classList.contains('open')
+  document.querySelectorAll('.fi.open').forEach(f => f.classList.remove('open'))
+  if (!open) fi.classList.add('open')
+}
+</script>
+</body>
+</html>
