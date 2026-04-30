@@ -211,7 +211,7 @@ export default function ProfilPage() {
     setHämtarBolagsverket(true)
     setBolagsverketMeddelande(null)
     try {
-      const res = await fetch('/api/profil/hämta-bolagsverket', {
+      const res = await fetch('/api/profil/hamta-bolagsverket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orgnr: orgNr }),

@@ -1,5 +1,5 @@
 /**
- * POST /api/profil/hämta-bolagsverket
+ * POST /api/profil/hamta-bolagsverket
  *
  * Tar emot { orgnr } i body, hämtar företagsdata via bolagsverket-agent
  * och upserts till firma_profil + firma_egenskap_källa.
