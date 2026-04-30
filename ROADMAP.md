@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 30 april 2026 — Features #4 + ASCII route-fix
+**Senast uppdaterad:** 30 april 2026 — Features #4 + känd banner-bug i Tekniska skulder
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -232,6 +232,14 @@ Tekniska skulder att åtgärda när tid finns:
 
 - **Optimering av polling i `projekt/[projektId]/page.tsx`** — `hämta()` gör 5 sekventiella queries. Inte akut.
 - **Förlorat-flödet i `<UtfallsKnappar>`** — nollar inte `vinnande_pris` när status ändras från vunnet → förlorat. TODO-kommentar tillagd. Inte akut, KPI-queryn skyddar.
+- **Features #4 banner — Supabase 400 Bad Request på client-side hook.**
+  Hela koden är skriven, committad och pushad (commits 478e020, ddf40d0,
+  4a97deb, 305364b, 3197465). /uppfoljning-sidan fungerar live (verifierat
+  visuellt). Bannern på dashboard visar inte siffran eftersom Supabase
+  returnerar 400 på client-side fetch — orsaken är inte verifierad.
+  DevTools Console visar exakt URL:en som failar. Felsöks med fräscha
+  ögon nästa session: kopiera console-loggen från /dashboard till en
+  ny chat. 5 minuters analys ska räcka.
 
 ---
 
@@ -356,4 +364,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 30 april 2026 — Features #4 + ASCII route-fix (mappen `/uppföljning` bytt till `/uppfoljning` eftersom Next.js App Router inte stöder ö i mappnamn). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 30 april 2026 — Features #4 + känd banner-bug i Tekniska skulder (Supabase 400 på client-side fetch — sidan /uppfoljning fungerar, bannern visar inte siffran, felsöks nästa session). Uppdatera denna fil efter varje slutförd sprint.*
