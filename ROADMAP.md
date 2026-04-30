@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 30 april 2026 — Features #4 + känd banner-bug i Tekniska skulder
+**Senast uppdaterad:** 1 maj 2026 — Features #4 banner verifierad live
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -232,14 +232,32 @@ Tekniska skulder att åtgärda när tid finns:
 
 - **Optimering av polling i `projekt/[projektId]/page.tsx`** — `hämta()` gör 5 sekventiella queries. Inte akut.
 - **Förlorat-flödet i `<UtfallsKnappar>`** — nollar inte `vinnande_pris` när status ändras från vunnet → förlorat. TODO-kommentar tillagd. Inte akut, KPI-queryn skyddar.
-- **Features #4 banner — Supabase 400 Bad Request på client-side hook.**
-  Hela koden är skriven, committad och pushad (commits 478e020, ddf40d0,
-  4a97deb, 305364b, 3197465). /uppfoljning-sidan fungerar live (verifierat
-  visuellt). Bannern på dashboard visar inte siffran eftersom Supabase
-  returnerar 400 på client-side fetch — orsaken är inte verifierad.
-  DevTools Console visar exakt URL:en som failar. Felsöks med fräscha
-  ögon nästa session: kopiera console-loggen från /dashboard till en
-  ny chat. 5 minuters analys ska räcka.
+
+---
+
+## Lärdomar
+
+### Spec-bug: Kolumnnamn ska verifieras mot DB-schema (1 maj 2026)
+
+Två 400-buggar i Features #4 hook (`useUppföljningar.ts`) berodde på
+spec-fel där kolumnnamn antogs istället för verifierades:
+
+- `projekt.typ` (kolumn finns inte) — borttagen
+- `projekt.sista_anbudsdag` (heter egentligen `deadline`) — bytt
+
+TypeScript fångar inte detta — bara Supabase runtime returnerar 400.
+Felmeddelandet i konsolen visar URL men ej specifik felkod, så det
+tar tid att diagnostisera utan att kolla Network → Response-bodyn.
+
+**Regel framåt:** Innan en hook/route specas med specifika kolumner —
+kör först:
+
+```sql
+SELECT column_name FROM information_schema.columns
+WHERE table_name = 'X' ORDER BY ordinal_position;
+```
+
+och referera schema-listan i specen.
 
 ---
 
@@ -364,4 +382,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 30 april 2026 — Features #4 + känd banner-bug i Tekniska skulder (Supabase 400 på client-side fetch — sidan /uppfoljning fungerar, bannern visar inte siffran, felsöks nästa session). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 1 maj 2026 — Features #4 banner verifierad live (kolumnnamn-buggar i hook fixade, banner renderar korrekt på dashboard). Uppdatera denna fil efter varje slutförd sprint.*
