@@ -34,7 +34,7 @@ export type Uppföljning = {
   skapad: string
   uppdaterad: string
   projekt_namn: string
-  projekt_sista_anbudsdag: string | null
+  projekt_deadline: string | null
 }
 
 export type UtfallInput = 'vunnet' | 'förlorat' | 'avbrutet'
@@ -48,12 +48,12 @@ const TERMINALA_STATES: ReadonlySet<UppföljningState> = new Set([
 type ProjektRad = {
   id: string
   namn: string | null
-  sista_anbudsdag: string | null
+  deadline: string | null
 }
 
 type UppföljningRad = Omit<
   Uppföljning,
-  'projekt_namn' | 'projekt_sista_anbudsdag'
+  'projekt_namn' | 'projekt_deadline'
 >
 
 function jämförAktiva(a: Uppföljning, b: Uppföljning, nu: number): number {
@@ -99,7 +99,7 @@ export function useUppföljningar() {
     if (projektIds.length > 0) {
       const { data: projektRader, error: e2 } = await supabase
         .from('projekt')
-        .select('id, namn, sista_anbudsdag')
+        .select('id, namn, deadline')
         .in('id', projektIds)
 
       if (e2) {
@@ -118,7 +118,7 @@ export function useUppföljningar() {
       return {
         ...u,
         projekt_namn: p?.namn ?? 'Okänt projekt',
-        projekt_sista_anbudsdag: p?.sista_anbudsdag ?? null,
+        projekt_deadline: p?.deadline ?? null,
       }
     })
 
