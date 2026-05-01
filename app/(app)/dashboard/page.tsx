@@ -4,16 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { posthog } from '@/lib/posthog'
-import Sidebar from '@/components/Sidebar'
 import ProjektKort, { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
 import UppföljningsBanner from '@/components/UppföljningsBanner'
-
-type UserProfil = {
-  fullnamn: string | null
-  företag: string | null
-  tier: string | null
-  initialer: string
-}
 
 type Uppföljning = {
   projekt_id: string
@@ -31,7 +23,6 @@ export default function DashboardPage() {
   const [projekt, setProjekt] = useState<Projekt[]>([])
   const [uppföljningar, setUppföljningar] = useState<Uppföljning[]>([])
   const [anbudData, setAnbudData] = useState<Anbud[]>([])
-  const [user, setUser] = useState<UserProfil | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const [dragProjektId, setDragProjektId] = useState<string | null>(null)
@@ -72,32 +63,20 @@ export default function DashboardPage() {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) return
 
-    // User profile (only on first load)
-    if (!user) {
-      const { data: profil } = await supabase
-        .from('profiler')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
+    // PostHog identify (idempotent — säker att kalla flera ggr)
+    const { data: profil } = await supabase
+      .from('profiler')
+      .select('*')
+      .eq('id', authUser.id)
+      .single()
 
-      if (profil) {
-        const namn = (profil as Record<string, unknown>).fullnamn as string | null
-        const företagNamn = (profil as Record<string, unknown>).företag as string | null
-        const tierVärde = (profil as Record<string, unknown>).tier as string | null
-        setUser({
-          fullnamn: namn,
-          företag: företagNamn,
-          tier: tierVärde,
-          initialer: namn
-            ? namn.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-            : '?',
-        })
-        posthog.identify(authUser.id, {
-          email: authUser.email,
-          företag: företagNamn,
-          tier: tierVärde,
-        })
-      }
+    if (profil) {
+      const p = profil as Record<string, unknown>
+      posthog.identify(authUser.id, {
+        email: authUser.email,
+        företag: p.företag as string | null,
+        tier: p.tier as string | null,
+      })
     }
 
     // Projects
@@ -196,10 +175,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
-      <Sidebar user={user} />
-
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 220 }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
@@ -418,7 +394,6 @@ export default function DashboardPage() {
             </>
           )}
         </div>
-      </div>
     </div>
   )
 }

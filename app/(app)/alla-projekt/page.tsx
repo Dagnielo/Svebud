@@ -3,16 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Sidebar from '@/components/Sidebar'
 import { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
-
-type UserProfil = {
-  fullnamn: string | null
-  företag: string | null
-  tier: string | null
-  initialer: string
-}
 
 type AnbudInfo = {
   projekt_id: string
@@ -65,7 +57,6 @@ export default function AllaProjektPage() {
   const [projekt, setProjekt] = useState<Projekt[]>([])
   const [anbudMap, setAnbudMap] = useState<Record<string, AnbudInfo>>({})
   const [anbudCount, setAnbudCount] = useState<Record<string, number>>({})
-  const [user, setUser] = useState<UserProfil | null>(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('alla')
   const [sök, setSök] = useState('')
@@ -74,28 +65,7 @@ export default function AllaProjektPage() {
 
   const hämtaData = useCallback(async () => {
     const { data: { user: authUser } } = await supabase.auth.getUser()
-    if (!authUser) { router.push('/login'); return }
-
-    if (!user) {
-      const { data: profil } = await supabase
-        .from('profiler')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
-
-      if (profil) {
-        const p = profil as Record<string, unknown>
-        const namn = p.fullnamn as string | null
-        setUser({
-          fullnamn: namn,
-          företag: p.företag as string | null,
-          tier: p.tier as string | null,
-          initialer: namn
-            ? namn.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-            : '?',
-        })
-      }
-    }
+    if (!authUser) return
 
     const { data: projektData } = await supabase
       .from('projekt')
@@ -139,10 +109,7 @@ export default function AllaProjektPage() {
   })
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
-      <Sidebar user={user} />
-
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 220 }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
@@ -421,6 +388,5 @@ export default function AllaProjektPage() {
           </div>
         </div>
       </div>
-    </div>
   )
 }

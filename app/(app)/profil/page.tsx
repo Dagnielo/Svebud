@@ -3,17 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Sidebar from '@/components/Sidebar'
 import { Button } from '@/components/ui/button'
 import { beräknaProfilstyrka } from '@/lib/profilstyrka'
 import { posthog } from '@/lib/posthog'
-
-type UserProfil = {
-  fullnamn: string | null
-  företag: string | null
-  tier: string | null
-  initialer: string
-}
 
 type Kontaktperson = {
   namn: string
@@ -38,7 +30,6 @@ export default function ProfilPage() {
   const [loading, setLoading] = useState(true)
   const [sparar, setSparar] = useState(false)
   const [sparat, setSparat] = useState(false)
-  const [user, setUser] = useState<UserProfil | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -84,7 +75,7 @@ export default function ProfilPage() {
   useEffect(() => {
     async function hämta() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) { router.push('/login'); return }
+      if (!authUser) return
 
       const { data: profil } = await supabase
         .from('profiler')
@@ -94,15 +85,6 @@ export default function ProfilPage() {
 
       if (profil) {
         const p = profil as Record<string, unknown>
-        const namn = p.fullnamn as string | null
-        setUser({
-          fullnamn: namn,
-          företag: p.företag as string | null,
-          tier: p.tier as string | null,
-          initialer: namn
-            ? namn.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-            : '?',
-        })
 
         setFullnamn((p.fullnamn as string) ?? '')
         setFöretag((p.företag as string) ?? '')
@@ -173,15 +155,8 @@ export default function ProfilPage() {
       })
       .eq('id', authUser.id)
 
-    // Uppdatera sidebar-visning
-    setUser({
-      fullnamn: fullnamn || null,
-      företag: företag || null,
-      tier: user?.tier ?? null,
-      initialer: fullnamn
-        ? fullnamn.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-        : '?',
-    })
+    // Uppdatera sidebar-visning via Server Component re-render (layout-fetch)
+    router.refresh()
 
     setSparar(false)
     setSparat(true)
@@ -256,10 +231,7 @@ export default function ProfilPage() {
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
-      <Sidebar user={user} />
-
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 220 }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
@@ -872,7 +844,6 @@ export default function ProfilPage() {
           )}
         </div>
       </div>
-    </div>
   )
 }
 

@@ -3,15 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Sidebar from '@/components/Sidebar'
 import { Button } from '@/components/ui/button'
-
-type UserProfil = {
-  fullnamn: string | null
-  företag: string | null
-  tier: string | null
-  initialer: string
-}
 
 const CERTIFIKAT_LISTA = [
   { kategori: 'El-auktorisation', items: [
@@ -56,7 +48,6 @@ export default function CertifikatPage() {
   const [loading, setLoading] = useState(true)
   const [sparar, setSparar] = useState(false)
   const [sparat, setSparat] = useState(false)
-  const [user, setUser] = useState<UserProfil | null>(null)
   const [certifikat, setCertifikat] = useState<Record<string, boolean>>({})
   const [erfarenhet, setErfarenhet] = useState<string[]>([])
   const [egnaCert, setEgnaCert] = useState<Record<string, string[]>>({})
@@ -69,25 +60,16 @@ export default function CertifikatPage() {
   useEffect(() => {
     async function hämta() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) { router.push('/login'); return }
+      if (!authUser) return
 
       const { data: profil } = await supabase
         .from('profiler')
-        .select('*')
+        .select('certifikat, erfarenhet')
         .eq('id', authUser.id)
         .single()
 
       if (profil) {
         const p = profil as Record<string, unknown>
-        const namn = p.fullnamn as string | null
-        setUser({
-          fullnamn: namn,
-          företag: p.företag as string | null,
-          tier: p.tier as string | null,
-          initialer: namn
-            ? namn.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-            : '?',
-        })
 
         const certs = (p.certifikat as Array<{ key: string; namn?: string; uppfyllt: boolean; kategori?: string }>) ?? []
         const certMap: Record<string, boolean> = {}
@@ -157,10 +139,7 @@ export default function CertifikatPage() {
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
-      <Sidebar user={user} />
-
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 220 }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
@@ -402,6 +381,5 @@ export default function CertifikatPage() {
           )}
         </div>
       </div>
-    </div>
   )
 }

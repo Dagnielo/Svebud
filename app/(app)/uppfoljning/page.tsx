@@ -1,22 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import Sidebar from '@/components/Sidebar'
 import {
   useUppföljningar,
   type Uppföljning,
   type UppföljningState,
   type UppföljningUtfall,
 } from '@/lib/hooks/useUppföljningar'
-
-type UserProfil = {
-  fullnamn: string | null
-  företag: string | null
-  tier: string | null
-  initialer: string
-}
 
 const STATE_META: Record<UppföljningState, { label: string; färg: string; bg: string }> = {
   anbud_skickat:            { label: 'Skickat',                 färg: 'var(--blue-accent)',   bg: 'rgba(74,158,255,0.12)' },
@@ -84,33 +74,7 @@ const TD_STIL: React.CSSProperties = {
 }
 
 export default function UppföljningarPage() {
-  const supabase = createClient()
-  const [user, setUser] = useState<UserProfil | null>(null)
   const { uppföljningar, loading, fel, uppdateraUtfall } = useUppföljningar()
-
-  useEffect(() => {
-    async function hämtaUser() {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
-      const { data: profil } = await supabase
-        .from('profiler')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
-      if (profil) {
-        const namn = (profil as Record<string, unknown>).fullnamn as string | null
-        setUser({
-          fullnamn: namn,
-          företag: (profil as Record<string, unknown>).företag as string | null,
-          tier: (profil as Record<string, unknown>).tier as string | null,
-          initialer: namn
-            ? namn.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-            : '?',
-        })
-      }
-    }
-    hämtaUser()
-  }, [supabase])
 
   const aktiva = uppföljningar.filter(
     u => !['vunnet', 'förlorat', 'avbrutet'].includes(u.state)
@@ -120,9 +84,7 @@ export default function UppföljningarPage() {
   )
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
-      <Sidebar user={user} />
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 220 }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
         <div
           className="flex items-center sticky top-0 z-40"
           style={{
@@ -188,7 +150,6 @@ export default function UppföljningarPage() {
             <SektionAvslutade rader={avslutade} />
           )}
         </div>
-      </div>
     </div>
   )
 }

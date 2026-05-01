@@ -3,14 +3,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { posthog } from '@/lib/posthog'
-import Sidebar from '@/components/Sidebar'
-
-type UserProfil = {
-  fullnamn: string | null
-  företag: string | null
-  tier: string | null
-  initialer: string
-}
 
 type Projekt = {
   id: string
@@ -67,7 +59,6 @@ function timmarKvar(skapad: string): number {
 
 export default function StatistikSida() {
   const supabase = createClient()
-  const [user, setUser] = useState<UserProfil | null>(null)
   const [projekt, setProjekt] = useState<Projekt[]>([])
   const [loading, setLoading] = useState(true)
   const [cache, setCache] = useState<CacheInfo | null>(null)
@@ -79,22 +70,11 @@ export default function StatistikSida() {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) { setLoading(false); return }
 
-    const [profilRes, projektRes, cacheRes] = await Promise.all([
-      supabase.from('profiler').select('*').eq('id', authUser.id).single(),
+    const [projektRes, cacheRes] = await Promise.all([
       supabase.from('projekt').select('*').eq('användar_id', authUser.id),
       supabase.from('ai_insikter_cache').select('*').eq('användar_id', authUser.id).order('skapad', { ascending: false }).limit(1).maybeSingle(),
     ])
 
-    if (profilRes.data) {
-      const profil = profilRes.data as Record<string, unknown>
-      const namn = profil.fullnamn as string | null
-      setUser({
-        fullnamn: namn,
-        företag: profil.företag as string | null,
-        tier: profil.tier as string | null,
-        initialer: namn ? namn.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?',
-      })
-    }
     setProjekt((projektRes.data ?? []) as Projekt[])
     if (cacheRes.data) {
       setCache({
@@ -219,9 +199,7 @@ export default function StatistikSida() {
   const cacheÄrFärsk = cache && (Date.now() - new Date(cache.skapad).getTime()) < 24 * 60 * 60 * 1000
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
-      <Sidebar user={user} />
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 220 }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
@@ -478,7 +456,6 @@ export default function StatistikSida() {
             </>
           )}
         </div>
-      </div>
     </div>
   )
 }

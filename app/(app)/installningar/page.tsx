@@ -3,15 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Sidebar from '@/components/Sidebar'
 import { Button } from '@/components/ui/button'
-
-type UserProfil = {
-  fullnamn: string | null
-  företag: string | null
-  tier: string | null
-  initialer: string
-}
 
 const tierInfo: Record<string, { namn: string; färg: string; beskrivning: string }> = {
   trial: { namn: 'Prov', färg: 'var(--muted-custom)', beskrivning: 'Gratisperiod – begränsad funktionalitet' },
@@ -22,7 +14,6 @@ const tierInfo: Record<string, { namn: string; färg: string; beskrivning: strin
 
 export default function InstallningarPage() {
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<UserProfil | null>(null)
   const [epost, setEpost] = useState('')
   const [tier, setTier] = useState('trial')
   const [sparar, setSparar] = useState(false)
@@ -37,29 +28,19 @@ export default function InstallningarPage() {
   useEffect(() => {
     async function hämta() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) { router.push('/login'); return }
+      if (!authUser) return
 
       setEpost(authUser.email ?? '')
 
       const { data: profil } = await supabase
         .from('profiler')
-        .select('*')
+        .select('tier')
         .eq('id', authUser.id)
         .single()
 
       if (profil) {
-        const p = profil as Record<string, unknown>
-        const namn = p.fullnamn as string | null
-        const t = (p.tier as string) ?? 'trial'
+        const t = ((profil as Record<string, unknown>).tier as string) ?? 'trial'
         setTier(t)
-        setUser({
-          fullnamn: namn,
-          företag: p.företag as string | null,
-          tier: t,
-          initialer: namn
-            ? namn.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-            : '?',
-        })
       }
       setLoading(false)
     }
@@ -114,10 +95,7 @@ export default function InstallningarPage() {
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--navy)' }}>
-      <Sidebar user={user} />
-
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 220 }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
@@ -290,6 +268,5 @@ export default function InstallningarPage() {
           )}
         </div>
       </div>
-    </div>
   )
 }
