@@ -432,7 +432,6 @@ SveBud/
 ├── ROADMAP.md                           ← du är här (öppna först)
 ├── CLAUDE.md                            ← befintlig projektkontext
 ├── docs/                                ← alla aktiva planeringsspecer
-│   ├── PROMPT_landing_v5.md             ← detaljspec landningssida (april — utnyttjad på mörk live)
 │   ├── PROMPT_landing_v6.md             ← designaudit-spec (13 fixar)
 │   ├── PROMPT_landing_v7.md             ← migrations-spec mörk→ljus + körinstruktion för v6
 │   ├── PROMPT_profil_v1.md              ← Features #11 megaprompt
