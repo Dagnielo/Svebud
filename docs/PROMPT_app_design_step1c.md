@@ -1,3 +1,68 @@
+# PROMPT_app_design_step1c.md
+
+## Steg 1C — Sidebar-redesign med Phosphor + ljusa tokens
+
+**Datum:** 1 maj 2026
+**Mål:** `components/Sidebar.tsx`
+**Estimerad tid:** 4 timmar
+**Risk:** Låg (en komponent)
+**Beroende:** Steg 1A + 1B + 1B-2 klara
+**Följdsteg:** Steg 1D (KpiKort-extraktion)
+
+> **Vad detta gör:** Sidebar:n går från mörk navy med emoji-ikoner till ljus design med Phosphor Bold-ikoner. Detta är **första synliga designändringen** i appen.
+
+---
+
+## Designprincip-kontext
+
+Från `CLAUDE.md`:
+> Phosphor Bold som enda ikon-system (industriell, neutral, professionell)
+
+Sidebar:n är **central varumärkesyta** — den syns på alla sidor. Designen här sätter tonen för hela app-redesignen.
+
+---
+
+## Operationer
+
+### Op 4.1 — Verifiera Phosphor är importerad
+
+Sidebar är Client Component. Phosphor kan importeras via npm (`@phosphor-icons/react`) eller via CDN (som landningssidan).
+
+Inventering visade att landningssidan använder CDN. För komponenter i appen är **npm-paket bättre** (tree-shaking, type-safety).
+
+**Verifiera:**
+```bash
+grep "phosphor" package.json
+```
+
+Om `@phosphor-icons/react` inte finns, lägg till:
+```bash
+npm install @phosphor-icons/react
+```
+
+### Op 4.2 — Mappning emoji → Phosphor
+
+| Nuvarande emoji | Label | Phosphor-ikon |
+|-----------------|-------|---------------|
+| ⚡ | Pipeline | `Lightning` (representerar elnät, OK enligt designprincip) |
+| ➕ | Nytt projekt | `Plus` |
+| 📁 | Alla projekt | `Folders` |
+| 📊 | Statistik | `ChartBar` |
+| 🏢 | Företagsprofil | `Buildings` |
+| 📜 | Certifikat | `Certificate` |
+| ⚙️ | Inställningar | `Gear` |
+
+### Op 4.3 — Ny Sidebar.tsx
+
+**Hitta** `components/Sidebar.tsx`. Backup:a innan refaktor:
+
+```bash
+cp components/Sidebar.tsx components/Sidebar.tsx.bak
+```
+
+**Ersätt hela filen** med:
+
+```typescript
 'use client'
 
 import Link from 'next/link'
@@ -133,7 +198,7 @@ export default function Sidebar({ user }: Props) {
               </div>
             </div>
           </div>
-          <form action="/api/logout" method="post">
+          <form action="/logout" method="post">
             <button
               type="submit"
               style={{
@@ -156,3 +221,95 @@ export default function Sidebar({ user }: Props) {
     </aside>
   )
 }
+```
+
+### Op 4.4 — Verifiera /logout-route
+
+Sidebar:n har en `<form action="/logout">`. Om denna route inte finns, behöver den skapas.
+
+**Verifiera:**
+```bash
+ls app/api/logout/ 2>/dev/null
+ls app/logout/ 2>/dev/null
+```
+
+Om ingen route finns, **skapa** `app/api/logout/route.ts`:
+
+```typescript
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+export async function POST() {
+  const supabase = createClient()
+  await supabase.auth.signOut()
+  redirect('/login')
+}
+```
+
+Om logout fanns redan med annan implementation — behåll den och ändra Sidebar:s `action`-prop därefter.
+
+### Op 4.5 — Bygg och visuell test
+
+```bash
+npm run build && npm run dev
+```
+
+Öppna alla 8 sidor sekventiellt.
+
+**Förväntat:**
+- Sidebar är ljus (vit bakgrund) på alla sidor
+- "SveBud."-wordmark visas korrekt med amber prick
+- Phosphor-ikoner renderas (inga emojis)
+- Aktiv sida har subtil amber-glow-bakgrund
+- User-avatar nere till vänster med initialer i amber-cirkel
+- Logout-knapp fungerar
+
+**Visuell jämförelse:** Hard reload `/dashboard`. Sidebar är ljus, content är fortfarande mörk → konsekvent inkonsekvens. Det är ok — content-redesign kommer i Steg 2-3.
+
+---
+
+## Commit-meddelande
+
+```
+feat(app-design): Sidebar-redesign med Phosphor + ljusa tokens (Steg 1C)
+
+Sidebar:n går från mörk navy med emoji-ikoner till ljus design med
+Phosphor Bold-ikoner. Använder ljusa tokens från Steg 1A.
+
+- Wordmark "SveBud." matchar landningssidan v7
+- 7 emoji-ikoner ersatta med Phosphor Bold (npm-paket)
+- Aktiv sida har amber-glow-bakgrund
+- User-avatar nere till vänster med initialer
+- Eventuell ny /api/logout-route skapad
+
+Spec: docs/PROMPT_app_design_step1c.md
+```
+
+---
+
+## Acceptanskriterier
+
+- [ ] `npm run build` 0 fel
+- [ ] Sidebar ljus på alla 8 sidor
+- [ ] 7 emoji-ikoner ersatta med Phosphor
+- [ ] Wordmark renderas korrekt (Sve navy, Bud amber, prick amber)
+- [ ] Aktiv sida har visuell highlight
+- [ ] Phosphor-paket installerat (`@phosphor-icons/react` i package.json)
+- [ ] /logout fungerar
+- [ ] Commit lokal, ej pushad
+
+---
+
+## Risker
+
+**Risk 1: `usePathname` returnerar olika på server vs client**
+Sidebar är Client Component med `usePathname()`. Detta är OK för Next.js 13+ men verifiera att inga hydration-warnings uppstår.
+
+**Risk 2: Phosphor-ikon-tree-shaking**
+`@phosphor-icons/react` är stort. Importera bara de 7 ikoner vi använder, inte hela biblioteket.
+
+**Risk 3: Inline-stilar vs Tailwind**
+Specen använder inline-stilar för konsistens med befintlig Sidebar. Du kan välja Tailwind-utilities istället — säg till Claude Code om du föredrar det.
+
+---
+
