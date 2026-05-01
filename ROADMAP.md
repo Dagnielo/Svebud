@@ -469,7 +469,8 @@ SveBud/
 │       ├── cert/ladda-upp/route.ts      ← (etapp B)
 │       └── benchmarks/räkna-om/route.ts ← (etapp D)
 ├── public/
-│   ├── landing.html                     ← Fas 1 färdig, Fas 2-3 kvar
+│   ├── landing.html                     ← LJUS DESIGN LIVE (1 maj v6+v7)
+│   ├── favicon.svg                      ← NY (1 maj v7)
 │   └── images/                          ← 5 JPG-filer
 ├── mockups/
 │   ├── 1_landing.html
@@ -518,4 +519,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 1 maj 2026 — Landing v6+v7 LIVE + Etapp A LIVE på svebud.se (mörk → ljus migrering komplett, 14 audit-fixar applicerade, designprincip förankrad i CLAUDE.md). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 1 maj 2026 (sen kväll) — Landing v6+v7 LIVE + Etapp A LIVE på svebud.se. Uppdatera denna fil efter varje slutförd sprint.*
