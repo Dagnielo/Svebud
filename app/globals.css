@@ -64,6 +64,7 @@
   --color-light-orange: var(--light-orange);
   --color-light-blue: var(--light-blue);
   --color-light-blue-bg: var(--light-blue-bg);
+  --color-light-card: var(--light-card);
 }
 
 :root {
@@ -165,6 +166,9 @@
   --light-red-bg: rgba(220,38,38,.06);
   --light-orange-bg: rgba(234,88,12,.08);
   --light-blue-bg: rgba(37,99,235,.08);
+
+  /* Tydligt mörkare cream för kort — separation mot vit kolumn-bg */
+  --light-card: #EAE5DA;
 }
 
 

@@ -71,7 +71,7 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
   return (
     <div
       style={{
-        background: 'var(--light-bg)',
+        background: 'var(--light-card)',
         border: '1px solid var(--light-border)',
         borderLeft: `4px solid ${stripe}`,
         borderRadius: 12,
@@ -105,7 +105,7 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
             <div
               style={{
                 fontSize: 12,
-                color: 'var(--light-t4)',
+                color: 'var(--light-t2)',
                 marginTop: 2,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -129,7 +129,7 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
               border: 'none',
               cursor: 'pointer',
               padding: 4,
-              color: 'var(--light-t4)',
+              color: 'var(--light-t2)',
             }}
             aria-label="Radera projekt"
           >
@@ -172,17 +172,17 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
             <Warning size={10} weight="bold" /> Komplettera
           </span>
         )}
-        <span style={{ fontSize: 11, color: 'var(--light-t4)', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 11, color: 'var(--light-t2)', marginLeft: 'auto' }}>
           {dagarSedanSkapad(projekt.skapad)}
         </span>
       </div>
 
       {projekt.pipeline_status === 'inskickat' && projekt.skickat_datum ? (
-        <div style={{ fontSize: 12, color: 'var(--light-t3)' }}>
+        <div style={{ fontSize: 12, color: 'var(--light-t2)' }}>
           Skickat {formatteraDatum(projekt.skickat_datum)}
         </div>
       ) : projekt.pipeline_status === 'tilldelning' && projekt.tilldelning_datum ? (
-        <div style={{ fontSize: 12, color: 'var(--light-t3)' }}>
+        <div style={{ fontSize: 12, color: 'var(--light-t2)' }}>
           Beslut {formatteraDatum(projekt.tilldelning_datum)}
         </div>
       ) : projekt.deadline ? (
@@ -204,7 +204,7 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
             border: '1px solid var(--light-border)',
             borderRadius: 6,
             background: 'var(--light-bg)',
-            color: 'var(--light-t3)',
+            color: 'var(--light-t2)',
           }}
         />
       ) : null}
@@ -224,7 +224,7 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
             style={{
               fontSize: 12,
               fontWeight: 600,
-              color: 'var(--light-t4)',
+              color: 'var(--light-t2)',
               padding: '8px 12px',
               textAlign: 'center',
               background: 'var(--light-cream)',
