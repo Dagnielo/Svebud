@@ -182,3 +182,24 @@ CRON_SECRET
 - Föranmälan-tracker visas bara efter "Vunnet"
 - "Byt till formell kravanalys"-länken borttagen (auto-detektion sköter det)
 - Instruktionsrutan baseras på `aktivTab`, inte `aktivtSteg`
+
+---
+
+## Designprinciper
+
+**SveBud ska se ut som ett yrkesverktyg byggt av människor som
+förstår elinstallation. AI är medlet — inte budskapet, inte
+identiteten.**
+
+Praktiska konsekvenser:
+
+- Ingen blixt-emoji som identitetsbärare (varken i logotyp eller
+  CTA-knappar)
+- Inga AI-buzzwords i feature-badges ("Imponerar", "AI-driven",
+  "Smart")
+- Riktiga branschfakta med källhänvisning, ej påhittad social proof
+- Phosphor Bold som enda ikon-system (industriell, neutral,
+  professionell)
+
+Källa: PROMPT_landing_v6.md / PROMPT_landing_v7.md, etablerad
+1 maj 2026.
