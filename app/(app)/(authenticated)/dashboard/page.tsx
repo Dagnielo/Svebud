@@ -325,44 +325,59 @@ export default function DashboardPage() {
                 label="Aktiva projekt"
                 value={projekt.length}
                 sub={`${allInkorg} inkorg · ${allUnderArbete} under arbete`}
-                färg="amber"
+                färg="neutral"
               />
               <KpiKort
                 label="Vunna anbud"
                 value={vunna.length > 0 ? vunna.length : '—'}
                 sub={avslutade.length > 0 ? `${vunna.length} av ${avslutade.length} avslutade` : 'Inga avslutade ännu'}
-                färg="green"
+                färg="neutral"
               />
               <KpiKort
                 label="Pipeline-värde"
                 value={pipelineVärde > 0 ? `${(pipelineVärde / 1000).toFixed(0)}k` : '—'}
                 sub={pipelineVärde > 0 ? `${pipelineVärde.toLocaleString('sv-SE')} kr` : 'Inget uppskattat värde'}
-                färg="blue"
+                färg="neutral"
               />
               <KpiKort
                 label="Närmaste deadline"
                 value={dagarTillDeadline !== null ? `${dagarTillDeadline}d` : '—'}
                 sub={närmasteDeadline ? närmasteDeadline.toLocaleDateString('sv-SE') : 'Inga deadlines'}
-                färg="orange"
+                färg="neutral"
               />
             </div>
 
             {/* Pipeline header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, marginBottom: 16 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--light-t1)' }}>Pipeline</span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: 'var(--light-cream)',
-                  color: 'var(--light-t2)',
-                  padding: '2px 8px',
-                  borderRadius: 20,
-                }}
-              >
-                {filtreradeProjekt.length}
-                {filtreradeProjekt.length !== projekt.length && ` av ${projekt.length}`}
-              </span>
+            <div style={{ marginBottom: 24, marginTop: 40, textAlign: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 12, marginBottom: 4 }}>
+                <h2
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    color: 'var(--light-t1)',
+                    margin: 0,
+                    letterSpacing: '-.02em',
+                  }}
+                >
+                  Pipeline
+                </h2>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    padding: '2px 10px',
+                    borderRadius: 12,
+                    background: 'var(--light-cream)',
+                    color: 'var(--light-t2)',
+                  }}
+                >
+                  {filtreradeProjekt.length}
+                  {filtreradeProjekt.length !== projekt.length && ` av ${projekt.length}`}
+                </span>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--light-t3)' }}>
+                Drag projekt mellan kolumner för att uppdatera status
+              </div>
             </div>
 
             {/* Pipeline grid */}
