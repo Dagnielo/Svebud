@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { posthog } from '@/lib/posthog'
+import KpiKort from '@/components/KpiKort'
 
 type Projekt = {
   id: string
@@ -243,25 +244,25 @@ export default function StatistikSida() {
                   label="Win rate (90d)"
                   value={`${kpi.winRate90d}%`}
                   sub={kpi.totaltAvslutade < 5 ? `${kpi.totaltAvslutade} av 5 avslutade — ge gärna mer data` : `Senaste 90 dagarna`}
-                  färg="var(--green)"
+                  färg="green"
                 />
                 <KpiKort
                   label="Vunnet värde"
                   value={kpi.vunnaMedPrisAntal === 0 ? '—' : formateraKr(kpi.totaltVunnetVärde) + ' kr'}
                   sub={kpi.vunnaMedPrisAntal === 0 ? 'Vinnande pris saknas — fyll i för att se värde-statistik' : `${kpi.vunnaMedPrisAntal} vunna med pris`}
-                  färg="var(--yellow)"
+                  färg="amber"
                 />
                 <KpiKort
                   label="Snitt anbudsvärde"
                   value={kpi.snittAnbudsvärde === 0 ? '—' : formateraKr(kpi.snittAnbudsvärde) + ' kr'}
                   sub="Genomsnitt av vunna med pris"
-                  färg="var(--blue-accent)"
+                  färg="blue"
                 />
                 <KpiKort
                   label="Anbud per månad"
                   value={kpi.snittPerMånad}
                   sub="Snitt skapade per månad senaste 3 månaderna"
-                  färg="var(--orange)"
+                  färg="orange"
                 />
               </div>
 
@@ -456,29 +457,6 @@ export default function StatistikSida() {
             </>
           )}
         </div>
-    </div>
-  )
-}
-
-function KpiKort({ label, value, sub, färg }: { label: string; value: string; sub: string; färg: string }) {
-  return (
-    <div
-      className="relative overflow-hidden"
-      style={{
-        background: 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
-        borderRadius: 12,
-        padding: '18px 20px',
-      }}
-    >
-      <div className="absolute top-0 left-0 right-0" style={{ height: 2, background: färg }} />
-      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted-custom)', marginBottom: 8 }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1, color: färg, fontFamily: 'var(--font-mono)' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 6 }}>{sub}</div>
     </div>
   )
 }
