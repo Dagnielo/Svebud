@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { parseClaudeJSON } from '@/lib/utils'
+import type { Projekt as ProjektFull } from '@/lib/types/projekt'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -15,18 +16,20 @@ const FORCE_LIMIT_PER_DAG = 10
 
 type Insikt = { ikon: string; rubrik: string; text: string }
 
-type Projekt = {
-  id: string
-  namn: string
-  beskrivning: string | null
-  tilldelning_status: string | null
-  tilldelning_datum: string | null
-  tilldelning_notering: string | null
-  vinnande_pris: number | null
-  skickat_datum: string | null
-  pipeline_status: string | null
-  skapad: string
-}
+type Projekt = Pick<
+  ProjektFull,
+  | 'id'
+  | 'namn'
+  | 'beskrivning'
+  | 'tilldelning_status'
+  | 'tilldelning_datum'
+  | 'tilldelning_notering'
+  | 'vinnande_pris'
+  | 'skickat_datum'
+  | 'pipeline_status'
+  | 'skapad'
+>
+
 
 /** Returnerar ISO-sträng för 00:00 idag i Europe/Stockholm-tidzon. */
 function stockholmDayStartIso(): string {

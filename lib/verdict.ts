@@ -57,32 +57,32 @@ export function bedömningsVisning(bedömning: Anbudsläge): {
       return {
         label: 'Starkt läge',
         kort: 'Starkt',
-        färg: 'var(--green)',
-        bgFärg: 'var(--green-bg)',
+        färg: 'var(--light-green)',
+        bgFärg: 'var(--light-green-bg)',
         beskrivning: 'Ni uppfyller alla ska-krav och har en stark position att lämna anbud.',
       }
     case 'BRA_LÄGE':
       return {
         label: 'Bra läge',
         kort: 'Bra',
-        färg: 'var(--yellow)',
-        bgFärg: 'var(--yellow-glow)',
+        färg: 'var(--light-amber)',
+        bgFärg: 'var(--light-amber-glow)',
         beskrivning: 'Bra position — några punkter behöver bekräftas innan anbud.',
       }
     case 'OSÄKERT_LÄGE':
       return {
         label: 'Osäkert läge',
         kort: 'Osäkert',
-        färg: 'var(--orange)',
-        bgFärg: 'var(--orange-bg)',
+        färg: 'var(--light-orange)',
+        bgFärg: 'var(--light-orange-bg)',
         beskrivning: 'Några ska-krav saknas. Ni kan fortfarande lämna anbud, men med kända gap.',
       }
     case 'SVÅRT_LÄGE':
       return {
         label: 'Svårt läge',
         kort: 'Svårt',
-        färg: 'var(--red)',
-        bgFärg: 'var(--red-bg)',
+        färg: 'var(--light-red)',
+        bgFärg: 'var(--light-red-bg)',
         beskrivning: 'Flera ska-krav saknas. Att lämna anbud innebär stor risk.',
       }
   }

@@ -4,19 +4,22 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { posthog } from '@/lib/posthog'
 import KpiKort from '@/components/KpiKort'
+import type { Projekt as ProjektFull } from '@/lib/types/projekt'
 
-type Projekt = {
-  id: string
-  namn: string
-  beskrivning: string | null
-  tilldelning_status: string | null
-  tilldelning_datum: string | null
-  tilldelning_notering: string | null
-  vinnande_pris: number | null
-  skickat_datum: string | null
-  pipeline_status: string | null
-  skapad: string
-}
+type Projekt = Pick<
+  ProjektFull,
+  | 'id'
+  | 'namn'
+  | 'beskrivning'
+  | 'tilldelning_status'
+  | 'tilldelning_datum'
+  | 'tilldelning_notering'
+  | 'vinnande_pris'
+  | 'skickat_datum'
+  | 'pipeline_status'
+  | 'skapad'
+>
+
 
 type Insikt = { ikon: string; rubrik: string; text: string }
 
@@ -101,7 +104,7 @@ export default function StatistikSida() {
     const winRate90d = senaste90d.length > 0 ? Math.round((vunna90d.length / senaste90d.length) * 100) : 0
 
     const vunnaMedPris = projekt.filter(p =>
-      p.tilldelning_status === 'vunnet' && p.vinnande_pris !== null && p.vinnande_pris > 0
+      p.tilldelning_status === 'vunnet' && p.vinnande_pris != null && p.vinnande_pris > 0
     )
     const totaltVunnetVärde = vunnaMedPris.reduce((sum, p) => sum + (p.vinnande_pris ?? 0), 0)
     const snittAnbudsvärde = vunnaMedPris.length > 0 ? Math.round(totaltVunnetVärde / vunnaMedPris.length) : 0
