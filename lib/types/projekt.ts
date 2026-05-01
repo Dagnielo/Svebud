@@ -36,3 +36,29 @@ export type Projekt = {
 
   kravmatchning?: Kravmatchning | null
 }
+
+/**
+ * Inskickning — versionshistorik-rad för anbudsutkast (detaljvyn).
+ */
+export type Inskickning = {
+  datum: string
+  version: number
+  kommentar?: string
+  utkast?: string
+}
+
+/**
+ * ProjektDetalj — utökad typ för detaljvyn (/projekt/[id]).
+ * Innehåller alla fält från Projekt PLUS detaljvy-specifika fält som
+ * AI-genererat innehåll, inskickning-historik och anbudsutkast.
+ *
+ * OBS: Använd Projekt för listvyer (Pipeline, Alla projekt).
+ * Använd ProjektDetalj endast i detaljvyn.
+ */
+export type ProjektDetalj = Projekt & {
+  rekommendation: unknown
+  anbudsutkast: string | null
+  anbudsutkast_redigerat: string | null
+  inskickningar: Inskickning[] | null
+  uppdaterad: string | null
+}

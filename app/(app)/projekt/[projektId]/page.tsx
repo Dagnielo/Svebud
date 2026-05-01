@@ -10,7 +10,11 @@ import RotKalkyl from '@/components/RotKalkyl'
 import ForanmalanTracker from '@/components/ForanmalanTracker'
 import KvalitetsPanel from '@/components/KvalitetsPanel'
 import KalkylVy, { type KalkylMoment } from '@/components/KalkylVy'
+import SidePanel from '@/components/SidePanel'
+import AktivitetsLogg, { type LoggRad } from '@/components/AktivitetsLogg'
+import ProjektDetaljHeader from '@/components/ProjektDetaljHeader'
 import type { KvalitetsResultat } from '@/lib/kvalitetsagent'
+import type { ProjektDetalj, Inskickning } from '@/lib/types/projekt'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { marked } from 'marked'
@@ -20,39 +24,11 @@ import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 import { posthog } from '@/lib/posthog'
 import UtfallsKnappar from '@/components/UtfallsKnappar'
 
-type Inskickning = {
-  datum: string
-  version: number
-  kommentar?: string
-  utkast?: string
-}
-
-type ProjektData = {
-  id: string
-  namn: string
-  beskrivning: string | null
-  jämförelse_status: string
-  rekommendation_status: string
-  rekommendation: unknown
-  kravmatchning: unknown
-  analys_komplett: boolean | null
-  pipeline_status: string
-  tilldelning_status: string | null
-  anbudsutkast: string | null
-  anbudsutkast_redigerat: string | null
-  deadline: string | null
-  skickat_datum: string | null
-  inskickningar: Inskickning[] | null
-  uppdaterad: string | null
-  skapad: string | null
-}
-
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
-type LoggRad = { id: string; steg: string; status: string; meddelande: string | null; skapad: string }
 
 const stegLabels = ['Dokument', 'Analys & Bedömning', 'Anbud & Skicka']
 
-function getAktivtSteg(p: ProjektData): number {
+function getAktivtSteg(p: ProjektDetalj): number {
   if (p.pipeline_status === 'inskickat' || p.pipeline_status === 'tilldelning') return 3
   if (p.rekommendation_status === 'klar') return 3
   if (p.jämförelse_status === 'klar') return 2
@@ -61,7 +37,7 @@ function getAktivtSteg(p: ProjektData): number {
 
 export default function ProjektSida({ params }: { params: Promise<{ projektId: string }> }) {
   const { projektId } = use(params)
-  const [projekt, setProjekt] = useState<ProjektData | null>(null)
+  const [projekt, setProjekt] = useState<ProjektDetalj | null>(null)
   const [anbud, setAnbud] = useState<AnbudRad[]>([])
   const [logg, setLogg] = useState<LoggRad[]>([])
   const [loading, setLoading] = useState(true)
@@ -110,7 +86,7 @@ export default function ProjektSida({ params }: { params: Promise<{ projektId: s
   async function hämta() {
     const { data: p } = await supabase.from('projekt').select('*').eq('id', projektId).single()
     if (p) {
-      const pd = p as unknown as ProjektData
+      const pd = p as unknown as ProjektDetalj
       setProjekt(pd)
       // Strippa AI:ns kalkyl/prissammanfattning + infoga kalkylmarkör
       let rensat = strippaMdKalkyl(pd.anbudsutkast_redigerat ?? pd.anbudsutkast ?? '')
@@ -510,79 +486,25 @@ hr{border:none;border-top:1pt solid #e0e0e0}
   const anbudsläge = hämtaAnbudsläge(kravmatch)
   const bedömning = anbudsläge ? bedömningsVisning(anbudsläge) : null
   const rekData = projekt.rekommendation as Record<string, unknown> | null
+  const kundtyp = ((kravmatch?.kundtyp as string | undefined) ?? (kravmatch?.kund_typ as string | undefined)) ?? null
+  const matchProcent = (kravmatch?.match_procent as number | undefined) ?? null
+
+  const hanteraDeadlineÄndring = async (val: string | null) => {
+    setProjekt(prev => prev ? { ...prev, deadline: val } : prev)
+    await supabase.from('projekt').update({ deadline: val }).eq('id', projektId)
+  }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
-      {/* Header */}
-      <div style={{ background: 'var(--navy-mid)', borderBottom: '3px solid var(--yellow)', padding: '20px 32px' }}>
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/dashboard')} style={{ fontSize: 12, color: 'var(--muted-custom)', fontWeight: 600, background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>← Pipeline</button>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>{projekt.namn}</h1>
-              {(() => {
-                const km = kravmatch as Record<string, unknown> | null
-                const kundtyp = km?.kundtyp as string ?? km?.kund_typ as string
-                if (!kundtyp) return null
-                return (
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: 'var(--navy)', border: '1px solid var(--navy-border)', color: 'var(--muted-custom)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {kundtyp}
-                  </span>
-                )
-              })()}
-              {analysTyp === 'snabb' && (
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,198,122,0.1)', border: '1px solid rgba(0,198,122,0.3)', color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Snabboffert
-                </span>
-              )}
-              {bedömning && aktivTab !== 'foranmalan' && (
-                <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 5, background: bedömning.bgFärg, color: bedömning.färg }}>
-                  {bedömning.kort} {(kravmatch as Record<string, unknown>)?.match_procent ? `${(kravmatch as Record<string, unknown>).match_procent}%` : ''}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3" style={{ marginTop: 4 }}>
-              {projekt.beskrivning && (
-                <p style={{ fontSize: 12, color: 'var(--muted-custom)', margin: 0 }}>{projekt.beskrivning}</p>
-              )}
-              {projekt.skapad && (
-                <span style={{ fontSize: 11, color: 'var(--slate)' }}>
-                  Skapad {new Date(projekt.skapad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </span>
-              )}
-            </div>
-          </div>
-          {/* Deadline — dölj på föranmälan-fliken */}
-          {aktivTab !== 'foranmalan' && (
-            <div className="flex items-center gap-1.5">
-              <span style={{ fontSize: 12 }}>📅</span>
-              {!projekt.deadline && (
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--yellow)', marginRight: 4 }}>
-                  Sätt deadline →
-                </span>
-              )}
-              <input
-                type="date"
-                value={projekt.deadline ?? ''}
-                onChange={async (e) => {
-                  const val = e.target.value || null
-                  setProjekt(prev => prev ? { ...prev, deadline: val } : prev)
-                  await supabase.from('projekt').update({ deadline: val }).eq('id', projektId)
-                }}
-                style={{
-                  background: 'var(--navy)',
-                  border: projekt.deadline ? '1px solid var(--navy-border)' : '1px dashed var(--yellow)',
-                  borderRadius: 6,
-                  color: projekt.deadline ? 'var(--white)' : 'var(--yellow)',
-                  fontSize: 12,
-                  padding: '4px 8px',
-                  cursor: 'pointer',
-                }}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      <ProjektDetaljHeader
+        projekt={projekt}
+        bedömning={bedömning}
+        matchProcent={matchProcent}
+        aktivTab={aktivTab ?? 'dokument'}
+        visaSnabboffert={analysTyp === 'snabb'}
+        kundtyp={kundtyp}
+        onDeadlineChange={hanteraDeadlineÄndring}
+      />
 
       {/* 3-stegs stepper */}
       <div style={{ padding: '24px 32px 0', marginBottom: 16 }}>
@@ -1506,7 +1428,7 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
 
         {/* Sidebar — dölj på föranmälan-fliken */}
         <div style={{ padding: 24, display: aktivTab === 'foranmalan' ? 'none' : 'block' }}>
-          <SidePanel title={`Dokument (${anbud.length})`}>
+          <SidePanel title="Dokument" räknare={anbud.length}>
             {anbud.length === 0 ? (
               <div style={{ fontSize: 12, color: 'var(--slate)' }}>Inga filer uppladdade</div>
             ) : anbud.map(a => (
@@ -1528,14 +1450,7 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
           )}
 
           <SidePanel title="Aktivitet">
-            {logg.length === 0 ? (
-              <div style={{ fontSize: 12, color: 'var(--slate)' }}>Ingen aktivitet ännu</div>
-            ) : logg.slice(0, 5).map(l => (
-              <div key={l.id} className="flex gap-2.5" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 10 }}>
-                <span className="font-mono flex-shrink-0" style={{ fontSize: 10, marginTop: 1 }}>{new Date(l.skapad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}</span>
-                <span style={{ color: 'var(--soft)' }}>{l.meddelande ?? `${l.steg}: ${l.status}`}</span>
-              </div>
-            ))}
+            <AktivitetsLogg logg={logg} max={5} />
           </SidePanel>
 
         </div>
@@ -1622,11 +1537,3 @@ function GenererarVy({ steg }: { steg: number }) {
   )
 }
 
-function SidePanel({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: 16, marginBottom: 14 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--muted-custom)', marginBottom: 12 }}>{title}</div>
-      {children}
-    </div>
-  )
-}
