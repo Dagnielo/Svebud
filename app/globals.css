@@ -63,6 +63,7 @@
   --color-light-red: var(--light-red);
   --color-light-orange: var(--light-orange);
   --color-light-blue: var(--light-blue);
+  --color-light-blue-bg: var(--light-blue-bg);
 }
 
 :root {
@@ -163,6 +164,7 @@
   --light-green-bg: rgba(22,163,74,.08);
   --light-red-bg: rgba(220,38,38,.06);
   --light-orange-bg: rgba(234,88,12,.08);
+  --light-blue-bg: rgba(37,99,235,.08);
 }
 
 

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { Projekt } from '@/lib/types/projekt'
+import type { PipelineStatus, Projekt } from '@/lib/types/projekt'
 export type { Projekt }
 import { bestämCta, hämtaAnbudslägeFrånProjekt } from '@/lib/projekt-status'
 import { bedömningsVisning } from '@/lib/verdict'
@@ -17,6 +17,13 @@ type Props = {
 
 export function getPipelineKolumn(p: Projekt): string {
   return p.pipeline_status ?? 'inkorg'
+}
+
+const stripeFärgPerStatus: Record<PipelineStatus, string> = {
+  inkorg: 'var(--light-amber)',
+  under_arbete: 'var(--light-blue)',
+  inskickat: 'var(--light-green)',
+  tilldelning: 'var(--light-orange)',
 }
 
 function dagarSedanSkapad(skapad: string): string {
@@ -59,11 +66,14 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
   const visUtfallsKnappar =
     projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning'
 
+  const stripe = stripeFärgPerStatus[projekt.pipeline_status ?? 'inkorg']
+
   return (
     <div
       style={{
         background: 'var(--light-bg)',
         border: '1px solid var(--light-border)',
+        borderLeft: `4px solid ${stripe}`,
         borderRadius: 12,
         padding: 16,
         display: 'flex',

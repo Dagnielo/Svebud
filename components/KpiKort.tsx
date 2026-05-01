@@ -29,6 +29,7 @@ export default function KpiKort({ label, value, sub, färg = 'neutral', ikon: Ik
         padding: '20px 22px',
         position: 'relative',
         overflow: 'hidden',
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}
     >
       <div
