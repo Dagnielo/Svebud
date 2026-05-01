@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { posthog } from '@/lib/posthog'
-import ProjektKort, { getPipelineKolumn, type Projekt } from '@/components/ProjektKort'
+import ProjektKort, { getPipelineKolumn } from '@/components/ProjektKort'
+import type { Projekt } from '@/lib/types/projekt'
 import UppföljningsBanner from '@/components/UppföljningsBanner'
 
 type Uppföljning = {

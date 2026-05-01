@@ -1,24 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import type { Projekt } from '@/lib/types/projekt'
+export type { Projekt }
+import { bestämCta, hämtaAnbudslägeFrånProjekt } from '@/lib/projekt-status'
+import { bedömningsVisning } from '@/lib/verdict'
 import UtfallsKnappar from '@/components/UtfallsKnappar'
-
-type Projekt = {
-  id: string
-  namn: string
-  beskrivning: string | null
-  jämförelse_status: string
-  rekommendation_status: string
-  analys_komplett: boolean | null
-  pipeline_status?: string
-  tilldelning_status?: string
-  tilldelning_datum?: string | null
-  tilldelning_notering?: string | null
-  vinnande_pris?: number | null
-  tier: string
-  skapad: string
-  deadline?: string | null
-}
+import { Trash, Calendar, Warning } from '@phosphor-icons/react'
 
 type Props = {
   projekt: Projekt
@@ -27,229 +15,238 @@ type Props = {
   onUtfallChange?: (id: string) => void
 }
 
-function dagarSedanSkapad(skapad: string) {
-  const diff = Date.now() - new Date(skapad).getTime()
-  const dagar = Math.floor(diff / (1000 * 60 * 60 * 24))
-  if (dagar === 0) return 'Idag'
-  if (dagar === 1) return 'Igår'
-  return `${dagar}d sedan`
-}
-
-function getPipelineLabel(p: Projekt): string {
-  const ps = p.pipeline_status ?? 'inkorg'
-  if (ps === 'tilldelning') {
-    if (p.tilldelning_status === 'vunnet') return 'Vunnet'
-    if (p.tilldelning_status === 'förlorat') return 'Förlorat'
-    return 'Väntar på besked'
-  }
-  if (ps === 'inskickat') return 'Anbud inskickat'
-  if (ps === 'under_arbete') return 'Under arbete'
-  if (p.analys_komplett !== null) return 'Analyserad ✓'
-  return 'Ladda upp dokument'
-}
-
-function getStatusDotColor(p: Projekt): string {
-  const ps = p.pipeline_status ?? 'inkorg'
-  if (ps === 'tilldelning' && p.tilldelning_status === 'vunnet') return 'var(--green)'
-  if (ps === 'tilldelning' && p.tilldelning_status === 'förlorat') return 'var(--red)'
-  if (ps === 'inskickat') return 'var(--blue-accent)'
-  if (ps === 'under_arbete') return 'var(--yellow)'
-  if (p.analys_komplett === false) return 'var(--orange)'
-  return 'var(--muted-custom)'
-}
-
-function getBorderColor(p: Projekt): string {
-  if (p.tilldelning_status === 'vunnet') return 'var(--green)'
-  if (p.tilldelning_status === 'förlorat') return 'var(--red)'
-  return 'var(--navy-border)'
-}
-
-export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtfallChange }: Props) {
-  const visaUtfallsknappar =
-    projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning'
-
-  return (
-    <Link href={`/projekt/${projekt.id}`} className="block" style={{ textDecoration: 'none' }}>
-      <div
-        style={{
-          background: 'var(--navy-light)',
-          border: `1px solid ${getBorderColor(projekt)}`,
-          borderRadius: 10,
-          padding: 14,
-          cursor: 'pointer',
-          transition: 'all 0.15s',
-        }}
-      >
-        <div className="flex items-start justify-between" style={{ marginBottom: 8 }}>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, color: 'var(--white)' }}>
-              {projekt.namn}
-            </div>
-            {projekt.beskrivning && (
-              <div style={{ fontSize: 11, color: 'var(--muted-custom)', marginTop: 2 }}>
-                {projekt.beskrivning.slice(0, 50)}
-              </div>
-            )}
-          </div>
-          <div
-            style={{
-              width: 8, height: 8, borderRadius: '50%',
-              flexShrink: 0, marginTop: 3,
-              background: getStatusDotColor(projekt),
-            }}
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 8 }}>
-          <span
-            style={{
-              fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
-              background: 'var(--navy)', color: 'var(--muted-custom)',
-            }}
-          >
-            {getPipelineLabel(projekt)}
-          </span>
-          <span
-            style={{
-              fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
-              background: 'var(--navy)', color: 'var(--muted-custom)',
-            }}
-          >
-            {dagarSedanSkapad(projekt.skapad)}
-          </span>
-        </div>
-
-        {visaUtfallsknappar && (
-          <div style={{ marginBottom: 8 }}>
-            <UtfallsKnappar
-              projekt={{
-                id: projekt.id,
-                tilldelning_status: (projekt.tilldelning_status as 'vunnet' | 'förlorat' | 'vantar' | null) ?? null,
-              }}
-              onChange={() => onUtfallChange?.(projekt.id)}
-              kompakt
-            />
-          </div>
-        )}
-
-        {/* Deadline — alltid synlig */}
-        <div
-          className="flex items-center gap-1.5"
-          style={{ marginBottom: 6 }}
-          onClick={e => { e.preventDefault(); e.stopPropagation() }}
-        >
-          {projekt.deadline ? (() => {
-            const d = new Date(projekt.deadline)
-            const dagar = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-            const passerad = dagar < 0
-            const brådskande = dagar >= 0 && dagar <= 3
-            return (
-              <>
-                <span style={{ fontSize: 11 }}>{passerad ? '⚠' : brådskande ? '🔥' : '📅'}</span>
-                <input
-                  type="date"
-                  value={projekt.deadline}
-                  onChange={e => onDeadlineChange?.(projekt.id, e.target.value || null)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: passerad ? 'var(--red)' : brådskande ? 'var(--orange)' : 'var(--muted-custom)',
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    padding: 0,
-                    width: 95,
-                  }}
-                />
-                <span style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: passerad ? 'var(--red)' : brådskande ? 'var(--orange)' : 'var(--slate)',
-                }}>
-                  {passerad
-                    ? 'Passerad!'
-                    : dagar === 0
-                      ? 'Idag!'
-                      : dagar === 1
-                        ? 'Imorgon'
-                        : `${dagar}d kvar`}
-                </span>
-              </>
-            )
-          })() : (
-            <>
-              <span style={{ fontSize: 11 }}>📅</span>
-              <input
-                type="date"
-                value=""
-                onChange={e => onDeadlineChange?.(projekt.id, e.target.value || null)}
-                style={{
-                  background: 'transparent',
-                  border: '1px dashed var(--steel)',
-                  borderRadius: 4,
-                  color: 'var(--yellow)',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: '1px 6px',
-                }}
-              />
-              <span style={{ fontSize: 10, color: 'var(--yellow)', fontWeight: 600 }}>
-                Sätt deadline
-              </span>
-            </>
-          )}
-        </div>
-
-        {projekt.analys_komplett === false && (
-          <span
-            style={{
-              fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
-              padding: '3px 8px', borderRadius: 5,
-              background: 'var(--orange-bg)', color: 'var(--orange)',
-            }}
-          >
-            ⚠ Komplettera
-          </span>
-        )}
-
-        <div
-          className="flex items-center justify-between"
-          style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--navy-border)' }}
-        >
-          <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>Öppna →</span>
-          {onRadera && (
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                if (confirm(`Vill du verkligen radera "${projekt.namn}"? Detta går inte att ångra.`)) {
-                  onRadera(projekt.id)
-                }
-              }}
-              style={{
-                fontSize: 11,
-                color: 'var(--slate)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '2px 6px',
-                borderRadius: 4,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.background = 'var(--red-bg)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'var(--slate)'; e.currentTarget.style.background = 'none' }}
-            >
-              🗑
-            </button>
-          )}
-        </div>
-      </div>
-    </Link>
-  )
-}
-
 export function getPipelineKolumn(p: Projekt): string {
   return p.pipeline_status ?? 'inkorg'
 }
 
-export type { Projekt }
+function dagarSedanSkapad(skapad: string): string {
+  const dagar = Math.floor((Date.now() - new Date(skapad).getTime()) / (1000 * 60 * 60 * 24))
+  if (dagar === 0) return 'Idag'
+  if (dagar === 1) return 'Igår'
+  if (dagar < 7) return `${dagar}d sedan`
+  if (dagar < 30) return `${Math.floor(dagar / 7)}v sedan`
+  return `${Math.floor(dagar / 30)}mån sedan`
+}
+
+function deadlineFärg(deadline: string | null | undefined): string {
+  if (!deadline) return 'var(--light-t4)'
+  const dagar = Math.floor((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  if (dagar < 0) return 'var(--light-red)'
+  if (dagar <= 3) return 'var(--light-orange)'
+  if (dagar <= 7) return 'var(--light-amber)'
+  return 'var(--light-t3)'
+}
+
+function dagarTillDeadline(deadline: string | null | undefined): string | null {
+  if (!deadline) return null
+  const dagar = Math.floor((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  if (dagar < 0) return `${Math.abs(dagar)}d försenad`
+  if (dagar === 0) return 'Idag'
+  if (dagar === 1) return 'Imorgon'
+  return `${dagar}d kvar`
+}
+
+function formatteraDatum(datum: string): string {
+  const d = new Date(datum)
+  return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
+}
+
+export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtfallChange }: Props) {
+  const cta = bestämCta(projekt)
+  const anbudsläge = hämtaAnbudslägeFrånProjekt(projekt)
+  const visning = anbudsläge ? bedömningsVisning(anbudsläge) : null
+
+  const visUtfallsKnappar =
+    projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning'
+
+  return (
+    <div
+      style={{
+        background: 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
+        borderRadius: 12,
+        padding: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        cursor: 'grab',
+        transition: 'box-shadow .12s ease, border-color .12s ease',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Link
+            href={`/projekt/${projekt.id}`}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: 'var(--light-t1)',
+              textDecoration: 'none',
+              display: 'block',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {projekt.namn}
+          </Link>
+          {projekt.beskrivning && (
+            <div
+              style={{
+                fontSize: 12,
+                color: 'var(--light-t4)',
+                marginTop: 2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {projekt.beskrivning}
+            </div>
+          )}
+        </div>
+        {onRadera && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              if (confirm('Radera projektet?')) onRadera(projekt.id)
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 4,
+              color: 'var(--light-t4)',
+            }}
+            aria-label="Radera projekt"
+          >
+            <Trash size={14} weight="bold" />
+          </button>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        {visning && (
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '.06em',
+              padding: '3px 8px',
+              borderRadius: 4,
+              color: visning.färg,
+              background: visning.bgFärg,
+            }}
+          >
+            {visning.kort}
+          </span>
+        )}
+        {projekt.analys_komplett === false && (
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              padding: '3px 8px',
+              borderRadius: 4,
+              color: 'var(--light-orange)',
+              background: 'var(--light-orange-bg)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <Warning size={10} weight="bold" /> Komplettera
+          </span>
+        )}
+        <span style={{ fontSize: 11, color: 'var(--light-t4)', marginLeft: 'auto' }}>
+          {dagarSedanSkapad(projekt.skapad)}
+        </span>
+      </div>
+
+      {projekt.pipeline_status === 'inskickat' && projekt.skickat_datum ? (
+        <div style={{ fontSize: 12, color: 'var(--light-t3)' }}>
+          Skickat {formatteraDatum(projekt.skickat_datum)}
+        </div>
+      ) : projekt.tilldelning_datum ? (
+        <div style={{ fontSize: 12, color: 'var(--light-t3)' }}>
+          Beslut {formatteraDatum(projekt.tilldelning_datum)}
+        </div>
+      ) : projekt.deadline ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <Calendar size={12} weight="bold" color={deadlineFärg(projekt.deadline)} />
+          <span style={{ color: deadlineFärg(projekt.deadline), fontWeight: 500 }}>
+            {dagarTillDeadline(projekt.deadline)}
+          </span>
+        </div>
+      ) : onDeadlineChange ? (
+        <input
+          type="date"
+          value={projekt.deadline ?? ''}
+          onChange={(e) => onDeadlineChange(projekt.id, e.target.value || null)}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            fontSize: 12,
+            padding: '4px 8px',
+            border: '1px solid var(--light-border)',
+            borderRadius: 6,
+            background: 'var(--light-bg)',
+            color: 'var(--light-t3)',
+          }}
+        />
+      ) : null}
+
+      {visUtfallsKnappar ? (
+        <UtfallsKnappar
+          projekt={{
+            id: projekt.id,
+            tilldelning_status: (projekt.tilldelning_status ?? null) as 'vunnet' | 'förlorat' | 'vantar' | null,
+          }}
+          onChange={onUtfallChange ? () => onUtfallChange(projekt.id) : undefined}
+          kompakt
+        />
+      ) : cta.typ !== 'ingen' ? (
+        cta.disabled ? (
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--light-t4)',
+              padding: '8px 12px',
+              textAlign: 'center',
+              background: 'var(--light-cream)',
+              borderRadius: 6,
+            }}
+          >
+            {cta.label}
+          </div>
+        ) : (
+          <Link
+            href={cta.href ?? `/projekt/${projekt.id}`}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--light-amber)',
+              padding: '8px 12px',
+              textAlign: 'center',
+              background: 'var(--light-amber-glow)',
+              borderRadius: 6,
+              border: '1px solid var(--light-amber-border)',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            {cta.label}
+          </Link>
+        )
+      ) : null}
+    </div>
+  )
+}
