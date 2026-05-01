@@ -1,7 +1,7 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 1 maj 2026 — Etapp A LIVE på svebud.se (76% profilstyrka)
-**Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v5.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
+**Senast uppdaterad:** 1 maj 2026 — Landing v6+v7 LIVE + Etapp A LIVE på svebud.se
+**Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
 
@@ -11,7 +11,7 @@
 
 | Yta | Färdig | Återstår |
 |-----|--------|----------|
-| **Landningssida** | 60% | Fas 3 (strukturella tillägg) — copy-mjukning, FAQ, om oss-sida, beta-formulär |
+| **Landningssida** | 100% | Eventuella strukturella tillägg (Om oss-sida, trial-längd 30 dagar) — i backlog |
 | **Dashboard** | 75% | Uppföljnings-banner (#4) |
 | **Statistik-sida** | 100% | — |
 | **Projekt-detaljvy** | 70% | Email-kanal-källa (#5), uppföljnings-knappar (#4) |
@@ -20,7 +20,7 @@
 | **Analytics** | 100% | — |
 
 **Översättning:**
-Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Tillväxt-features** (uppföljning, email-kanal, prisförslag, referral). Plus landningssida-polering.
+Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Tillväxt-features** (uppföljning, email-kanal, prisförslag, referral). Landningssidan är komplett.
 
 ---
 
@@ -123,6 +123,50 @@ används som skugg-tabell för Bolagsverket-data + källspårning.
 
 **Nästa: Etapp B — Behörigheter + AI-extraktion av certifikat (redo att starta).**
 
+### 1 maj 2026 (sen kväll) — Landing v6+v7 LIVE ✅
+
+Sammanslagen design-migrering + audit-applicering på live svebud.se.
+
+**Bakgrund:** Designaudit identifierade att `public/landing.html` (mörk) skiljde sig från `mockups/svebud-landing-ljus_5.html` (ljus = ny designintention). Två separata sidor med samma designspråk men olika sektioner och klassnamn. v6-specen skrevs initialt mot mockupen — vilket gav 13/20 NO-OP-resultat när den kördes mot mörk live. v7 var den ärliga migreringen.
+
+**Levererat i 4 commits på main:**
+
+- `a376bfe` — Logotyp-byte till wordmark + favicon (v6 Steg 2 — på mörk live)
+- `6cc2397` — Migrera till ljus design v7 (ersätter mörk `public/landing.html`)
+- `b4522b6` — Applicera 14 audit-fixar på ny ljus design (v7 commit 2)
+- Designprinciper i CLAUDE.md (v7 commit 3)
+
+**14 audit-fixar applicerade:**
+
+- Fake "4,9/5"-rating borttagen
+- "⚡ Analys" → "Kalkyl pågår" i hero-mockup
+- Fake elfirma-strip borttagen (16 påhittade firmnamn)
+- Phosphor Bold på alla 9 ikoner (3 pain + 6 features) + 3 i Branschkunskap-sektionen
+- Feature-badges → konkreta löften (Inkluderat / PDF + Word / ROT + grön teknik / Pro-feature)
+- Beta-program-section borttagen
+- Branschfakta-rad borttagen (4 osourced siffror — hellre inget än fejk)
+- Pricing-alert → riktiga signup-länkar
+- Blixt-emoji bort från alla CTA-knappar
+- Footer Bransch-länkar disabled tills SEO-sidor finns
+- Stats-strip borttagen (visuellt fel placerad enligt användartest)
+- Hero-trust-rad borttagen (ärlighet > tom social proof tills riktiga pilotanvändare finns)
+- CTA-sektionens bakgrundsbild borttagen (för mörk, bröt mot ljust designspråk)
+- "Se demo →"-knapp + risk-rad fick bättre kontrast på ljus bakgrund
+
+**Ny logotyp-behandling:** Variant B2 wordmark — "Sve" navy + "Bud" amber + amber prick på baseline. Inter-font, font-weight 800. Ingen blixt-emoji som identitetsbärare.
+
+**Ny favicon:** Amber prick på navy bakgrund, SVG-format.
+
+**Designprincip förankrad i CLAUDE.md:**
+> SveBud ska se ut som ett yrkesverktyg byggt av människor som förstår elinstallation. AI är medlet — inte budskapet, inte identiteten.
+
+**Filer som tillkom/ändrades:**
+- `docs/PROMPT_landing_v6.md` — designaudit-spec (13 fixar)
+- `docs/PROMPT_landing_v7.md` — migrations-spec (mörk → ljus + körinstruktion för v6)
+- `public/landing.html` — komplett ny ljus version (1.4 MB inkl. 5 inbäddade base64-bilder)
+- `public/favicon.svg` — ny SVG-favicon
+- `CLAUDE.md` — ny `## Designprinciper`-sektion
+
 ---
 
 ## Nästa steg — vart är vi på väg?
@@ -137,10 +181,9 @@ Sprint-pipeline tom efter Features #4. Nästa naturliga steg ligger i "Vecka dä
 |---|--------|-----|-----|
 | 8 | Landing 3.1 — Om oss-sida | Landing [3.1] | 1 dag |
 | 9 | Landing 3.3 — Trial-längd 30 dagar från första uppladdning | Landing [3.3] | 4 timmar |
-| 10 | Landing 3.2 — Beta-ansökningsformulär | Landing [3.2] | 1 dag |
-| 11 | Features #5 — Email-kanal (Resend Inbound) | Features [#5] | 2 dagar |
+| 10 | Features #5 — Email-kanal (Resend Inbound) | Features [#5] | 2 dagar |
 
-**Total: ~4 dagar.** Landningssidan komplett (alla tre faser). Email-kanalen öppen.
+**Total: ~3 dagar.** Landningssidan komplett. Email-kanalen öppen.
 
 ### Senare — Infrastruktur + tillväxt
 
@@ -329,6 +372,29 @@ Development) för att fungera överallt.
 lägg DIREKT till den i Vercel också, för alla 3 miljöer. Annars
 kraschar nästa Production-build.
 
+### Spec-bug, femte lager: Mockup ≠ live (1 maj 2026)
+
+När en designspec skrivs ska den verifieras mot den faktiska filen
+som ska ändras (`public/landing.html` på `main`), inte mot mockup-
+filer som `mockups/svebud-landing-ljus_5.html`. Mockup-filer driftar
+och representerar designintention, inte implementations-verklighet.
+Två separata HTML-filer kan ha samma designspråk men helt olika
+sektioner, klassnamn och copy.
+
+PROMPT_landing_v6 skrevs mot ljus-mockupen. Live var fortfarande
+mörk. Resultat: Claude Code rapporterade 13/20 NO-OP eftersom
+specens strängar inte fanns i live. v6 commit 1 städade mörk sida
+som ändå skulle skrotas. v7 var den ärliga migreringen.
+
+**Regel framåt:** Innan en designspec skrivs:
+
+1. `git show HEAD:public/<fil>.html | head -50` — bekräfta vilken
+   version som faktiskt är live
+2. Diff:a mot mockupen visuellt
+3. Anchora exakta `old_string`-strängar mot live, inte mockup
+4. Om migrering behövs: skriv en separat migrations-spec FÖRST,
+   sen audit-fixar PÅ den migrerade filen
+
 ---
 
 ## Så använder du denna struktur i Claude Code
@@ -452,4 +518,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 1 maj 2026 — Etapp A LIVE på svebud.se (76% profilstyrka, FIRECRAWLER_API_KEY satt i Vercel). Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 1 maj 2026 — Landing v6+v7 LIVE + Etapp A LIVE på svebud.se (mörk → ljus migrering komplett, 14 audit-fixar applicerade, designprincip förankrad i CLAUDE.md). Uppdatera denna fil efter varje slutförd sprint.*
