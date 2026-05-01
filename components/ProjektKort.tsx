@@ -171,7 +171,7 @@ export default function ProjektKort({ projekt, onRadera, onDeadlineChange, onUtf
         <div style={{ fontSize: 12, color: 'var(--light-t3)' }}>
           Skickat {formatteraDatum(projekt.skickat_datum)}
         </div>
-      ) : projekt.tilldelning_datum ? (
+      ) : projekt.pipeline_status === 'tilldelning' && projekt.tilldelning_datum ? (
         <div style={{ fontSize: 12, color: 'var(--light-t3)' }}>
           Beslut {formatteraDatum(projekt.tilldelning_datum)}
         </div>
