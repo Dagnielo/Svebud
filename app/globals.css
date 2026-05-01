@@ -46,10 +46,32 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Ljusa tokens som Tailwind-utilities (Steg 1A) */
+  --color-light-bg: var(--light-bg);
+  --color-light-off: var(--light-off);
+  --color-light-cream: var(--light-cream);
+  --color-light-border: var(--light-border);
+  --color-light-border2: var(--light-border2);
+  --color-light-t1: var(--light-t1);
+  --color-light-t2: var(--light-t2);
+  --color-light-t3: var(--light-t3);
+  --color-light-t4: var(--light-t4);
+  --color-light-navy: var(--light-navy);
+  --color-light-amber: var(--light-amber);
+  --color-light-green: var(--light-green);
+  --color-light-red: var(--light-red);
+  --color-light-orange: var(--light-orange);
+  --color-light-blue: var(--light-blue);
 }
 
 :root {
   /* SveBud Design System */
+
+  /* ════════════════════════
+     MÖRKA TOKENS (avvecklas i Steg 1D)
+     Använd INTE i ny kod. Migrera till --light-* när möjligt.
+  ════════════════════════ */
   --yellow: #F5C400;
   --yellow-dim: #C9A000;
   --yellow-glow: rgba(245,196,0,0.15);
@@ -103,6 +125,44 @@
   --sidebar-accent-foreground: #F4F8FC;
   --sidebar-border: #2E5070;
   --sidebar-ring: #F5C400;
+
+  /* ════════════════════════
+     LJUSA TOKENS (Steg 1A — parallellt med mörka)
+     Aktiveras när komponenter migreras i Steg 1B-1D.
+     Avvecklas mörka tokens i Steg 1D-städ.
+  ════════════════════════ */
+
+  /* Bakgrunder */
+  --light-bg: #FFFFFF;
+  --light-off: #F8F7F4;
+  --light-cream: #F0EBE2;
+
+  /* Borders */
+  --light-border: #E5E3E0;
+  --light-border2: #D4D1CC;
+
+  /* Text på ljus bg */
+  --light-t1: #0E1B2E;
+  --light-t2: #2D3E52;
+  --light-t3: #5A6B7D;
+  --light-t4: #8A9BAD;
+
+  /* Accent */
+  --light-navy: #0E1B2E;
+  --light-amber: #C8960A;
+
+  /* Status-färger anpassade för ljus bg */
+  --light-green: #16A34A;
+  --light-red: #DC2626;
+  --light-orange: #EA580C;
+  --light-blue: #2563EB;
+
+  /* Subtila accent-bg */
+  --light-amber-glow: rgba(200,150,10,.06);
+  --light-amber-border: rgba(200,150,10,.18);
+  --light-green-bg: rgba(22,163,74,.08);
+  --light-red-bg: rgba(220,38,38,.06);
+  --light-orange-bg: rgba(234,88,12,.08);
 }
 
 
