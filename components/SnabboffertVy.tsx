@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 const kategoriInfo: Record<string, { emoji: string; label: string; färg: string }> = {
-  elcentral: { emoji: '⚡', label: 'Elcentralsbyte', färg: 'var(--yellow)' },
-  laddbox: { emoji: '🔌', label: 'Laddbox', färg: 'var(--green)' },
-  belysning: { emoji: '💡', label: 'Belysning', färg: 'var(--blue-accent)' },
-  renovation: { emoji: '🔨', label: 'Renovering', färg: 'var(--orange)' },
-  solceller: { emoji: '☀️', label: 'Solceller', färg: 'var(--yellow)' },
-  brandlarm: { emoji: '🚨', label: 'Brandlarm', färg: 'var(--red)' },
-  stamrenovering: { emoji: '🏢', label: 'Stamrenovering', färg: 'var(--blue-accent)' },
-  felsökning: { emoji: '🔍', label: 'Felsökning', färg: 'var(--orange)' },
-  övrigt: { emoji: '🔧', label: 'Övrigt', färg: 'var(--muted-custom)' },
+  elcentral: { emoji: '⚡', label: 'Elcentralsbyte', färg: 'var(--light-amber)' },
+  laddbox: { emoji: '🔌', label: 'Laddbox', färg: 'var(--light-green)' },
+  belysning: { emoji: '💡', label: 'Belysning', färg: 'var(--light-blue)' },
+  renovation: { emoji: '🔨', label: 'Renovering', färg: 'var(--light-orange)' },
+  solceller: { emoji: '☀️', label: 'Solceller', färg: 'var(--light-amber)' },
+  brandlarm: { emoji: '🚨', label: 'Brandlarm', färg: 'var(--light-red)' },
+  stamrenovering: { emoji: '🏢', label: 'Stamrenovering', färg: 'var(--light-blue)' },
+  felsökning: { emoji: '🔍', label: 'Felsökning', färg: 'var(--light-orange)' },
+  övrigt: { emoji: '🔧', label: 'Övrigt', färg: 'var(--light-t3)' },
 }
 
 const kundtypLabel: Record<string, string> = {
@@ -113,7 +113,7 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
     return (
       <div className="animate-pulse space-y-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-24 rounded-xl" style={{ background: 'var(--navy-mid)' }} />
+          <div key={i} className="h-24 rounded-xl" style={{ background: 'var(--light-cream)' }} />
         ))}
       </div>
     )
@@ -159,17 +159,18 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
   const totExkl = totArbete + totMaterial
   const moms = Math.round(totExkl * 0.25)
   const totInkl = totExkl + moms
-  const inputStyle = { background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 4, color: 'var(--white)', fontFamily: 'var(--font-mono), monospace', fontSize: 11, padding: '4px 6px', width: 70, textAlign: 'right' as const }
+  const inputStyle = { background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 4, color: 'var(--light-t1)', fontFamily: 'var(--font-mono), monospace', fontSize: 11, padding: '4px 6px', width: 70, textAlign: 'right' as const }
 
   return (
     <div className="space-y-4">
       {/* Header: Kategori + Kundtyp */}
       <div
         style={{
-          background: 'var(--navy-mid)',
-          border: '1px solid var(--navy-border)',
+          background: 'var(--light-bg)',
+          border: '1px solid var(--light-border)',
           borderRadius: 12,
           padding: '20px 24px',
+          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
         }}
       >
         <div className="flex items-center gap-3" style={{ marginBottom: 16 }}>
@@ -187,15 +188,15 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span style={{ fontSize: 17, fontWeight: 800 }}>{kat.label}</span>
+              <span style={{ fontSize: 17, fontWeight: 800, color: 'var(--light-t1)' }}>{kat.label}</span>
               <span
                 style={{
                   fontSize: 10,
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: 4,
-                  background: 'var(--navy)',
-                  color: 'var(--muted-custom)',
+                  background: 'var(--light-cream)',
+                  color: 'var(--light-t3)',
                   textTransform: 'uppercase',
                 }}
               >
@@ -207,8 +208,8 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: 4,
-                  background: 'var(--navy)',
-                  color: 'var(--muted-custom)',
+                  background: 'var(--light-cream)',
+                  color: 'var(--light-t3)',
                 }}
               >
                 {data.omfattning}
@@ -220,29 +221,29 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
                     fontWeight: 700,
                     padding: '2px 8px',
                     borderRadius: 4,
-                    background: 'var(--green-bg)',
-                    color: 'var(--green)',
+                    background: 'var(--light-green-bg)',
+                    color: 'var(--light-green)',
                   }}
                 >
                   ROT
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 2 }}>
+            <div style={{ fontSize: 13, color: 'var(--light-t3)', marginTop: 2 }}>
               {data.tidsuppskattning} · {data.uppskattat_pris_inkl_moms.toLocaleString('sv-SE')} kr inkl moms
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div
               className="font-mono"
-              style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)', background: 'var(--green-bg)', padding: '4px 10px', borderRadius: 6 }}
+              style={{ fontSize: 12, fontWeight: 700, color: 'var(--light-green)', background: 'var(--light-green-bg)', padding: '4px 10px', borderRadius: 6 }}
             >
               SNABBOFFERT
             </div>
           </div>
         </div>
 
-        <p style={{ fontSize: 14, color: 'var(--soft)', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: 'var(--light-t2)', lineHeight: 1.6 }}>
           {data.sammanfattning}
         </p>
       </div>
@@ -251,10 +252,11 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
       {(data.beställare || data.kontaktperson || data.adress) && (
         <div
           style={{
-            background: 'var(--navy-mid)',
-            border: '1px solid var(--navy-border)',
+            background: 'var(--light-bg)',
+            border: '1px solid var(--light-border)',
             borderRadius: 12,
             padding: '16px 24px',
+            boxShadow: '0 1px 2px rgba(14,27,46,.04)',
           }}
         >
           <div
@@ -263,7 +265,7 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
-              color: 'var(--slate)',
+              color: 'var(--light-t4)',
               marginBottom: 10,
             }}
           >
@@ -272,32 +274,32 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
           <div className="grid grid-cols-2 gap-3" style={{ fontSize: 13 }}>
             {data.beställare && (
               <div>
-                <span style={{ color: 'var(--muted-custom)' }}>Beställare: </span>
-                <span style={{ fontWeight: 600 }}>{data.beställare}</span>
+                <span style={{ color: 'var(--light-t3)' }}>Beställare: </span>
+                <span style={{ fontWeight: 600, color: 'var(--light-t1)' }}>{data.beställare}</span>
               </div>
             )}
             {data.kontaktperson && (
               <div>
-                <span style={{ color: 'var(--muted-custom)' }}>Kontakt: </span>
-                <span style={{ fontWeight: 600 }}>{data.kontaktperson}</span>
+                <span style={{ color: 'var(--light-t3)' }}>Kontakt: </span>
+                <span style={{ fontWeight: 600, color: 'var(--light-t1)' }}>{data.kontaktperson}</span>
               </div>
             )}
             {data.epost && (
               <div>
-                <span style={{ color: 'var(--muted-custom)' }}>E-post: </span>
-                <span style={{ fontWeight: 600 }}>{data.epost}</span>
+                <span style={{ color: 'var(--light-t3)' }}>E-post: </span>
+                <span style={{ fontWeight: 600, color: 'var(--light-t1)' }}>{data.epost}</span>
               </div>
             )}
             {data.telefon && (
               <div>
-                <span style={{ color: 'var(--muted-custom)' }}>Telefon: </span>
-                <span style={{ fontWeight: 600 }}>{data.telefon}</span>
+                <span style={{ color: 'var(--light-t3)' }}>Telefon: </span>
+                <span style={{ fontWeight: 600, color: 'var(--light-t1)' }}>{data.telefon}</span>
               </div>
             )}
             {data.adress && (
               <div className="col-span-2">
-                <span style={{ color: 'var(--muted-custom)' }}>Adress: </span>
-                <span style={{ fontWeight: 600 }}>{data.adress}</span>
+                <span style={{ color: 'var(--light-t3)' }}>Adress: </span>
+                <span style={{ fontWeight: 600, color: 'var(--light-t1)' }}>{data.adress}</span>
               </div>
             )}
           </div>
@@ -307,10 +309,11 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
       {/* Uppdragsbeskrivning */}
       <div
         style={{
-          background: 'var(--navy-mid)',
-          border: '1px solid var(--navy-border)',
+          background: 'var(--light-bg)',
+          border: '1px solid var(--light-border)',
           borderRadius: 12,
           padding: '16px 24px',
+          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
         }}
       >
         <div
@@ -319,13 +322,13 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
-            color: 'var(--slate)',
+            color: 'var(--light-t4)',
             marginBottom: 10,
           }}
         >
           Uppdragsbeskrivning
         </div>
-        <p style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13, color: 'var(--light-t2)', lineHeight: 1.6 }}>
           {data.uppdragsbeskrivning}
         </p>
       </div>
@@ -333,23 +336,24 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
       {/* Föreslagna moment */}
       <div
         style={{
-          background: 'var(--navy-mid)',
-          border: '1px solid var(--navy-border)',
+          background: 'var(--light-bg)',
+          border: '1px solid var(--light-border)',
           borderRadius: 12,
           overflow: 'hidden',
+          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
         }}
       >
         <div
           className="flex items-center justify-between"
           style={{
             padding: '14px 24px',
-            borderBottom: '1px solid var(--navy-border)',
+            borderBottom: '1px solid var(--light-border)',
           }}
         >
-          <span style={{ fontSize: 14, fontWeight: 700 }}>Föreslagna moment (redigerbar)</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>Föreslagna moment (redigerbar)</span>
           <button
             onClick={läggTillMoment}
-            style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
+            style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
           >
             + Lägg till moment
           </button>
@@ -374,9 +378,9 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.06em',
-                      color: 'var(--muted-custom)',
+                      color: 'var(--light-t4)',
                       padding: '8px 4px',
-                      borderBottom: '1px solid var(--navy-border)',
+                      borderBottom: '1px solid var(--light-border)',
                       textAlign: h === 'Moment' || h === '' ? 'left' : 'right',
                     }}
                   >
@@ -388,23 +392,23 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
             <tbody>
               {moment.map((m, i) => (
                 <tr key={i}>
-                  <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                     <input value={m.beskrivning} onChange={e => uppdateraMoment(i, 'beskrivning', e.target.value)} style={{ ...inputStyle, width: '100%', textAlign: 'left', fontSize: 11 }} title={m.beskrivning} />
                   </td>
-                  <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                     <input type="number" value={m.timmar} onChange={e => uppdateraMoment(i, 'timmar', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                   </td>
-                  <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                     <input type="number" value={m.timpris} onChange={e => uppdateraMoment(i, 'timpris', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                   </td>
-                  <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                  <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                     <input type="number" value={m.materialkostnad} onChange={e => uppdateraMoment(i, 'materialkostnad', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                   </td>
-                  <td className="font-mono" style={{ padding: '4px', fontSize: 11, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)', color: 'var(--white)' }}>
+                  <td className="font-mono" style={{ padding: '4px', fontSize: 11, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid var(--light-border)', color: 'var(--light-t1)' }}>
                     {m.belopp.toLocaleString('sv-SE')} kr
                   </td>
-                  <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)', textAlign: 'center' }}>
-                    <button onClick={() => taBortMoment(i)} style={{ fontSize: 11, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                  <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)', textAlign: 'center' }}>
+                    <button onClick={() => taBortMoment(i)} style={{ fontSize: 11, color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
                   </td>
                 </tr>
               ))}
@@ -412,22 +416,22 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
           </table>
 
           {/* Summering */}
-          <div style={{ background: 'var(--navy)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
-            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+          <div style={{ background: 'var(--light-cream)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
+            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 4 }}>
               <span>Arbete</span><span className="font-mono">{totArbete.toLocaleString('sv-SE')} kr</span>
             </div>
-            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 4 }}>
               <span>Material</span><span className="font-mono">{totMaterial.toLocaleString('sv-SE')} kr</span>
             </div>
-            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 4 }}>
               <span>Exkl. moms</span><span className="font-mono">{totExkl.toLocaleString('sv-SE')} kr</span>
             </div>
-            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 8 }}>
+            <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 8 }}>
               <span>Moms 25%</span><span className="font-mono">{moms.toLocaleString('sv-SE')} kr</span>
             </div>
-            <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt inkl. moms</span>
-              <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--yellow)' }}>
+            <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--light-border)', paddingTop: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-t1)' }}>Totalt inkl. moms</span>
+              <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--light-amber)' }}>
                 {totInkl.toLocaleString('sv-SE')} kr
               </span>
             </div>

@@ -23,7 +23,7 @@ import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 import { posthog } from '@/lib/posthog'
 import UtfallsKnappar from '@/components/UtfallsKnappar'
-import { ArrowLeft, Check, Lightning, FileText, CaretUp, CaretDown } from '@phosphor-icons/react'
+import { ArrowLeft, Check, Lightning, FileText, CaretUp, CaretDown, Question, Plus } from '@phosphor-icons/react'
 
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
 
@@ -702,17 +702,18 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                   {(kundFrågor ?? []).length > 0 && (
                     <div
                       style={{
-                        background: 'var(--navy-mid)',
-                        border: '1px solid rgba(245,196,0,0.3)',
+                        background: 'var(--light-bg)',
+                        border: '1px solid var(--light-amber-border)',
                         borderRadius: 12,
                         padding: '16px 24px',
                         marginTop: 16,
+                        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                       }}
                     >
                       <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
                         <div className="flex items-center gap-2">
-                          <span style={{ fontSize: 16 }}>❓</span>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
+                          <Question size={16} weight="bold" color="var(--light-amber)" />
+                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-amber)' }}>
                             Frågor att ställa till kunden
                           </span>
                         </div>
@@ -721,7 +722,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
                             navigator.clipboard.writeText(text)
                           }}
-                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
                         >
                           📋 Kopiera alla
                         </button>
@@ -729,7 +730,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
 
                       {(kundFrågor ?? []).map((fråga, i) => (
                         <div key={i} className="flex items-start gap-2" style={{ marginBottom: 4 }}>
-                          <span style={{ fontSize: 11, color: 'var(--slate)', marginTop: 6, flexShrink: 0 }}>{i + 1}.</span>
+                          <span style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 6, flexShrink: 0 }}>{i + 1}.</span>
                           <input
                             value={fråga}
                             onChange={e => setKundFrågor(prev => (prev ?? []).map((f, j) => j === i ? e.target.value : f))}
@@ -737,16 +738,16 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                               flex: 1,
                               padding: '4px 8px',
                               borderRadius: 6,
-                              background: 'var(--navy)',
-                              border: '1px solid var(--navy-border)',
-                              color: 'var(--soft)',
+                              background: 'var(--light-bg)',
+                              border: '1px solid var(--light-border)',
+                              color: 'var(--light-t1)',
                               fontSize: 12,
                               lineHeight: 1.5,
                             }}
                           />
                           <button
                             onClick={() => setKundFrågor(prev => (prev ?? []).filter((_, j) => j !== i))}
-                            style={{ fontSize: 11, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, flexShrink: 0 }}
+                            style={{ fontSize: 11, color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, flexShrink: 0 }}
                           >
                             ✕
                           </button>
@@ -769,9 +770,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             flex: 1,
                             padding: '4px 8px',
                             borderRadius: 6,
-                            background: 'var(--navy)',
-                            border: '1px dashed var(--navy-border)',
-                            color: 'var(--white)',
+                            background: 'var(--light-bg)',
+                            border: '1px dashed var(--light-border)',
+                            color: 'var(--light-t1)',
                             fontSize: 12,
                           }}
                         />
@@ -782,13 +783,13 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                               setNyFråga('')
                             }
                           }}
-                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'transparent', border: '1px solid var(--light-amber)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         >
-                          + Lägg till
+                          <Plus size={12} weight="bold" /> Lägg till
                         </button>
                       </div>
 
-                      <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10 }}>
+                      <p style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 10 }}>
                         Kopiera och skicka till kunden innan du genererar anbudet. Ladda sedan upp kundens svar som dokument i steg 1 och kör om analysen för en bättre kalkyl.
                       </p>
                     </div>
@@ -814,22 +815,22 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               )}
 
               {!utkast ? (
-                <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px 24px', textAlign: 'center' }}>
+                <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '32px 24px', textAlign: 'center', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
                   {anbudLaddar ? (
                     <GenererarVy steg={genSteg} />
                   ) : (
                     <>
                       <div style={{ fontSize: 28, marginBottom: 8 }}>📋</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: 'var(--light-t1)' }}>
                         {projekt.jämförelse_status === 'klar' ? 'Redo att generera anbud' : 'Analysera förfrågan först'}
                       </div>
-                      <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                      <p style={{ fontSize: 13, color: 'var(--light-t3)', marginBottom: 16 }}>
                         {projekt.jämförelse_status === 'klar'
                           ? 'AI:n skapar ett komplett anbudsutkast. Du kan redigera innan du skickar.'
                           : 'Gå till steg 1 (Dokument), ladda upp filer och tryck "Analysera förfrågan".'}
                       </p>
                       {projekt.jämförelse_status === 'klar' && (
-                        <Button onClick={körAnbudsGenerering} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 14, fontWeight: 700, padding: '12px 32px' }}>
+                        <Button onClick={körAnbudsGenerering} style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontSize: 14, fontWeight: 700, padding: '12px 32px' }}>
                           Generera anbudsutkast →
                         </Button>
                       )}

@@ -88,7 +88,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
     }
   }, [projektId, !data]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading) return <div className="animate-pulse h-40 rounded-lg" style={{ background: 'var(--navy-mid)' }} />
+  if (loading) return <div className="animate-pulse h-40 rounded-lg" style={{ background: 'var(--light-cream)' }} />
 
   // Scanning pågår
   if (externtScanning) {
@@ -98,11 +98,11 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
   // Inget resultat ännu
   if (!data) {
     return (
-      <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '32px', textAlign: 'center' }}>
-        <p style={{ fontSize: 14, color: 'var(--muted-custom)', marginBottom: 8 }}>
+      <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '32px', textAlign: 'center', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+        <p style={{ fontSize: 14, color: 'var(--light-t3)', marginBottom: 8 }}>
           Dokumenten behöver analyseras.
         </p>
-        <p style={{ fontSize: 12, color: 'var(--slate)' }}>
+        <p style={{ fontSize: 12, color: 'var(--light-t4)' }}>
           Gå till Dokument-fliken, ladda upp filer och klicka "Analysera förfrågan".
         </p>
       </div>
@@ -111,17 +111,18 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
   const totalKrav = data.matchade_krav.length + data.kräver_bekräftelse.length + data.ej_uppfyllda.length
   const anbudsläge = hämtaAnbudsläge(data as unknown as Record<string, unknown>)
-  const visning = anbudsläge ? bedömningsVisning(anbudsläge) : { label: 'Analyserad', kort: '—', färg: 'var(--muted-custom)', bgFärg: 'var(--navy)', beskrivning: '' }
+  const visning = anbudsläge ? bedömningsVisning(anbudsläge) : { label: 'Analyserad', kort: '—', färg: 'var(--light-t3)', bgFärg: 'var(--light-cream)', beskrivning: '' }
 
   return (
     <div className="space-y-4">
       {/* Anbudsläge — Stort sammanfattningskort */}
       <div
         style={{
-          background: 'var(--navy-mid)',
+          background: 'var(--light-bg)',
           border: `2px solid ${visning.färg}`,
           borderRadius: 14,
           padding: '24px',
+          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
         }}
       >
         <div className="flex items-center gap-4" style={{ marginBottom: 16 }}>
@@ -143,7 +144,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
             <div style={{ fontSize: 22, fontWeight: 800, color: visning.färg, marginBottom: 4 }}>
               {visning.label}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: 'var(--light-t2)', lineHeight: 1.5 }}>
               {data.sammanfattning}
             </div>
           </div>
@@ -151,16 +152,16 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
         {/* Krav-statistik */}
         <div className="flex gap-4" style={{ marginTop: 12 }}>
-          <StatBox label="Matchade" count={data.matchade_krav.length} color="var(--green)" icon="✅" />
-          <StatBox label="Att bekräfta" count={data.kräver_bekräftelse.length} color="var(--orange)" icon="⚠️" />
-          <StatBox label="Ej uppfyllda" count={data.ej_uppfyllda.length} color="var(--red)" icon="❌" />
-          <StatBox label="Totalt" count={totalKrav} color="var(--muted-custom)" icon="📋" />
+          <StatBox label="Matchade" count={data.matchade_krav.length} color="var(--light-green)" icon="✅" />
+          <StatBox label="Att bekräfta" count={data.kräver_bekräftelse.length} color="var(--light-orange)" icon="⚠️" />
+          <StatBox label="Ej uppfyllda" count={data.ej_uppfyllda.length} color="var(--light-red)" icon="❌" />
+          <StatBox label="Totalt" count={totalKrav} color="var(--light-t3)" icon="📋" />
         </div>
       </div>
 
       {/* Projektinfo */}
-      <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)', fontSize: 14, fontWeight: 700 }}>
+      <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)', fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>
           📋 Projektinformation
         </div>
         <div style={{ padding: '12px 18px' }}>
@@ -179,22 +180,22 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
       {/* ⚠️ Kräver bekräftelse — BARA dessa visas direkt */}
       {data.kräver_bekräftelse.length > 0 && (
-        <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--orange)', borderRadius: 12, overflow: 'hidden' }}>
-          <div className="flex items-center gap-2" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
+        <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-orange)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+          <div className="flex items-center gap-2" style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)' }}>
             <span style={{ fontSize: 16 }}>⚠️</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--orange)' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-orange)' }}>
               {data.kräver_bekräftelse.length} krav behöver din bekräftelse
             </span>
           </div>
           <div style={{ padding: '8px 12px' }}>
             {data.kräver_bekräftelse.map((k, i) => (
-              <div key={i} style={{ padding: '12px 8px', marginBottom: 4, borderRadius: 8, background: 'var(--navy-light)' }}>
+              <div key={i} style={{ padding: '12px 8px', marginBottom: 4, borderRadius: 8, background: 'var(--light-off)' }}>
                 <div className="flex items-start gap-3">
                   <span style={{ fontSize: 14, marginTop: 1 }}>⚠️</span>
                   <div className="flex-1">
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--white)' }}>{k.krav}</div>
-                    <div style={{ fontSize: 12, color: 'var(--orange)', marginTop: 4 }}>{k.matchning}</div>
-                    <div style={{ fontSize: 11, color: 'var(--slate)', marginTop: 2 }}>{k.källa}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--light-t1)' }}>{k.krav}</div>
+                    <div style={{ fontSize: 12, color: 'var(--light-orange)', marginTop: 4 }}>{k.matchning}</div>
+                    <div style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 2 }}>{k.källa}</div>
                   </div>
                 </div>
               </div>
@@ -205,22 +206,22 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
       {/* ❌ Ej uppfyllda */}
       {data.ej_uppfyllda.length > 0 && (
-        <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--red)', borderRadius: 12, overflow: 'hidden' }}>
-          <div className="flex items-center gap-2" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
+        <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-red)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+          <div className="flex items-center gap-2" style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)' }}>
             <span style={{ fontSize: 16 }}>❌</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--red)' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-red)' }}>
               {data.ej_uppfyllda.length} krav uppfylls inte
             </span>
           </div>
           <div style={{ padding: '8px 12px' }}>
             {data.ej_uppfyllda.map((k, i) => (
-              <div key={i} style={{ padding: '12px 8px', marginBottom: 4, borderRadius: 8, background: 'var(--navy-light)' }}>
+              <div key={i} style={{ padding: '12px 8px', marginBottom: 4, borderRadius: 8, background: 'var(--light-off)' }}>
                 <div className="flex items-start gap-3">
                   <span style={{ fontSize: 14, marginTop: 1 }}>❌</span>
                   <div className="flex-1">
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--white)' }}>{k.krav}</div>
-                    <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 4 }}>{k.matchning}</div>
-                    <div style={{ fontSize: 11, color: 'var(--slate)', marginTop: 2 }}>{k.källa}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--light-t1)' }}>{k.krav}</div>
+                    <div style={{ fontSize: 12, color: 'var(--light-red)', marginTop: 4 }}>{k.matchning}</div>
+                    <div style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 2 }}>{k.källa}</div>
                   </div>
                 </div>
               </div>
@@ -230,17 +231,17 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
       )}
 
       {/* ✅ Matchade krav — Collapsed */}
-      <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
         <button
           onClick={() => setVisaMatchade(!visaMatchade)}
           className="flex items-center gap-2 w-full"
           style={{ padding: '14px 18px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
         >
           <span style={{ fontSize: 16 }}>✅</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--green)', flex: 1 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-green)', flex: 1 }}>
             {data.matchade_krav.length} krav automatiskt matchade
           </span>
-          <span style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
+          <span style={{ fontSize: 12, color: 'var(--light-t3)' }}>
             {visaMatchade ? '▲ Dölj' : '▼ Visa alla'}
           </span>
         </button>
@@ -248,9 +249,9 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
           <div style={{ padding: '0 12px 12px' }}>
             {data.matchade_krav.map((k, i) => (
               <div key={i} className="flex items-start gap-2" style={{ padding: '6px 8px', fontSize: 12 }}>
-                <span style={{ color: 'var(--green)', flexShrink: 0 }}>✓</span>
-                <span style={{ color: 'var(--soft)', flex: 1 }}>{k.krav}</span>
-                <span style={{ color: 'var(--slate)', fontSize: 10 }}>{k.matchning}</span>
+                <span style={{ color: 'var(--light-green)', flexShrink: 0 }}>✓</span>
+                <span style={{ color: 'var(--light-t2)', flex: 1 }}>{k.krav}</span>
+                <span style={{ color: 'var(--light-t4)', fontSize: 10 }}>{k.matchning}</span>
               </div>
             ))}
           </div>
@@ -261,18 +262,18 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
       {(data.risker.length > 0 || data.möjligheter.length > 0) && (
         <div className="grid grid-cols-2 gap-4">
           {data.risker.length > 0 && (
-            <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '14px 18px' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--orange)', marginBottom: 8 }}>⚠ Risker</div>
+            <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-orange)', marginBottom: 8 }}>⚠ Risker</div>
               {data.risker.map((r, i) => (
-                <div key={i} style={{ fontSize: 12, color: 'var(--soft)', marginBottom: 4 }}>• {r}</div>
+                <div key={i} style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 4 }}>• {r}</div>
               ))}
             </div>
           )}
           {data.möjligheter.length > 0 && (
-            <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '14px 18px' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--green)', marginBottom: 8 }}>✦ Möjligheter</div>
+            <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-green)', marginBottom: 8 }}>✦ Möjligheter</div>
               {data.möjligheter.map((m, i) => (
-                <div key={i} style={{ fontSize: 12, color: 'var(--soft)', marginBottom: 4 }}>• {m}</div>
+                <div key={i} style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 4 }}>• {m}</div>
               ))}
             </div>
           )}
@@ -280,9 +281,9 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
       )}
 
       {/* Rekommendation */}
-      <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '16px 18px' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>💡 Rekommendation</div>
-        <div style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.6 }}>{data.rekommendation}</div>
+      <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '16px 18px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--light-t1)' }}>💡 Rekommendation</div>
+        <div style={{ fontSize: 13, color: 'var(--light-t2)', lineHeight: 1.6 }}>{data.rekommendation}</div>
       </div>
     </div>
   )
@@ -290,8 +291,8 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
 function StatBox({ label, count, color, icon }: { label: string; count: number; color: string; icon: string }) {
   return (
-    <div className="flex-1" style={{ background: 'var(--navy-light)', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
-      <div style={{ fontSize: 10, color: 'var(--slate)', marginBottom: 4 }}>{icon} {label}</div>
+    <div className="flex-1" style={{ background: 'var(--light-off)', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
+      <div style={{ fontSize: 10, color: 'var(--light-t4)', marginBottom: 4 }}>{icon} {label}</div>
       <div style={{ fontSize: 20, fontWeight: 800, color }}>{count}</div>
     </div>
   )
@@ -300,8 +301,8 @@ function StatBox({ label, count, color, icon }: { label: string; count: number; 
 function InfoRad({ label, värde }: { label: string; värde: string | null }) {
   return (
     <div style={{ padding: '6px 0' }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 13, fontWeight: 500, color: värde ? 'var(--white)' : 'var(--slate)' }}>{värde ?? '—'}</div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 500, color: värde ? 'var(--light-t1)' : 'var(--light-t4)' }}>{värde ?? '—'}</div>
     </div>
   )
 }
@@ -317,34 +318,34 @@ function ScanningIndikator({ dokument }: { dokument: Dokument[] }) {
   const progress = Math.min(sekunder / 90 * 100, 95)
 
   return (
-    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--yellow)', borderRadius: 12, padding: '24px' }}>
+    <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-amber)', borderRadius: 12, padding: '24px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
       <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
-        <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid var(--navy-border)', borderTop: '3px solid var(--yellow)', borderRadius: '50%', flexShrink: 0 }} />
+        <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid var(--light-border)', borderTop: '3px solid var(--light-amber)', borderRadius: '50%', flexShrink: 0 }} />
         <div className="flex-1">
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--yellow)' }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--light-amber)' }}>
             Analyserar {dokument.length} dokument och matchar mot er profil...
           </div>
-          <div style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: 'var(--light-t3)', marginTop: 2 }}>
             AI:n läser dokumenten, identifierar krav och matchar mot era certifikat och erfarenhet
           </div>
         </div>
-        <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--yellow)', fontFamily: 'var(--font-mono), monospace', flexShrink: 0 }}>
+        <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--light-amber)', fontFamily: 'var(--font-mono), monospace', flexShrink: 0 }}>
           {sekunder}s
         </div>
       </div>
-      <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--navy-light)', marginBottom: 16 }}>
-        <div style={{ width: `${progress}%`, height: '100%', borderRadius: 2, background: 'var(--yellow)', transition: 'width 1s linear' }} />
+      <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--light-cream)', marginBottom: 16 }}>
+        <div style={{ width: `${progress}%`, height: '100%', borderRadius: 2, background: 'var(--light-amber)', transition: 'width 1s linear' }} />
       </div>
       <div>
         {dokument.map((d, i) => (
-          <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 4, padding: '5px 8px', borderRadius: 6, background: 'var(--navy-light)' }}>
-            <div className="animate-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)', flexShrink: 0 }} />
-            <span style={{ color: 'var(--soft)', flex: 1 }}>{d.filnamn}</span>
+          <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 4, padding: '5px 8px', borderRadius: 6, background: 'var(--light-off)' }}>
+            <div className="animate-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--light-amber)', flexShrink: 0 }} />
+            <span style={{ color: 'var(--light-t2)', flex: 1 }}>{d.filnamn}</span>
           </div>
         ))}
       </div>
       {sekunder > 90 && (
-        <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'var(--orange-bg)', fontSize: 12, color: 'var(--orange)' }}>
+        <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'var(--light-orange-bg)', fontSize: 12, color: 'var(--light-orange)' }}>
           Analysen tar längre tid än vanligt. Vänta eller ladda om sidan.
         </div>
       )}

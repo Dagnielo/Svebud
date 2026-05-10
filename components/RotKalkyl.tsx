@@ -98,7 +98,7 @@ export default function RotKalkyl({
   const labelStyle = {
     fontSize: 12,
     fontWeight: 600 as const,
-    color: 'var(--muted-custom)',
+    color: 'var(--light-t3)',
     marginBottom: 4,
     display: 'block' as const,
   }
@@ -106,19 +106,20 @@ export default function RotKalkyl({
   return (
     <div
       style={{
-        background: 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
+        background: 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
         borderRadius: 12,
         padding: '20px 24px',
         marginTop: 16,
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}
     >
       {/* Header med toggle */}
       <div className="flex items-center justify-between" style={{ marginBottom: aktiverat ? 16 : 8 }}>
         <div>
-          <h3 style={{ fontSize: 15, fontWeight: 700 }}>Husavdrag & skattereduktion</h3>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--light-t1)' }}>Husavdrag & skattereduktion</h3>
           {!aktiverat && (
-            <p style={{ fontSize: 12, color: 'var(--yellow)', marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: 'var(--light-amber)', marginTop: 4 }}>
               Aktivera för att beräkna ROT- eller Grön teknik-avdrag i offerten
             </p>
           )}
@@ -132,9 +133,9 @@ export default function RotKalkyl({
             fontSize: 13,
             fontWeight: 700,
             border: '2px solid',
-            borderColor: aktiverat ? 'var(--green)' : 'var(--yellow)',
-            background: aktiverat ? 'var(--green-bg)' : 'var(--yellow-glow)',
-            color: aktiverat ? 'var(--green)' : 'var(--yellow)',
+            borderColor: aktiverat ? 'var(--light-green)' : 'var(--light-amber)',
+            background: aktiverat ? 'var(--light-green-bg)' : 'var(--light-amber-glow)',
+            color: aktiverat ? 'var(--light-green)' : 'var(--light-amber)',
             cursor: 'pointer',
           }}
         >
@@ -143,7 +144,7 @@ export default function RotKalkyl({
               width: 8,
               height: 8,
               borderRadius: '50%',
-              background: aktiverat ? 'var(--green)' : 'var(--slate)',
+              background: aktiverat ? 'var(--light-green)' : 'var(--light-t4)',
             }}
           />
           {aktiverat ? '● Aktiverat' : 'Aktivera'}
@@ -161,9 +162,9 @@ export default function RotKalkyl({
               padding: '10px 8px',
               borderRadius: 8,
               border: '1px solid',
-              borderColor: typ === t.id ? 'rgba(245,196,0,0.5)' : 'var(--navy-border)',
-              background: typ === t.id ? 'var(--yellow-glow)' : 'var(--navy)',
-              color: typ === t.id ? 'var(--white)' : 'var(--muted-custom)',
+              borderColor: typ === t.id ? 'var(--light-amber)' : 'var(--light-border)',
+              background: typ === t.id ? 'var(--light-amber-glow)' : 'var(--light-bg)',
+              color: typ === t.id ? 'var(--light-t1)' : 'var(--light-t3)',
               cursor: !aktiverat && t.id !== 'ej_rot' ? 'not-allowed' : 'pointer',
               opacity: !aktiverat && t.id !== 'ej_rot' ? 0.4 : 1,
               textAlign: 'left',
@@ -173,7 +174,7 @@ export default function RotKalkyl({
           >
             <div style={{ fontSize: 16, marginBottom: 4 }}>{t.emoji}</div>
             <div style={{ fontWeight: 700, lineHeight: 1.2, marginBottom: 2 }}>{t.label}</div>
-            <div style={{ fontSize: 10, color: 'var(--slate)' }}>{t.procent}</div>
+            <div style={{ fontSize: 10, color: 'var(--light-t4)' }}>{t.procent}</div>
             {typ === t.id && (
               <div
                 style={{
@@ -183,7 +184,7 @@ export default function RotKalkyl({
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  background: 'var(--yellow)',
+                  background: 'var(--light-amber)',
                 }}
               />
             )}
@@ -198,19 +199,19 @@ export default function RotKalkyl({
             <div
               className="flex items-start gap-2"
               style={{
-                background: 'var(--navy)',
+                background: 'var(--light-off)',
                 borderRadius: 8,
                 padding: '10px 14px',
                 marginBottom: 16,
                 fontSize: 12,
-                color: 'var(--muted-custom)',
+                color: 'var(--light-t3)',
               }}
             >
-              <span style={{ color: 'var(--blue-accent)', flexShrink: 0, marginTop: 1 }}>ℹ</span>
+              <span style={{ color: 'var(--light-blue)', flexShrink: 0, marginTop: 1 }}>ℹ</span>
               <div>
                 <span>{valdTypInfo.beskrivning}</span>
                 {' '}
-                <span style={{ fontWeight: 600 }}>
+                <span style={{ fontWeight: 600, color: 'var(--light-t2)' }}>
                   Underlag: {valdTypInfo.underlag}.
                 </span>
                 {valdTypInfo.källa && (
@@ -218,7 +219,7 @@ export default function RotKalkyl({
                     href={valdTypInfo.källa}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: 'var(--blue-accent)', marginLeft: 4, textDecoration: 'none' }}
+                    style={{ color: 'var(--light-blue)', marginLeft: 4, textDecoration: 'none' }}
                   >
                     Skatteverket ↗
                   </a>
@@ -239,9 +240,9 @@ export default function RotKalkyl({
                   width: '100%',
                   padding: '6px 10px',
                   borderRadius: 8,
-                  background: 'var(--navy)',
-                  border: '1px solid var(--navy-border)',
-                  color: 'var(--white)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
+                  color: 'var(--light-t1)',
                   fontSize: 13,
                 }}
               >
@@ -266,9 +267,9 @@ export default function RotKalkyl({
                       fontSize: 13,
                       fontWeight: 700,
                       border: '1px solid',
-                      borderColor: antalAgare === n ? 'rgba(245,196,0,0.5)' : 'var(--navy-border)',
-                      background: antalAgare === n ? 'var(--yellow-glow)' : 'var(--navy)',
-                      color: antalAgare === n ? 'var(--yellow)' : 'var(--muted-custom)',
+                      borderColor: antalAgare === n ? 'var(--light-amber)' : 'var(--light-border)',
+                      background: antalAgare === n ? 'var(--light-amber-glow)' : 'var(--light-bg)',
+                      color: antalAgare === n ? 'var(--light-amber)' : 'var(--light-t3)',
                       cursor: 'pointer',
                     }}
                   >
@@ -290,9 +291,9 @@ export default function RotKalkyl({
                   width: '100%',
                   padding: '6px 10px',
                   borderRadius: 8,
-                  background: 'var(--navy)',
-                  border: '1px solid var(--navy-border)',
-                  color: 'var(--white)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
+                  color: 'var(--light-t1)',
                   fontSize: 13,
                 }}
               />
@@ -304,18 +305,18 @@ export default function RotKalkyl({
             <div
               className="flex items-start gap-2"
               style={{
-                background: 'var(--orange-bg)',
-                border: '1px solid rgba(255,140,66,0.3)',
+                background: 'var(--light-orange-bg)',
+                border: '1px solid var(--light-orange)',
                 borderRadius: 8,
                 padding: '10px 14px',
                 marginBottom: 12,
                 fontSize: 12,
               }}
             >
-              <span style={{ color: 'var(--orange)', flexShrink: 0, marginTop: 1 }}>⚠</span>
+              <span style={{ color: 'var(--light-orange)', flexShrink: 0, marginTop: 1 }}>⚠</span>
               <div>
-                <p style={{ fontWeight: 700, color: 'var(--orange)', marginBottom: 2 }}>Avdragstak nått</p>
-                <p style={{ color: 'var(--muted-custom)' }}>
+                <p style={{ fontWeight: 700, color: 'var(--light-orange)', marginBottom: 2 }}>Avdragstak nått</p>
+                <p style={{ color: 'var(--light-t3)' }}>
                   Beräknat avdrag ({Math.round(res.rotUnderlag * (valdTypInfo ? parseFloat(valdTypInfo.procent) / 100 : 0.3)).toLocaleString('sv')} kr)
                   överstiger kundens kvarvarande utrymme ({res.kvarvarandeUtrymme.toLocaleString('sv')} kr).
                   Avdraget begränsas till {res.rotBelopp.toLocaleString('sv')} kr.
@@ -328,16 +329,16 @@ export default function RotKalkyl({
             <div
               className="flex items-start gap-2"
               style={{
-                background: 'rgba(74,158,255,0.08)',
-                border: '1px solid rgba(74,158,255,0.25)',
+                background: 'var(--light-blue-bg)',
+                border: '1px solid var(--light-blue)',
                 borderRadius: 8,
                 padding: '10px 14px',
                 marginBottom: 12,
                 fontSize: 12,
               }}
             >
-              <span style={{ color: 'var(--blue-accent)', flexShrink: 0, marginTop: 1 }}>ℹ</span>
-              <p style={{ color: 'var(--muted-custom)' }}>{res.fastighetsVarning}</p>
+              <span style={{ color: 'var(--light-blue)', flexShrink: 0, marginTop: 1 }}>ℹ</span>
+              <p style={{ color: 'var(--light-t3)' }}>{res.fastighetsVarning}</p>
             </div>
           )}
         </>
@@ -346,7 +347,7 @@ export default function RotKalkyl({
       {/* Prissammanfattning */}
       <div
         style={{
-          background: 'var(--navy)',
+          background: 'var(--light-cream)',
           borderRadius: 10,
           padding: '16px 20px',
         }}
@@ -357,7 +358,7 @@ export default function RotKalkyl({
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
-            color: 'var(--slate)',
+            color: 'var(--light-t4)',
             marginBottom: 12,
           }}
         >
@@ -366,7 +367,7 @@ export default function RotKalkyl({
 
         <div
           className="flex justify-between"
-          style={{ fontSize: 13, padding: '4px 0', color: 'var(--white)', fontWeight: 700 }}
+          style={{ fontSize: 13, padding: '4px 0', color: 'var(--light-t1)', fontWeight: 700 }}
         >
           <span>Totalt inkl moms</span>
           <span>{Math.round(res.totalInkMoms).toLocaleString('sv')} kr</span>
@@ -378,7 +379,7 @@ export default function RotKalkyl({
             style={{
               fontSize: 13,
               padding: '4px 0',
-              color: 'var(--green)',
+              color: 'var(--light-green)',
               fontWeight: 600,
             }}
           >
@@ -390,25 +391,25 @@ export default function RotKalkyl({
         <div
           className="flex justify-between items-end"
           style={{
-            borderTop: '1px solid var(--navy-border)',
+            borderTop: '1px solid var(--light-border)',
             paddingTop: 10,
             marginTop: 8,
           }}
         >
-          <span style={{ fontSize: 15, fontWeight: 800 }}>Kunden betalar</span>
+          <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--light-t1)' }}>Kunden betalar</span>
           <div style={{ textAlign: 'right' }}>
             <div
               style={{
                 fontSize: 22,
                 fontWeight: 800,
                 letterSpacing: '-0.03em',
-                color: aktiverat && res.rotBelopp > 0 ? 'var(--yellow)' : 'var(--white)',
+                color: aktiverat && res.rotBelopp > 0 ? 'var(--light-amber)' : 'var(--light-t1)',
               }}
             >
               {Math.round(res.kundBetalar).toLocaleString('sv')} kr
             </div>
             {aktiverat && res.rotBelopp > 0 && (
-              <div style={{ fontSize: 11, color: 'var(--green)', marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: 'var(--light-green)', marginTop: 2 }}>
                 ↓ Kunden sparar {res.rotBelopp.toLocaleString('sv')} kr
               </div>
             )}
@@ -417,14 +418,14 @@ export default function RotKalkyl({
       </div>
 
       {/* Disclaimer */}
-      <p style={{ fontSize: 10, color: 'var(--slate)', marginTop: 10, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 10, color: 'var(--light-t4)', marginTop: 10, lineHeight: 1.5 }}>
         Beräkningen är vägledande. Det är alltid kunden som ansvarar för att de uppfyller
         Skatteverkets villkor. Om avdrag nekas ansvarar kunden för mellanskillnaden.{' '}
         <a
           href={ROT_REGLER.källa}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: 'var(--blue-accent)', textDecoration: 'none' }}
+          style={{ color: 'var(--light-blue)', textDecoration: 'none' }}
         >
           Skatteverket ↗
         </a>
