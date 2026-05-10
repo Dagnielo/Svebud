@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Plus, X } from '@phosphor-icons/react'
 
 export type KalkylMoment = { beskrivning: string; timmar: number; timpris: number; materialkostnad: number; belopp: number }
 
@@ -51,14 +52,14 @@ export default function KalkylVy({ kalkyl, onChange }: { kalkyl?: Record<string,
   const moms = Math.round(totalExklMoms * 0.25)
   const totalInklMoms = totalExklMoms + moms
 
-  const inputStyle = { background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 4, color: 'var(--white)', fontFamily: 'var(--font-mono), monospace', fontSize: 11, padding: '4px 6px', width: 70, textAlign: 'right' as const }
+  const inputStyle = { background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 4, color: 'var(--light-t1)', fontFamily: 'var(--font-mono), monospace', fontSize: 11, padding: '4px 6px', width: 70, textAlign: 'right' as const }
 
   return (
-    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
-      <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
-        <span style={{ fontSize: 14, fontWeight: 700 }}>Kalkyl (redigerbar)</span>
-        <button onClick={läggTillMoment} style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>
-          + Lägg till moment
+    <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+      <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>Kalkyl (redigerbar)</span>
+        <button onClick={läggTillMoment} style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <Plus size={12} weight="bold" /> Lägg till moment
         </button>
       </div>
       <div style={{ padding: '0 16px 16px', overflowX: 'auto' }}>
@@ -74,30 +75,32 @@ export default function KalkylVy({ kalkyl, onChange }: { kalkyl?: Record<string,
           <thead>
             <tr>
               {['Moment', 'Timmar', 'Timpris', 'Material', 'Belopp', ''].map(h => (
-                <th key={h} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--muted-custom)', padding: '8px 4px', borderBottom: '1px solid var(--navy-border)', textAlign: h === 'Moment' || h === '' ? 'left' : 'right' }}>{h}</th>
+                <th key={h} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--light-t4)', padding: '8px 4px', borderBottom: '1px solid var(--light-border)', textAlign: h === 'Moment' || h === '' ? 'left' : 'right' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {moment.map((m, i) => (
               <tr key={i}>
-                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                   <input value={m.beskrivning} onChange={e => uppdatera(i, 'beskrivning', e.target.value)} style={{ ...inputStyle, width: '100%', textAlign: 'left', fontSize: 11 }} title={m.beskrivning} />
                 </td>
-                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                   <input type="number" value={m.timmar} onChange={e => uppdatera(i, 'timmar', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                 </td>
-                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                   <input type="number" value={m.timpris} onChange={e => uppdatera(i, 'timpris', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                 </td>
-                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)' }}>
+                <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)' }}>
                   <input type="number" value={m.materialkostnad} onChange={e => uppdatera(i, 'materialkostnad', e.target.value)} style={{ ...inputStyle, width: '100%' }} />
                 </td>
-                <td className="font-mono" style={{ padding: '4px', fontSize: 11, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid rgba(36,54,80,0.5)', color: 'var(--white)' }}>
+                <td className="font-mono" style={{ padding: '4px', fontSize: 11, textAlign: 'right', fontWeight: 600, borderBottom: '1px solid var(--light-border)', color: 'var(--light-t1)' }}>
                   {m.belopp.toLocaleString('sv-SE')} kr
                 </td>
-                <td style={{ padding: '4px', borderBottom: '1px solid rgba(36,54,80,0.5)', textAlign: 'center' }}>
-                  <button onClick={() => taBortMoment(i)} style={{ fontSize: 11, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)', textAlign: 'center' }}>
+                  <button onClick={() => taBortMoment(i)} style={{ color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <X size={12} weight="bold" />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -105,22 +108,22 @@ export default function KalkylVy({ kalkyl, onChange }: { kalkyl?: Record<string,
         </table>
 
         {/* Summering */}
-        <div style={{ background: 'var(--navy)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+        <div style={{ background: 'var(--light-cream)', borderRadius: 10, padding: '14px 16px', marginTop: 12 }}>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 4 }}>
             <span>Arbete</span><span className="font-mono">{totaltArbete.toLocaleString('sv-SE')} kr</span>
           </div>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 4 }}>
             <span>Material</span><span className="font-mono">{totaltMaterial.toLocaleString('sv-SE')} kr</span>
           </div>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 4 }}>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 4 }}>
             <span>Totalt exkl. moms</span><span className="font-mono">{totalExklMoms.toLocaleString('sv-SE')} kr</span>
           </div>
-          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 8 }}>
+          <div className="flex justify-between" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 8 }}>
             <span>Moms 25%</span><span className="font-mono">{moms.toLocaleString('sv-SE')} kr</span>
           </div>
-          <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt inkl. moms</span>
-            <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--yellow)' }}>{totalInklMoms.toLocaleString('sv-SE')} kr</span>
+          <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--light-border)', paddingTop: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-t1)' }}>Totalt inkl. moms</span>
+            <span className="font-mono" style={{ fontSize: 22, fontWeight: 800, color: 'var(--light-amber)' }}>{totalInklMoms.toLocaleString('sv-SE')} kr</span>
           </div>
         </div>
       </div>

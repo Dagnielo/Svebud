@@ -23,7 +23,7 @@ import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 import { posthog } from '@/lib/posthog'
 import UtfallsKnappar from '@/components/UtfallsKnappar'
-import { ArrowLeft, Check, Lightning, FileText, CaretUp, CaretDown, Question, Plus } from '@phosphor-icons/react'
+import { ArrowLeft, Check, Lightning, FileText, CaretUp, CaretDown, Question, Plus, Download, ClipboardText, PaperPlaneTilt } from '@phosphor-icons/react'
 
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
 
@@ -867,16 +867,17 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       style={{
                         padding: '10px 16px',
                         borderRadius: 8,
-                        background: 'var(--navy-mid)',
-                        border: '1px solid var(--navy-border)',
+                        background: 'var(--light-bg)',
+                        border: '1px solid var(--light-border)',
+                        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                         fontSize: 12,
-                        color: 'var(--muted-custom)',
+                        color: 'var(--light-t2)',
                       }}
                     >
                       <span>💡</span>
                       <span>
                         Vill du justera priser eller moment? Gå tillbaka till{' '}
-                        <button onClick={() => setAktivTab('analys')} style={{ color: 'var(--yellow)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontSize: 12 }}>
+                        <button onClick={() => setAktivTab('analys')} style={{ color: 'var(--light-amber)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontSize: 12 }}>
                           Analys & Bedömning
                         </button>
                         {' '}och generera ett nytt anbud.
@@ -885,26 +886,26 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                   )}
 
                   {/* Anbudsutkast — fällbar rullgardin */}
-                  <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
                     <button
                       onClick={() => setUtkastÖppet(!utkastÖppet)}
                       className="flex items-center justify-between w-full"
-                      style={{ padding: '14px 18px', background: 'none', border: 'none', borderBottom: utkastÖppet ? '1px solid var(--navy-border)' : 'none', cursor: 'pointer' }}
+                      style={{ padding: '14px 18px', background: 'none', border: 'none', borderBottom: utkastÖppet ? '1px solid var(--light-border)' : 'none', cursor: 'pointer' }}
                     >
                       <div>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--white)' }}>📋 Anbudsutkast</span>
-                        <span style={{ fontSize: 11, color: 'var(--muted-custom)', marginLeft: 8 }}>Genererat från din analys i steg 2 — öppna för att granska eller redigera</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>📋 Anbudsutkast</span>
+                        <span style={{ fontSize: 11, color: 'var(--light-t3)', marginLeft: 8 }}>Genererat från din analys i steg 2 — öppna för att granska eller redigera</span>
                       </div>
                       <div className="flex items-center gap-3">
                         {sparar && (
-                          <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>Sparar...</span>
+                          <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>Sparar...</span>
                         )}
                         {projekt.uppdaterad && (
-                          <span style={{ fontSize: 10, color: 'var(--slate)' }}>
+                          <span style={{ fontSize: 10, color: 'var(--light-t4)' }}>
                             Genererat {new Date(projekt.uppdaterad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })} kl {new Date(projekt.uppdaterad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
-                        <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                        <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
                           {utkastÖppet ? '▲ Dölj' : '▼ Visa'}
                         </span>
                       </div>
@@ -924,31 +925,31 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         />
                         <div style={{
                           position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-                          background: 'linear-gradient(transparent, var(--navy-mid))',
+                          background: 'linear-gradient(transparent, var(--light-cream))',
                           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12,
                         }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--yellow)' }}>Klicka för att visa hela anbudet</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--light-amber)' }}>Klicka för att visa hela anbudet</span>
                         </div>
                       </div>
                     )}
                     {/* Expanderat läge */}
                     {utkastÖppet && (
                       <>
-                        <div className="flex items-center gap-2" style={{ padding: '10px 18px', borderBottom: '1px solid var(--navy-border)' }}>
+                        <div className="flex items-center gap-2" style={{ padding: '10px 18px', borderBottom: '1px solid var(--light-border)', background: 'var(--light-cream)' }}>
                           <Button
                             onClick={() => setFörhandsgranskning(!förhandsgranskning)}
                             variant="outline"
                             style={{
                               fontSize: 12,
-                              borderColor: !förhandsgranskning ? 'var(--yellow)' : 'var(--navy-border)',
-                              color: !förhandsgranskning ? 'var(--yellow)' : 'var(--soft)',
-                              background: !förhandsgranskning ? 'var(--yellow-glow)' : 'transparent',
+                              borderColor: !förhandsgranskning ? 'var(--light-amber)' : 'var(--light-border)',
+                              color: !förhandsgranskning ? 'var(--light-amber)' : 'var(--light-t2)',
+                              background: !förhandsgranskning ? 'var(--light-amber-glow)' : 'var(--light-bg)',
                             }}
                           >
                             {förhandsgranskning ? '✏️ Redigera' : '👁 Förhandsgranska'}
                           </Button>
-                          <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--soft)' }}>📋 Kopiera text</Button>
-                          <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--yellow)', color: 'var(--yellow)' }}>
+                          <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}>📋 Kopiera text</Button>
+                          <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--light-amber)', color: 'var(--light-amber)', background: 'var(--light-bg)' }}>
                             🔄 Generera nytt
                           </Button>
                         </div>
@@ -964,11 +965,11 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           <textarea
                             value={utkast}
                             onChange={e => setUtkast(e.target.value)}
-                            style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--navy)', color: 'var(--soft)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
+                            style={{ width: '100%', minHeight: 500, padding: 18, background: 'var(--light-bg)', color: 'var(--light-t1)', border: 'none', fontSize: 13, lineHeight: 1.7, fontFamily: 'var(--font-mono), monospace', resize: 'vertical' }}
                           />
                         )}
-                        <div className="flex justify-center" style={{ padding: '10px 0', borderTop: '1px solid var(--navy-border)' }}>
-                          <Button onClick={() => setUtkastÖppet(false)} variant="outline" style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}>
+                        <div className="flex justify-center" style={{ padding: '10px 0', borderTop: '1px solid var(--light-border)' }}>
+                          <Button onClick={() => setUtkastÖppet(false)} variant="outline" style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t3)', background: 'var(--light-bg)' }}>
                             ▲ Minimera
                           </Button>
                         </div>
@@ -992,25 +993,26 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     return (
                       <div
                         style={{
-                          background: 'var(--navy-mid)',
-                          border: '1px solid var(--navy-border)',
+                          background: 'var(--light-cream)',
+                          border: '1px solid var(--light-border)',
                           borderRadius: 12,
                           padding: '16px 20px',
+                          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                         }}
                       >
                         <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
                           <div>
-                            <span style={{ fontSize: 14, fontWeight: 700 }}>💰 Prisöversikt</span>
-                            <span style={{ fontSize: 11, color: 'var(--muted-custom)', marginLeft: 8 }}>Ingår i anbudsutkastet ovan</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>💰 Prisöversikt</span>
+                            <span style={{ fontSize: 11, color: 'var(--light-t3)', marginLeft: 8 }}>Ingår i anbudsutkastet ovan</span>
                           </div>
                           <button
                             onClick={() => setAktivTab('analys')}
                             style={{
                               fontSize: 11,
                               fontWeight: 700,
-                              color: 'var(--yellow)',
-                              background: 'var(--yellow-glow)',
-                              border: '1px solid rgba(245,196,0,0.3)',
+                              color: 'var(--light-amber)',
+                              background: 'var(--light-amber-glow)',
+                              border: '1px solid var(--light-amber-border)',
                               borderRadius: 6,
                               padding: '4px 12px',
                               cursor: 'pointer',
@@ -1019,27 +1021,27 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             Ändra priser i steg 2 →
                           </button>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 6, fontSize: 13, color: 'var(--soft)' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 6, fontSize: 13, color: 'var(--light-t2)' }}>
                           <span>Arbete ({mom.length} moment)</span>
-                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace' }}>{totArbete.toLocaleString('sv-SE')} kr</span>
+                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace', color: 'var(--light-t1)' }}>{totArbete.toLocaleString('sv-SE')} kr</span>
                           <span>Material</span>
-                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace' }}>{totMaterial.toLocaleString('sv-SE')} kr</span>
+                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace', color: 'var(--light-t1)' }}>{totMaterial.toLocaleString('sv-SE')} kr</span>
                           <span>Moms (25%)</span>
-                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace' }}>{moms.toLocaleString('sv-SE')} kr</span>
-                          <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--navy-border)', margin: '4px 0' }} />
-                          <span style={{ fontWeight: 700 }}>Totalt inkl. moms</span>
-                          <span style={{ textAlign: 'right', fontWeight: 700, fontFamily: 'var(--font-mono), monospace' }}>{totInkl.toLocaleString('sv-SE')} kr</span>
+                          <span style={{ textAlign: 'right', fontFamily: 'var(--font-mono), monospace', color: 'var(--light-t1)' }}>{moms.toLocaleString('sv-SE')} kr</span>
+                          <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--light-border)', margin: '4px 0' }} />
+                          <span style={{ fontWeight: 700, color: 'var(--light-t1)' }}>Totalt inkl. moms</span>
+                          <span style={{ textAlign: 'right', fontWeight: 700, fontFamily: 'var(--font-mono), monospace', color: 'var(--light-amber)' }}>{totInkl.toLocaleString('sv-SE')} kr</span>
                           {harAvdrag && (
                             <>
-                              <span style={{ color: 'var(--green)' }}>{avdragNamn}</span>
-                              <span style={{ textAlign: 'right', color: 'var(--green)', fontFamily: 'var(--font-mono), monospace' }}>−{rotData.rotBelopp.toLocaleString('sv-SE')} kr</span>
-                              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--navy-border)', margin: '4px 0' }} />
-                              <span style={{ fontWeight: 700, color: 'var(--yellow)' }}>Kunden betalar</span>
-                              <span style={{ textAlign: 'right', fontWeight: 700, color: 'var(--yellow)', fontSize: 15, fontFamily: 'var(--font-mono), monospace' }}>{(totInkl - rotData.rotBelopp).toLocaleString('sv-SE')} kr</span>
+                              <span style={{ color: 'var(--light-green)' }}>{avdragNamn}</span>
+                              <span style={{ textAlign: 'right', color: 'var(--light-green)', fontFamily: 'var(--font-mono), monospace' }}>−{rotData.rotBelopp.toLocaleString('sv-SE')} kr</span>
+                              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--light-border)', margin: '4px 0' }} />
+                              <span style={{ fontWeight: 700, color: 'var(--light-amber)' }}>Kunden betalar</span>
+                              <span style={{ textAlign: 'right', fontWeight: 700, color: 'var(--light-amber)', fontSize: 15, fontFamily: 'var(--font-mono), monospace' }}>{(totInkl - rotData.rotBelopp).toLocaleString('sv-SE')} kr</span>
                             </>
                           )}
                         </div>
-                        <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 10, marginBottom: 0 }}>
+                        <p style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 10, marginBottom: 0 }}>
                           Priserna läggs till automatiskt i anbudet vid export och förhandsgranskning.
                         </p>
                       </div>
@@ -1050,14 +1052,15 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                   {kontaktpersoner.length > 0 && (
                     <div
                       style={{
-                        background: 'var(--navy-mid)',
-                        border: '1px solid var(--navy-border)',
+                        background: 'var(--light-bg)',
+                        border: '1px solid var(--light-border)',
                         borderRadius: 12,
                         padding: '16px 20px',
+                        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                       }}
                     >
                       <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700 }}>✍ Kontaktperson i anbudet</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-t1)' }}>✍ Kontaktperson i anbudet</span>
                         <button
                           onClick={() => {
                             if (kontaktInfogad) {
@@ -1072,15 +1075,18 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           style={{
                             fontSize: 11,
                             fontWeight: 700,
-                            color: kontaktInfogad ? 'var(--navy)' : 'var(--yellow)',
-                            background: kontaktInfogad ? 'var(--green)' : 'var(--yellow-glow)',
-                            border: `1px solid ${kontaktInfogad ? 'var(--green)' : 'rgba(245,196,0,0.3)'}`,
+                            color: kontaktInfogad ? 'var(--light-green)' : 'var(--light-amber)',
+                            background: kontaktInfogad ? 'var(--light-green-bg)' : 'var(--light-amber-glow)',
+                            border: `1px solid ${kontaktInfogad ? 'var(--light-green)' : 'var(--light-amber-border)'}`,
                             borderRadius: 6,
                             padding: '4px 12px',
                             cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
                           }}
                         >
-                          {kontaktInfogad ? '✅ Infogad — ta bort' : 'Infoga i anbudet'}
+                          {kontaktInfogad ? <><Check size={12} weight="bold" /> Infogad — ta bort</> : <><Plus size={12} weight="bold" /> Infoga i anbudet</>}
                         </button>
                       </div>
                       <div className="flex items-center gap-3">
@@ -1091,9 +1097,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             flex: 1,
                             padding: '8px 12px',
                             borderRadius: 8,
-                            background: 'var(--navy)',
-                            border: '1px solid var(--navy-border)',
-                            color: 'var(--white)',
+                            background: 'var(--light-bg)',
+                            border: '1px solid var(--light-border)',
+                            color: 'var(--light-t1)',
                             fontSize: 12,
                           }}
                         >
@@ -1108,17 +1114,17 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           marginTop: 8,
                           padding: '8px 12px',
                           borderRadius: 6,
-                          background: 'var(--navy)',
+                          background: 'var(--light-off)',
                           fontSize: 12,
-                          color: 'var(--soft)',
+                          color: 'var(--light-t2)',
                           lineHeight: 1.5,
                         }}
                       >
-                        <strong>{kontaktpersoner[valdKontakt]?.namn}</strong>
-                        {kontaktpersoner[valdKontakt]?.roll && <span style={{ color: 'var(--muted-custom)' }}> · {kontaktpersoner[valdKontakt].roll}</span>}
+                        <strong style={{ color: 'var(--light-t1)' }}>{kontaktpersoner[valdKontakt]?.namn}</strong>
+                        {kontaktpersoner[valdKontakt]?.roll && <span style={{ color: 'var(--light-t3)' }}> · {kontaktpersoner[valdKontakt].roll}</span>}
                         <br />
                         {kontaktpersoner[valdKontakt]?.epost && <span>{kontaktpersoner[valdKontakt].epost}</span>}
-                        {kontaktpersoner[valdKontakt]?.epost && kontaktpersoner[valdKontakt]?.telefon && <span style={{ color: 'var(--slate)' }}> · </span>}
+                        {kontaktpersoner[valdKontakt]?.epost && kontaktpersoner[valdKontakt]?.telefon && <span style={{ color: 'var(--light-t4)' }}> · </span>}
                         {kontaktpersoner[valdKontakt]?.telefon && <span>{kontaktpersoner[valdKontakt].telefon}</span>}
                       </div>
                     </div>
@@ -1137,31 +1143,32 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                   {/* Ladda ner anbudsutkast */}
                   <div
                     style={{
-                      background: 'var(--navy-mid)',
-                      border: '1px solid var(--navy-border)',
+                      background: 'var(--light-bg)',
+                      border: '1px solid var(--light-border)',
                       borderRadius: 12,
                       padding: '16px 20px',
+                      boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                     }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>📄 Ladda ner anbudsutkast</div>
-                    <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 0, marginBottom: 12 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: 'var(--light-t1)' }}>📄 Ladda ner anbudsutkast</div>
+                    <p style={{ fontSize: 12, color: 'var(--light-t3)', marginTop: 0, marginBottom: 12 }}>
                       Färdigt anbud med aktuella priser, kalkyl och eventuella avdrag. Redo att skickas till kund.
                     </p>
                     <div className="flex gap-3">
                       <button
                         onClick={exporteraSomPdf}
-                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--soft)', background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer' }}
+                        style={{ fontSize: 12, fontWeight: 700, color: 'var(--light-navy)', background: 'var(--light-amber)', border: '1px solid var(--light-amber)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                       >
-                        📄 PDF
+                        <Download size={14} weight="bold" /> PDF
                       </button>
                       <button
                         onClick={exporteraSomWord}
-                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--soft)', background: 'var(--navy)', border: '1px solid var(--navy-border)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer' }}
+                        style={{ fontSize: 12, fontWeight: 700, color: 'var(--light-navy)', background: 'var(--light-amber)', border: '1px solid var(--light-amber)', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                       >
-                        📝 Word
+                        <Download size={14} weight="bold" /> Word
                       </button>
                     </div>
-                    <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 8 }}>
+                    <p style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 8 }}>
                       Ladda ner för att bifoga i mail eller skriva ut.
                     </p>
                   </div>
@@ -1169,16 +1176,17 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                   {/* Förbered mail till kund */}
                   <div
                     style={{
-                      background: 'var(--navy-mid)',
-                      border: '1px solid var(--navy-border)',
+                      background: 'var(--light-bg)',
+                      border: '1px solid var(--light-border)',
                       borderRadius: 12,
                       padding: '20px 24px',
+                      boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                     }}
                   >
                     <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700 }}>📧 Förbered mail till kund</div>
-                        <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>📧 Förbered mail till kund</div>
+                        <p style={{ fontSize: 12, color: 'var(--light-t3)', marginTop: 2 }}>
                           Kopiera ämnesrad och följebrev — klistra in i ditt eget mailprogram och bifoga PDF:en.
                         </p>
                       </div>
@@ -1186,7 +1194,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
 
                     {/* Ämnesrad */}
                     <div style={{ marginBottom: 10 }}>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 4, display: 'block' }}>
                         Ämnesrad
                       </label>
                       <div className="flex gap-2">
@@ -1198,9 +1206,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             flex: 1,
                             padding: '8px 12px',
                             borderRadius: 8,
-                            background: 'var(--navy)',
-                            border: '1px solid var(--navy-border)',
-                            color: 'var(--white)',
+                            background: 'var(--light-bg)',
+                            border: '1px solid var(--light-border)',
+                            color: 'var(--light-t1)',
                             fontSize: 13,
                           }}
                         />
@@ -1209,16 +1217,16 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             const el = document.getElementById('mail-amne') as HTMLInputElement
                             navigator.clipboard.writeText(el.value)
                           }}
-                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0 }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         >
-                          Kopiera
+                          <ClipboardText size={12} weight="bold" /> Kopiera
                         </button>
                       </div>
                     </div>
 
                     {/* Följebrev */}
                     <div style={{ marginBottom: 10 }}>
-                      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 4, display: 'block' }}>
                         Följebrev
                       </label>
                       <div className="flex gap-2">
@@ -1248,9 +1256,9 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                             flex: 1,
                             padding: '8px 12px',
                             borderRadius: 8,
-                            background: 'var(--navy)',
-                            border: '1px solid var(--navy-border)',
-                            color: 'var(--white)',
+                            background: 'var(--light-bg)',
+                            border: '1px solid var(--light-border)',
+                            color: 'var(--light-t1)',
                             fontSize: 12,
                             lineHeight: 1.6,
                             resize: 'vertical',
@@ -1261,12 +1269,12 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                             const el = document.getElementById('följebrev-textarea') as HTMLTextAreaElement
                             navigator.clipboard.writeText(el?.value ?? '')
                           }}
-                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0, alignSelf: 'flex-start' }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', flexShrink: 0, alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         >
-                          Kopiera
+                          <ClipboardText size={12} weight="bold" /> Kopiera
                         </button>
                       </div>
-                      <p style={{ fontSize: 10, color: 'var(--slate)', marginTop: 4 }}>
+                      <p style={{ fontSize: 10, color: 'var(--light-t4)', marginTop: 4 }}>
                         Redigera följebrevet fritt — det sparas automatiskt.
                       </p>
                     </div>
@@ -1275,9 +1283,9 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                   </div>
 
                   {/* Markera som skickat */}
-                  <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '20px 24px' }}>
+                  <div style={{ background: 'var(--light-cream)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
                     <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 4, display: 'block' }}>
                         Kommentar (valfritt)
                       </label>
                       <input
@@ -1288,9 +1296,9 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                           width: '100%',
                           padding: '8px 12px',
                           borderRadius: 8,
-                          background: 'var(--navy)',
-                          border: '1px solid var(--navy-border)',
-                          color: 'var(--white)',
+                          background: 'var(--light-bg)',
+                          border: '1px solid var(--light-border)',
+                          color: 'var(--light-t1)',
                           fontSize: 13,
                         }}
                       />
@@ -1301,16 +1309,16 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                           markeraSomSkickat(skickaKommentar.trim() || undefined)
                           setSkickaKommentar('')
                         }}
-                        style={{ background: 'var(--green)', color: 'var(--navy)', fontSize: 14, padding: '12px 24px' }}
+                        style={{ background: 'var(--light-green)', color: 'var(--light-bg)', fontSize: 14, padding: '12px 24px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
                       >
-                        📤 Markera som skickat
+                        <PaperPlaneTilt size={16} weight="bold" /> Markera som skickat
                       </Button>
                     </div>
                   </div>
 
                   {/* Inskickningshistorik */}
                   {(projekt.inskickningar?.length ?? 0) > 0 && (
-                    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '16px 24px' }}>
+                    <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '16px 24px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
                       <button
                         onClick={() => setVisaHistorik(!visaHistorik)}
                         className="flex items-center justify-between w-full"
@@ -1318,14 +1326,14 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                       >
                         <div className="flex items-center gap-2">
                           <span style={{ fontSize: 14 }}>📋</span>
-                          <span style={{ fontSize: 14, fontWeight: 700 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>
                             Inskickningshistorik
                           </span>
-                          <span style={{ fontSize: 11, fontWeight: 700, background: 'var(--navy-light)', color: 'var(--muted-custom)', padding: '2px 8px', borderRadius: 20 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, background: 'var(--light-cream)', color: 'var(--light-t3)', padding: '2px 8px', borderRadius: 20 }}>
                             {projekt.inskickningar?.length ?? 0}
                           </span>
                         </div>
-                        <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                        <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
                           {visaHistorik ? '▲ Dölj' : '▼ Visa'}
                         </span>
                       </button>
@@ -1338,8 +1346,8 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                               style={{
                                 marginBottom: 6,
                                 borderRadius: 8,
-                                background: i === 0 ? 'var(--green-bg)' : 'var(--navy)',
-                                border: i === 0 ? '1px solid rgba(0,198,122,0.3)' : '1px solid var(--navy-border)',
+                                background: i === 0 ? 'var(--light-green-bg)' : 'var(--light-off)',
+                                border: i === 0 ? '1px solid var(--light-green)' : '1px solid var(--light-border)',
                                 overflow: 'hidden',
                               }}
                             >
@@ -1357,37 +1365,37 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                                   <span style={{
                                     fontSize: 10,
                                     fontWeight: 700,
-                                    background: i === 0 ? 'var(--green)' : 'var(--navy-light)',
-                                    color: i === 0 ? 'var(--navy)' : 'var(--muted-custom)',
+                                    background: i === 0 ? 'var(--light-green)' : 'var(--light-cream)',
+                                    color: i === 0 ? 'var(--light-bg)' : 'var(--light-t3)',
                                     padding: '2px 8px',
                                     borderRadius: 4,
                                   }}>
                                     v{insk.version}
                                   </span>
-                                  <span style={{ fontSize: 12, fontWeight: 600, color: i === 0 ? 'var(--white)' : 'var(--muted-custom)' }}>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: i === 0 ? 'var(--light-t1)' : 'var(--light-t3)' }}>
                                     {new Date(insk.datum).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     {' kl '}
                                     {new Date(insk.datum).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
                                   </span>
                                   {i === 0 && (
-                                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--green)' }}>Senaste</span>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--light-green)' }}>Senaste</span>
                                   )}
                                 </div>
                                 {insk.utkast && (
-                                  <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                                  <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
                                     {expanderadVersion === insk.version ? '▲ Dölj anbud' : '▼ Visa anbud'}
                                   </span>
                                 )}
                               </button>
                               {insk.kommentar && (
-                                <div style={{ fontSize: 12, color: 'var(--soft)', padding: '0 14px 8px', marginLeft: 36 }}>
+                                <div style={{ fontSize: 12, color: 'var(--light-t2)', padding: '0 14px 8px', marginLeft: 36 }}>
                                   💬 {insk.kommentar}
                                 </div>
                               )}
                               {expanderadVersion === insk.version && insk.utkast && (
                                 <div
                                   style={{
-                                    borderTop: '1px solid var(--navy-border)',
+                                    borderTop: '1px solid var(--light-border)',
                                     background: '#fff',
                                     maxHeight: 500,
                                     overflowY: 'auto',
@@ -1406,7 +1414,7 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
 
                   {/* Tilldelning */}
                   {(projekt.pipeline_status === 'inskickat' || projekt.pipeline_status === 'tilldelning') && (
-                    <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, padding: '16px 24px' }}>
+                    <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '16px 24px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
                       <UtfallsKnappar
                         projekt={{
                           id: projekt.id,
