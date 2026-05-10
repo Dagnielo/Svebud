@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import type { KvalitetsResultat, GranskningsPunkt } from '@/lib/kvalitetsagent'
 import { Button } from '@/components/ui/button'
+import { MagnifyingGlass } from '@phosphor-icons/react'
 
 const allvarlighetConfig: Record<string, { färg: string; bg: string; ikon: string; label: string }> = {
-  bra: { färg: 'var(--green)', bg: 'var(--green-bg)', ikon: '✅', label: 'Bra' },
-  tips: { färg: 'var(--blue-accent)', bg: 'rgba(74,158,255,0.08)', ikon: '💡', label: 'Tips' },
-  varning: { färg: 'var(--orange)', bg: 'var(--orange-bg)', ikon: '⚠️', label: 'Varning' },
-  fel: { färg: 'var(--red)', bg: 'var(--red-bg)', ikon: '❌', label: 'Fel' },
+  bra: { färg: 'var(--light-green)', bg: 'var(--light-green-bg)', ikon: '✅', label: 'Bra' },
+  tips: { färg: 'var(--light-blue)', bg: 'var(--light-blue-bg)', ikon: '💡', label: 'Tips' },
+  varning: { färg: 'var(--light-orange)', bg: 'var(--light-orange-bg)', ikon: '⚠️', label: 'Varning' },
+  fel: { färg: 'var(--light-red)', bg: 'var(--light-red-bg)', ikon: '❌', label: 'Fel' },
 }
 
 const kategoriLabel: Record<string, string> = {
@@ -21,10 +22,10 @@ const kategoriLabel: Record<string, string> = {
 }
 
 function getBetygFärg(betyg: number): string {
-  if (betyg >= 9) return 'var(--green)'
-  if (betyg >= 7) return 'var(--yellow)'
-  if (betyg >= 5) return 'var(--orange)'
-  return 'var(--red)'
+  if (betyg >= 9) return 'var(--light-green)'
+  if (betyg >= 7) return 'var(--light-amber)'
+  if (betyg >= 5) return 'var(--light-orange)'
+  return 'var(--light-red)'
 }
 
 function getBetygLabel(betyg: number): string {
@@ -51,20 +52,24 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
     return (
       <div
         style={{
-          background: 'var(--navy-mid)',
-          border: '1px solid var(--navy-border)',
+          background: 'var(--light-bg)',
+          border: '1px solid var(--light-border)',
           borderRadius: 12,
           padding: '16px 20px',
+          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
         }}
       >
         <div className="flex items-center justify-between">
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700 }}>🔍 Kvalitetsgranskning</div>
-            <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2, marginBottom: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <MagnifyingGlass size={16} weight="bold" />
+              Kvalitetsgranskning
+            </div>
+            <p style={{ fontSize: 12, color: 'var(--light-t3)', marginTop: 2, marginBottom: 0 }}>
               Låt AI:n granska anbudet och ge förbättringsförslag.
             </p>
           </div>
-          <Button onClick={onGranska} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
+          <Button onClick={onGranska} style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
             Granska anbudet →
           </Button>
         </div>
@@ -76,19 +81,20 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
     return (
       <div
         style={{
-          background: 'var(--navy-mid)',
-          border: '1px solid var(--navy-border)',
+          background: 'var(--light-bg)',
+          border: '1px solid var(--light-border)',
           borderRadius: 12,
           padding: '24px',
           textAlign: 'center',
+          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
         }}
       >
         <div className="animate-pulse" style={{ marginBottom: 8 }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--navy-light)', margin: '0 auto 12px' }} />
-          <div style={{ height: 14, width: 200, background: 'var(--navy-light)', borderRadius: 6, margin: '0 auto 8px' }} />
-          <div style={{ height: 10, width: 300, background: 'var(--navy-light)', borderRadius: 4, margin: '0 auto' }} />
+          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--light-cream)', margin: '0 auto 12px' }} />
+          <div style={{ height: 14, width: 200, background: 'var(--light-cream)', borderRadius: 6, margin: '0 auto 8px' }} />
+          <div style={{ height: 10, width: 300, background: 'var(--light-cream)', borderRadius: 4, margin: '0 auto' }} />
         </div>
-        <p style={{ fontSize: 13, color: 'var(--muted-custom)' }}>AI granskar anbudet...</p>
+        <p style={{ fontSize: 13, color: 'var(--light-t3)' }}>AI granskar anbudet...</p>
       </div>
     )
   }
@@ -105,10 +111,11 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
   return (
     <div
       style={{
-        background: 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
+        background: 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
         borderRadius: 12,
         overflow: 'hidden',
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}
     >
       {/* Header med betyg */}
@@ -116,7 +123,7 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
         className="flex items-center justify-between"
         style={{
           padding: '16px 24px',
-          borderBottom: '1px solid var(--navy-border)',
+          borderBottom: '1px solid var(--light-border)',
           cursor: 'pointer',
         }}
         onClick={() => setExpanderad(!expanderad)}
@@ -143,7 +150,7 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span style={{ fontSize: 16, fontWeight: 800 }}>Kvalitetsgranskning</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--light-t1)' }}>Kvalitetsgranskning</span>
               <span
                 style={{
                   fontSize: 11,
@@ -157,7 +164,7 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                 {betygLabel}
               </span>
             </div>
-            <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginTop: 2 }}>
+            <p style={{ fontSize: 12, color: 'var(--light-t3)', marginTop: 2 }}>
               {resultat.sammanfattning}
             </p>
           </div>
@@ -167,25 +174,25 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
           {/* Statistik-badges */}
           <div className="flex gap-1.5">
             {resultat.antal_fel > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--red-bg)', color: 'var(--red)' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-red-bg)', color: 'var(--light-red)' }}>
                 ❌ {resultat.antal_fel}
               </span>
             )}
             {resultat.antal_varningar > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--orange-bg)', color: 'var(--orange)' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-orange-bg)', color: 'var(--light-orange)' }}>
                 ⚠️ {resultat.antal_varningar}
               </span>
             )}
             {resultat.antal_tips > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(74,158,255,0.08)', color: 'var(--blue-accent)' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-blue-bg)', color: 'var(--light-blue)' }}>
                 💡 {resultat.antal_tips}
               </span>
             )}
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--green-bg)', color: 'var(--green)' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-green-bg)', color: 'var(--light-green)' }}>
               ✅ {resultat.antal_bra}
             </span>
           </div>
-          <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+          <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
             {expanderad ? '▲' : '▼'}
           </span>
         </div>
@@ -205,9 +212,9 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                   fontSize: 11,
                   fontWeight: 600,
                   border: '1px solid',
-                  borderColor: filter === f ? 'var(--yellow)' : 'var(--navy-border)',
-                  background: filter === f ? 'var(--yellow-glow)' : 'transparent',
-                  color: filter === f ? 'var(--yellow)' : 'var(--muted-custom)',
+                  borderColor: filter === f ? 'var(--light-amber)' : 'var(--light-border)',
+                  background: filter === f ? 'var(--light-amber-glow)' : 'var(--light-bg)',
+                  color: filter === f ? 'var(--light-amber)' : 'var(--light-t2)',
                   cursor: 'pointer',
                 }}
               >
@@ -235,11 +242,11 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                   <div style={{ flex: 1 }}>
                     <div className="flex items-center gap-2" style={{ marginBottom: 2 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: config.färg }}>{punkt.titel}</span>
-                      <span style={{ fontSize: 10, color: 'var(--slate)', background: 'var(--navy)', padding: '1px 6px', borderRadius: 4 }}>
+                      <span style={{ fontSize: 10, color: 'var(--light-t3)', background: 'var(--light-cream)', padding: '1px 6px', borderRadius: 4 }}>
                         {kategoriLabel[punkt.kategori] ?? punkt.kategori}
                       </span>
                     </div>
-                    <p style={{ fontSize: 12, color: 'var(--soft)', lineHeight: 1.6, margin: 0 }}>
+                    <p style={{ fontSize: 12, color: 'var(--light-t2)', lineHeight: 1.6, margin: 0 }}>
                       {punkt.beskrivning}
                     </p>
                     {punkt.åtgärd && (
@@ -248,10 +255,10 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                           marginTop: 6,
                           padding: '6px 10px',
                           borderRadius: 6,
-                          background: 'var(--navy)',
-                          border: '1px solid var(--navy-border)',
+                          background: 'var(--light-amber-glow)',
+                          border: '1px solid var(--light-amber-border)',
                           fontSize: 11,
-                          color: 'var(--yellow)',
+                          color: 'var(--light-amber)',
                           lineHeight: 1.5,
                         }}
                       >
@@ -259,10 +266,10 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                       </div>
                     )}
                     {punkt.allvarlighet !== 'bra' && (
-                      <div style={{ marginTop: 4, fontSize: 10, color: 'var(--slate)' }}>
+                      <div style={{ marginTop: 4, fontSize: 10, color: 'var(--light-t4)' }}>
                         {['pris', 'rot'].includes(punkt.kategori) ? (
                           onGåTillSteg2 ? (
-                            <button onClick={onGåTillSteg2} style={{ background: 'none', border: 'none', color: 'var(--yellow)', cursor: 'pointer', fontSize: 10, fontWeight: 600, padding: 0 }}>
+                            <button onClick={onGåTillSteg2} style={{ background: 'none', border: 'none', color: 'var(--light-amber)', cursor: 'pointer', fontSize: 10, fontWeight: 600, padding: 0 }}>
                               Ändra priser i steg 2 →
                             </button>
                           ) : 'Justeras i steg 2 (Analys & Bedömning)'
@@ -283,14 +290,14 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
               onClick={onGranska}
               disabled={laddar}
               variant="outline"
-              style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
+              style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}
             >
               🔄 Granska igen
             </Button>
             <Button
               onClick={() => setExpanderad(false)}
               variant="outline"
-              style={{ fontSize: 12, borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
+              style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}
             >
               ▲ Stäng
             </Button>

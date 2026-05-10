@@ -23,7 +23,7 @@ import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 import { posthog } from '@/lib/posthog'
 import UtfallsKnappar from '@/components/UtfallsKnappar'
-import { ArrowLeft, Check, Lightning } from '@phosphor-icons/react'
+import { ArrowLeft, Check, Lightning, FileText, CaretUp, CaretDown } from '@phosphor-icons/react'
 
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
 
@@ -611,30 +611,30 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               <div className="space-y-4">
                 <AnbudsUppladdning projektId={projektId} onUppladdat={() => hämta()} />
                 {anbud.length > 0 && (
-                  <div style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', borderRadius: 12, overflow: 'hidden' }}>
-                    <div className="flex items-center gap-2.5" style={{ padding: '14px 18px', borderBottom: '1px solid var(--navy-border)' }}>
-                      <span style={{ fontSize: 14, fontWeight: 700 }}>Uppladdade dokument ({anbud.length})</span>
-                      <span className="ml-auto font-mono" style={{ fontSize: 10, fontWeight: 800, background: 'var(--green-bg)', color: 'var(--green)', padding: '3px 8px', borderRadius: 5 }}>
-                        {anbud.length} uppladdade ✓
+                  <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
+                    <div className="flex items-center gap-2.5" style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)' }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>Uppladdade dokument ({anbud.length})</span>
+                      <span className="ml-auto font-mono" style={{ fontSize: 10, fontWeight: 800, background: 'var(--light-green-bg)', color: 'var(--light-green)', padding: '3px 8px', borderRadius: 5, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        {anbud.length} uppladdade <Check size={11} weight="bold" />
                       </span>
                     </div>
                     <div style={{ padding: '12px 18px' }}>
                       {anbud.map(a => (
-                        <div key={a.id} style={{ borderBottom: '1px solid rgba(36,54,80,0.3)' }}>
+                        <div key={a.id} style={{ borderBottom: '1px solid var(--light-border)' }}>
                           <div className="flex items-center gap-2" style={{ padding: '8px 0' }}>
                             <div
                               className="flex items-center gap-2 flex-1 cursor-pointer"
                               onClick={() => a.rå_text && setExpanderadDok(expanderadDok === a.id ? null : a.id)}
-                              style={{ fontSize: 13 }}
+                              style={{ fontSize: 13, color: 'var(--light-t1)' }}
                             >
-                              <span style={{ color: 'var(--blue-accent)' }}>📄</span>
+                              <FileText size={14} weight="bold" color="var(--light-blue)" />
                               <span className="flex-1">{a.filnamn}</span>
                               {a.rå_text ? (
-                                <span style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
-                                  {expanderadDok === a.id ? '▲ Dölj text' : '▼ Visa text'}
+                                <span style={{ fontSize: 11, color: 'var(--light-t3)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                  {expanderadDok === a.id ? <><CaretUp size={10} weight="bold" /> Dölj text</> : <><CaretDown size={10} weight="bold" /> Visa text</>}
                                 </span>
                               ) : (
-                                <span style={{ fontSize: 10, color: 'var(--slate)', fontStyle: 'italic' }}>
+                                <span style={{ fontSize: 10, color: 'var(--light-t4)', fontStyle: 'italic' }}>
                                   PDF — läses direkt av AI
                                 </span>
                               )}
@@ -643,9 +643,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                               onClick={() => raderaDokument(a.id, a.storage_path)}
                               style={{
                                 fontSize: 12,
-                                color: 'var(--red)',
-                                background: 'var(--red-bg)',
-                                border: '1px solid rgba(255,77,77,0.3)',
+                                color: 'var(--light-red)',
+                                background: 'var(--light-red-bg)',
+                                border: '1px solid var(--light-red)',
                                 borderRadius: 6,
                                 cursor: 'pointer',
                                 padding: '3px 8px',
@@ -661,11 +661,11 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                                 padding: '12px 14px',
                                 marginBottom: 8,
                                 borderRadius: 8,
-                                background: 'var(--navy)',
-                                border: '1px solid var(--navy-border)',
+                                background: 'var(--light-off)',
+                                border: '1px solid var(--light-border)',
                                 fontSize: 12,
                                 lineHeight: 1.7,
-                                color: 'var(--soft)',
+                                color: 'var(--light-t2)',
                                 whiteSpace: 'pre-wrap',
                                 maxHeight: 400,
                                 overflowY: 'auto',

@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { FolderOpen, ClipboardText, FloppyDisk, X } from '@phosphor-icons/react'
 
 type UppladdningsStatus = 'idle' | 'laddar_upp' | 'klar' | 'fel'
 
@@ -95,7 +96,6 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
     if (!textInput.trim()) return
     setSpararText(true)
 
-    // Skapa en textfil och ladda upp
     const blob = new Blob([textInput], { type: 'text/plain' })
     const fil = new File([blob], `inklistrad_text_${Date.now()}.txt`, { type: 'text/plain' })
 
@@ -119,17 +119,17 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
   }, [laddaUppFlerFiler])
 
   return (
-    <Card style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+    <Card style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
       <CardHeader>
-        <CardTitle style={{ fontSize: 15 }}>Ladda upp förfrågningsunderlag</CardTitle>
+        <CardTitle style={{ fontSize: 15, color: 'var(--light-t1)' }}>Ladda upp förfrågningsunderlag</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Drag & drop zon */}
         <div
           style={{
             border: '2px dashed',
-            borderColor: dragActive ? 'var(--yellow)' : 'var(--navy-border)',
-            background: dragActive ? 'var(--yellow-glow)' : 'transparent',
+            borderColor: dragActive ? 'var(--light-amber)' : 'var(--light-border)',
+            background: dragActive ? 'var(--light-amber-glow)' : 'transparent',
             borderRadius: 8,
             padding: '24px',
             textAlign: 'center',
@@ -141,26 +141,28 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
         >
           {status === 'idle' && !visaTextInput && (
             <>
-              <p style={{ color: 'var(--muted-custom)', marginBottom: 8, fontSize: 14 }}>
-                Dra och släpp <strong style={{ color: 'var(--white)' }}>alla dokument</strong> i förfrågningsunderlaget hit
+              <p style={{ color: 'var(--light-t3)', marginBottom: 8, fontSize: 14 }}>
+                Dra och släpp <strong style={{ color: 'var(--light-t1)' }}>alla dokument</strong> i förfrågningsunderlaget hit
               </p>
-              <p style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 16 }}>
+              <p style={{ fontSize: 12, color: 'var(--light-t4)', marginBottom: 16 }}>
                 PDF · Word · Excel · Mail · Bilder · XML · Max 20 MB per fil
               </p>
               <div className="flex gap-3 justify-center">
                 <Button
                   variant="outline"
                   onClick={() => document.getElementById('fu-fil-input')?.click()}
-                  style={{ borderColor: 'var(--navy-border)', color: 'var(--soft)' }}
+                  style={{ borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)', display: 'inline-flex', alignItems: 'center', gap: 8 }}
                 >
-                  📁 Välj filer
+                  <FolderOpen size={16} weight="bold" />
+                  Välj filer
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setVisaTextInput(true)}
-                  style={{ borderColor: 'var(--navy-border)', color: 'var(--soft)' }}
+                  style={{ borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)', display: 'inline-flex', alignItems: 'center', gap: 8 }}
                 >
-                  📋 Klistra in text / mail
+                  <ClipboardText size={16} weight="bold" />
+                  Klistra in text / mail
                 </Button>
               </div>
               <input
@@ -176,7 +178,7 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
 
           {status === 'laddar_upp' && (
             <div className="space-y-3">
-              <p style={{ fontSize: 14, color: 'var(--yellow)', fontWeight: 600 }}>
+              <p style={{ fontSize: 14, color: 'var(--light-amber)', fontWeight: 600 }}>
                 Laddar upp {filer.filter(f => f.status !== 'fel').length} filer...
               </p>
               <Progress value={progress} />
@@ -186,7 +188,7 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
           {(status === 'klar' || status === 'fel') && filer.length > 0 && !visaTextInput && (
             <div className="space-y-2">
               <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: status === 'klar' ? 'var(--green)' : 'var(--red)' }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: status === 'klar' ? 'var(--light-green)' : 'var(--light-red)' }}>
                   {status === 'klar'
                     ? `${filer.filter(f => f.status === 'klar').length} filer uppladdade`
                     : 'Uppladdning misslyckades'}
@@ -196,7 +198,7 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
                     variant="outline"
                     size="sm"
                     onClick={() => { setStatus('idle'); setFiler([]); setProgress(0) }}
-                    style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)', fontSize: 12 }}
+                    style={{ borderColor: 'var(--light-border)', color: 'var(--light-t3)', background: 'var(--light-bg)', fontSize: 12 }}
                   >
                     Ladda upp fler
                   </Button>
@@ -204,9 +206,10 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
                     variant="outline"
                     size="sm"
                     onClick={() => { setVisaTextInput(true) }}
-                    style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)', fontSize: 12 }}
+                    style={{ borderColor: 'var(--light-border)', color: 'var(--light-t3)', background: 'var(--light-bg)', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                   >
-                    📋 Klistra in text
+                    <ClipboardText size={14} weight="bold" />
+                    Klistra in text
                   </Button>
                 </div>
               </div>
@@ -218,12 +221,16 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
         {visaTextInput && (
           <div style={{ marginTop: 12 }}>
             <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>📋 Klistra in mailtext eller förfrågningstext</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <ClipboardText size={14} weight="bold" />
+                Klistra in mailtext eller förfrågningstext
+              </span>
               <button
                 onClick={() => setVisaTextInput(false)}
-                style={{ fontSize: 12, color: 'var(--muted-custom)', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ fontSize: 12, color: 'var(--light-t3)', background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
               >
-                ✕ Stäng
+                <X size={12} weight="bold" />
+                Stäng
               </button>
             </div>
             <textarea
@@ -235,9 +242,9 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
                 minHeight: 200,
                 padding: 12,
                 borderRadius: 8,
-                background: 'var(--navy)',
-                border: '1px solid var(--navy-border)',
-                color: 'var(--soft)',
+                background: 'var(--light-bg)',
+                border: '1px solid var(--light-border)',
+                color: 'var(--light-t1)',
                 fontSize: 13,
                 lineHeight: 1.6,
                 resize: 'vertical',
@@ -247,11 +254,12 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
               <Button
                 onClick={sparaText}
                 disabled={spararText || !textInput.trim()}
-                style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 13 }}
+                style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                {spararText ? 'Sparar...' : '💾 Spara som dokument'}
+                <FloppyDisk size={14} weight="bold" />
+                {spararText ? 'Sparar...' : 'Spara som dokument'}
               </Button>
-              <span style={{ fontSize: 11, color: 'var(--slate)', alignSelf: 'center' }}>
+              <span style={{ fontSize: 11, color: 'var(--light-t4)', alignSelf: 'center' }}>
                 {textInput.length > 0 ? `${textInput.length} tecken` : ''}
               </span>
             </div>
@@ -265,21 +273,21 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
               <div
                 key={i}
                 className="flex items-center gap-2"
-                style={{ padding: '6px 0', borderBottom: i < filer.length - 1 ? '1px solid var(--navy-border)' : 'none' }}
+                style={{ padding: '6px 0', borderBottom: i < filer.length - 1 ? '1px solid var(--light-border)' : 'none' }}
               >
                 <span style={{ fontSize: 12 }}>
                   {f.status === 'klar' ? '✅' : f.status === 'laddar' ? '⏳' : f.status === 'varning' ? '⚠️' : f.status === 'väntar' ? '⏸️' : '❌'}
                 </span>
-                <span style={{ fontSize: 12, color: 'var(--soft)', flex: 1 }} className="truncate">{f.namn}</span>
+                <span style={{ fontSize: 12, color: 'var(--light-t2)', flex: 1 }} className="truncate">{f.namn}</span>
                 {f.meddelande && (
-                  <span style={{ fontSize: 10, color: f.status === 'varning' ? 'var(--orange)' : 'var(--red)' }}>
+                  <span style={{ fontSize: 10, color: f.status === 'varning' ? 'var(--light-orange)' : 'var(--light-red)' }}>
                     {f.meddelande.slice(0, 40)}
                   </span>
                 )}
                 <span style={{
                   fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4,
-                  background: f.status === 'klar' ? 'var(--green-bg)' : f.status === 'fel' ? 'var(--red-bg)' : f.status === 'laddar' ? 'var(--yellow-glow)' : 'var(--navy-light)',
-                  color: f.status === 'klar' ? 'var(--green)' : f.status === 'fel' ? 'var(--red)' : f.status === 'laddar' ? 'var(--yellow)' : 'var(--muted-custom)',
+                  background: f.status === 'klar' ? 'var(--light-green-bg)' : f.status === 'fel' ? 'var(--light-red-bg)' : f.status === 'laddar' ? 'var(--light-amber-glow)' : 'var(--light-cream)',
+                  color: f.status === 'klar' ? 'var(--light-green)' : f.status === 'fel' ? 'var(--light-red)' : f.status === 'laddar' ? 'var(--light-amber)' : 'var(--light-t3)',
                 }}>
                   {f.status === 'klar' ? 'OK' : f.status === 'laddar' ? '...' : f.status === 'varning' ? '⚠' : f.status === 'väntar' ? 'Väntar' : 'Fel'}
                 </span>
