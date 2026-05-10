@@ -5,6 +5,7 @@ import { FORANMALAN_STEG, STEG_ORDNING, FORANMALAN_JOBBTYPER, nästaSteg, stegIn
 import type { StegId } from '@/lib/foranmalan-regler'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ArrowSquareOut } from '@phosphor-icons/react'
 
 interface ForanmalanProjekt {
   id: string
@@ -148,7 +149,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
   }
 
   if (laddar) {
-    return <div className="animate-pulse h-20 rounded-xl" style={{ background: 'var(--navy-mid)' }} />
+    return <div className="animate-pulse h-20 rounded-xl" style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)' }} />
   }
 
   // Ingen tracker — visa "Starta"
@@ -156,35 +157,36 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
     return (
       <div
         style={{
-          background: 'var(--navy-mid)',
-          border: '2px dashed var(--navy-border)',
+          background: 'var(--light-bg)',
+          border: '2px dashed var(--light-border)',
           borderRadius: 12,
           padding: '24px',
           textAlign: 'center',
+          boxShadow: '0 1px 2px rgba(14,27,46,.04)',
         }}
       >
         <div style={{ fontSize: 28, marginBottom: 8 }}>📋</div>
-        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Föranmälan & nätbolag</div>
-        <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: 'var(--light-t1)' }}>Föranmälan & nätbolag</div>
+        <p style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 16 }}>
           Aktivera föranmälan-tracker för att hålla koll på status hos nätbolaget och notifiera kunden.
         </p>
         <Button
           onClick={() => setSkapaDialogOpen(true)}
-          style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700 }}
+          style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700 }}
         >
           + Starta tracker
         </Button>
 
         {/* Skapa-dialog */}
         <Dialog open={skapaDialogOpen} onOpenChange={setSkapaDialogOpen}>
-          <DialogContent style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', maxWidth: 500 }}>
+          <DialogContent style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', maxWidth: 500 }}>
             <DialogHeader>
-              <DialogTitle>Starta föranmälan-tracker</DialogTitle>
+              <DialogTitle style={{ color: 'var(--light-t1)' }}>Starta föranmälan-tracker</DialogTitle>
             </DialogHeader>
             <div className="space-y-4" style={{ marginTop: 16 }}>
               {/* Jobbtyp */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 6, display: 'block' }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 6, display: 'block' }}>
                   Jobbtyp *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -196,9 +198,9 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                         padding: '8px 10px',
                         borderRadius: 8,
                         border: '1px solid',
-                        borderColor: nyJobbtyp === j.id ? 'rgba(245,196,0,0.5)' : 'var(--navy-border)',
-                        background: nyJobbtyp === j.id ? 'var(--yellow-glow)' : 'var(--navy)',
-                        color: nyJobbtyp === j.id ? 'var(--white)' : 'var(--muted-custom)',
+                        borderColor: nyJobbtyp === j.id ? 'var(--light-amber)' : 'var(--light-border)',
+                        background: nyJobbtyp === j.id ? 'var(--light-amber-glow)' : 'var(--light-off)',
+                        color: nyJobbtyp === j.id ? 'var(--light-amber)' : 'var(--light-t2)',
                         cursor: 'pointer',
                         textAlign: 'left',
                         fontSize: 12,
@@ -206,7 +208,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                     >
                       <span style={{ marginRight: 6 }}>{j.emoji}</span>
                       {j.label}
-                      {!j.kravs && <span style={{ fontSize: 10, color: 'var(--green)', marginLeft: 4 }}>Ej krav</span>}
+                      {!j.kravs && <span style={{ fontSize: 10, color: 'var(--light-green)', marginLeft: 4 }}>Ej krav</span>}
                     </button>
                   ))}
                 </div>
@@ -214,34 +216,34 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
 
               {/* Nätbolag */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 4, display: 'block' }}>
                   Nätbolag
                 </label>
                 <input
                   value={nyNätbolag}
                   onChange={e => setNyNätbolag(e.target.value)}
                   placeholder="T.ex. Vattenfall, Ellevio, E.ON..."
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: 'var(--navy)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 13 }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 13 }}
                 />
               </div>
 
               {/* Kunduppgifter */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 4, display: 'block' }}>
                   Kunduppgifter (för notiser)
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  <input value={nyKundNamn} onChange={e => setNyKundNamn(e.target.value)} placeholder="Kundens namn" style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--navy)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 13 }} />
-                  <input value={nyKundTelefon} onChange={e => setNyKundTelefon(e.target.value)} placeholder="Telefon" style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--navy)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 13 }} />
+                  <input value={nyKundNamn} onChange={e => setNyKundNamn(e.target.value)} placeholder="Kundens namn" style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 13 }} />
+                  <input value={nyKundTelefon} onChange={e => setNyKundTelefon(e.target.value)} placeholder="Telefon" style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 13 }} />
                 </div>
-                <input value={nyKundEpost} onChange={e => setNyKundEpost(e.target.value)} placeholder="Kundens e-post (för automatiska notiser)" style={{ width: '100%', marginTop: 8, padding: '8px 12px', borderRadius: 8, background: 'var(--navy)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 13 }} />
+                <input value={nyKundEpost} onChange={e => setNyKundEpost(e.target.value)} placeholder="Kundens e-post (för automatiska notiser)" style={{ width: '100%', marginTop: 8, padding: '8px 12px', borderRadius: 8, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 13 }} />
               </div>
 
               <Button
                 onClick={skapaTracker}
                 disabled={!nyJobbtyp || uppdaterar}
                 className="w-full"
-                style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700 }}
+                style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700 }}
               >
                 {uppdaterar ? 'Skapar...' : 'Starta tracker'}
               </Button>
@@ -259,10 +261,11 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
   return (
     <div
       style={{
-        background: 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
+        background: 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
         borderRadius: 12,
         overflow: 'hidden',
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}
     >
       {/* Header */}
@@ -270,7 +273,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
         className="flex items-center justify-between"
         style={{
           padding: '16px 24px',
-          borderBottom: '1px solid var(--navy-border)',
+          borderBottom: '1px solid var(--light-border)',
         }}
       >
         <div className="flex items-center gap-3">
@@ -279,7 +282,8 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
               width: 40,
               height: 40,
               borderRadius: 10,
-              background: 'var(--yellow-glow)',
+              background: 'var(--light-amber-glow)',
+              border: '1px solid var(--light-amber-border)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -289,8 +293,8 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
             {jobbInfo?.emoji}
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 800 }}>Föranmälan — {jobbInfo?.label}</div>
-            <div style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--light-t1)' }}>Föranmälan — {jobbInfo?.label}</div>
+            <div style={{ fontSize: 13, color: 'var(--light-t3)', marginTop: 1 }}>
               {fp.nätbolag ? `Nätbolag: ${fp.nätbolag}` : 'Inget nätbolag angivet'}
               {fp.kund_namn && ` · Kund: ${fp.kund_namn}`}
             </div>
@@ -302,9 +306,9 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
             fontWeight: 700,
             padding: '6px 14px',
             borderRadius: 8,
-            background: fp.nuvarande_steg === 'klar' ? 'var(--green-bg)' : 'var(--yellow-glow)',
-            color: fp.nuvarande_steg === 'klar' ? 'var(--green)' : 'var(--yellow)',
-            border: `1px solid ${fp.nuvarande_steg === 'klar' ? 'rgba(0,198,122,0.3)' : 'rgba(245,196,0,0.3)'}`,
+            background: fp.nuvarande_steg === 'klar' ? 'var(--light-green-bg)' : 'var(--light-amber-glow)',
+            color: fp.nuvarande_steg === 'klar' ? 'var(--light-green)' : 'var(--light-amber)',
+            border: `1px solid ${fp.nuvarande_steg === 'klar' ? 'var(--light-green)' : 'var(--light-amber-border)'}`,
           }}
         >
           {FORANMALAN_STEG.find(s => s.id === fp.nuvarande_steg)?.label}
@@ -315,7 +319,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
         {/* Progress stepper — full bredd */}
         <div style={{ position: 'relative', marginBottom: 28 }}>
           {/* Bakgrundslinje */}
-          <div style={{ position: 'absolute', top: 20, left: 40, right: 40, height: 3, background: 'var(--navy-border)', borderRadius: 2 }} />
+          <div style={{ position: 'absolute', top: 20, left: 40, right: 40, height: 3, background: 'var(--light-border)', borderRadius: 2 }} />
           {/* Progresslinje */}
           <div
             style={{
@@ -323,7 +327,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
               top: 20,
               left: 40,
               height: 3,
-              background: fp.nuvarande_steg === 'klar' ? 'var(--green)' : 'var(--yellow)',
+              background: fp.nuvarande_steg === 'klar' ? 'var(--light-green)' : 'var(--light-amber)',
               borderRadius: 2,
               width: `${(nuvarandeStegIdx / (STEG_ORDNING.length - 1)) * (100 - 10)}%`,
               transition: 'width 0.5s',
@@ -354,15 +358,15 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                       height: 40,
                       borderRadius: '50%',
                       border: '3px solid',
-                      borderColor: vald ? 'var(--white)' : klar ? 'var(--green)' : aktiv ? 'var(--yellow)' : 'var(--navy-border)',
-                      background: klar ? 'var(--green)' : aktiv ? 'var(--yellow-glow)' : 'var(--navy-mid)',
+                      borderColor: vald ? 'var(--light-t1)' : klar ? 'var(--light-green)' : aktiv ? 'var(--light-amber)' : 'var(--light-border)',
+                      background: klar ? 'var(--light-green)' : aktiv ? 'var(--light-amber-glow)' : 'var(--light-bg)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: 16,
                       fontWeight: 800,
-                      color: klar ? 'var(--navy)' : aktiv ? 'var(--yellow)' : 'var(--muted-custom)',
-                      boxShadow: vald ? '0 0 0 5px rgba(255,255,255,0.15)' : aktiv ? '0 0 0 5px var(--yellow-glow)' : 'none',
+                      color: klar ? 'var(--light-bg)' : aktiv ? 'var(--light-amber)' : 'var(--light-t4)',
+                      boxShadow: vald ? '0 0 0 5px rgba(14,27,46,0.08)' : aktiv ? '0 0 0 5px var(--light-amber-glow)' : 'none',
                       transition: 'all 0.3s',
                       position: 'relative',
                       zIndex: 2,
@@ -377,18 +381,18 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                       marginTop: 8,
                       lineHeight: 1.3,
                       fontWeight: aktiv || vald ? 700 : 500,
-                      color: vald ? 'var(--white)' : aktiv ? 'var(--white)' : klar ? 'var(--green)' : 'var(--slate)',
+                      color: vald ? 'var(--light-t1)' : aktiv ? 'var(--light-t1)' : klar ? 'var(--light-green)' : 'var(--light-t4)',
                       maxWidth: 100,
                     }}
                   >
                     {steg.label}
                   </span>
                   {stegDatum && (klar || aktiv) ? (
-                    <span style={{ fontSize: 9, color: klar ? 'var(--green)' : 'var(--yellow)', marginTop: 2, fontWeight: 600, fontFamily: 'var(--font-mono), monospace' }}>
+                    <span style={{ fontSize: 9, color: klar ? 'var(--light-green)' : 'var(--light-amber)', marginTop: 2, fontWeight: 600, fontFamily: 'var(--font-mono), monospace' }}>
                       {stegDatum.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   ) : aktiv && !stegDatum ? (
-                    <span style={{ fontSize: 9, color: 'var(--yellow)', marginTop: 2, fontWeight: 600 }}>
+                    <span style={{ fontSize: 9, color: 'var(--light-amber)', marginTop: 2, fontWeight: 600 }}>
                       ← Du är här
                     </span>
                   ) : null}
@@ -405,38 +409,43 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
             .sort((a, b) => new Date(b.skapad).getTime() - new Date(a.skapad).getTime())
           const stegInfo = FORANMALAN_STEG.find(s => s.id === valtSteg)
           const stegHjälp = jobbInfo?.stegOchHjälp?.[valtSteg as keyof typeof jobbInfo.stegOchHjälp]
+          // Förenkla detaljvy-header per avvikelse C: light-amber-glow för aktiv, light-green-bg för klar
+          const valtKlar = valtSteg === 'klar' || (nuvarandeStegIdx > 0 && STEG_ORDNING.indexOf(valtSteg as StegId) < nuvarandeStegIdx)
+          const stegBg = valtKlar ? 'var(--light-green-bg)' : 'var(--light-amber-glow)'
+          const stegBorder = valtKlar ? 'var(--light-green)' : 'var(--light-amber-border)'
           return (
             <div
               style={{
-                background: 'var(--navy)',
+                background: 'var(--light-bg)',
                 borderRadius: 10,
                 padding: '16px 20px',
                 marginBottom: 16,
-                border: '1px solid var(--navy-border)',
+                border: '1px solid var(--light-border)',
+                boxShadow: '0 1px 2px rgba(14,27,46,.04)',
               }}
             >
               <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" style={{ padding: '4px 10px', borderRadius: 6, background: stegBg, border: `1px solid ${stegBorder}` }}>
                   <span style={{ fontSize: 16 }}>{stegInfo?.emoji}</span>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>{stegInfo?.label}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>{stegInfo?.label}</span>
                 </div>
                 <button
                   onClick={() => setValtSteg(null)}
-                  style={{ fontSize: 12, color: 'var(--muted-custom)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  style={{ fontSize: 12, color: 'var(--light-t4)', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   ✕ Stäng
                 </button>
               </div>
 
               {stegHjälp && (
-                <p style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.6, marginBottom: 12 }}>
+                <p style={{ fontSize: 13, color: 'var(--light-t2)', lineHeight: 1.6, marginBottom: 12 }}>
                   {stegHjälp}
                 </p>
               )}
 
               {stegLogg.length > 0 ? (
                 <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--slate)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--light-t4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
                     Noteringar
                   </div>
                   {stegLogg.map(logg => (
@@ -446,22 +455,22 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                         padding: '8px 12px',
                         marginBottom: 6,
                         borderRadius: 6,
-                        background: 'var(--navy-mid)',
-                        border: '1px solid var(--navy-border)',
+                        background: 'var(--light-off)',
+                        border: '1px solid var(--light-border)',
                       }}
                     >
                       <div className="flex items-center justify-between" style={{ marginBottom: logg.kommentar ? 4 : 0 }}>
-                        <span style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
+                        <span style={{ fontSize: 12, color: 'var(--light-t3)' }}>
                           {new Date(logg.skapad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' })}
                           {' kl '}
                           {new Date(logg.skapad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         {logg.notis_skickad && (
-                          <span style={{ fontSize: 11, color: 'var(--green)' }}>✉ Notis skickad</span>
+                          <span style={{ fontSize: 11, color: 'var(--light-green)' }}>✉ Notis skickad</span>
                         )}
                       </div>
                       {logg.kommentar && (
-                        <p style={{ fontSize: 13, color: 'var(--white)', margin: 0, lineHeight: 1.5 }}>
+                        <p style={{ fontSize: 13, color: 'var(--light-t1)', margin: 0, lineHeight: 1.5 }}>
                           💬 {logg.kommentar}
                         </p>
                       )}
@@ -469,7 +478,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                   ))}
                 </div>
               ) : (
-                <div style={{ fontSize: 12, color: 'var(--slate)', fontStyle: 'italic' }}>
+                <div style={{ fontSize: 12, color: 'var(--light-t4)', fontStyle: 'italic' }}>
                   Inga noteringar för detta steg.
                 </div>
               )}
@@ -483,24 +492,26 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
           {jobbInfo?.stegOchHjälp && fp.nuvarande_steg !== 'klar' && (
             <div
               style={{
-                background: 'var(--navy)',
+                background: 'var(--light-bg)',
+                border: '1px solid var(--light-border)',
                 borderRadius: 10,
                 padding: '14px 18px',
+                boxShadow: '0 1px 2px rgba(14,27,46,.04)',
               }}
             >
-              <div style={{ fontWeight: 700, color: 'var(--slate)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+              <div style={{ fontWeight: 700, color: 'var(--light-t4)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
                 Tips för detta steg
               </div>
-              <p style={{ color: 'var(--soft)', lineHeight: 1.7, margin: 0, fontSize: 13 }}>
+              <p style={{ color: 'var(--light-t2)', lineHeight: 1.7, margin: 0, fontSize: 13 }}>
                 {jobbInfo.stegOchHjälp[fp.nuvarande_steg as keyof typeof jobbInfo.stegOchHjälp] || ''}
               </p>
               {/* Ha redo-lista */}
               {(jobbInfo as unknown as { haRedo?: Record<string, string[]> }).haRedo?.[fp.nuvarande_steg as string] && (
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--navy-border)' }}>
-                  <div style={{ fontWeight: 700, color: 'var(--yellow)', fontSize: 11, marginBottom: 6 }}>
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--light-border)' }}>
+                  <div style={{ fontWeight: 700, color: 'var(--light-amber)', fontSize: 11, marginBottom: 6 }}>
                     Ha redo:
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: 'var(--soft)', lineHeight: 1.8 }}>
+                  <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: 'var(--light-t2)', lineHeight: 1.8 }}>
                     {((jobbInfo as unknown as { haRedo: Record<string, string[]> }).haRedo[fp.nuvarande_steg as string]).map((item, idx) => (
                       <li key={idx}>{item}</li>
                     ))}
@@ -512,13 +523,13 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                   href={jobbInfo.regelLank}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: 'var(--blue-accent)', fontSize: 12, textDecoration: 'none', marginTop: 8, display: 'inline-block' }}
+                  style={{ color: 'var(--light-blue)', fontSize: 12, textDecoration: 'none', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                 >
-                  Läs mer om ELNÄT 2025 K §5.9 ↗
+                  Läs mer om ELNÄT 2025 K §5.9 <ArrowSquareOut size={12} weight="bold" />
                 </a>
               )}
               {regelÄrGammal() && (
-                <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(255,165,0,0.1)', border: '1px solid rgba(255,165,0,0.3)', fontSize: 11, color: 'var(--orange)' }}>
+                <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'var(--light-orange-bg)', border: '1px solid var(--light-orange)', fontSize: 11, color: 'var(--light-orange)' }}>
                   ⚠️ Regelinformationen baseras på {REGEL_VERSION.källa} ({new Date(REGEL_VERSION.datum).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' })}). Kontrollera att reglerna fortfarande gäller.
                 </div>
               )}
@@ -528,13 +539,15 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
           {/* Info-kort: handläggningstid + kundnotis — redigerbart */}
           <div
             style={{
-              background: 'var(--navy)',
+              background: 'var(--light-bg)',
+              border: '1px solid var(--light-border)',
               borderRadius: 10,
               padding: '14px 18px',
+              boxShadow: '0 1px 2px rgba(14,27,46,.04)',
             }}
           >
             <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
-              <div style={{ fontWeight: 700, color: 'var(--slate)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <div style={{ fontWeight: 700, color: 'var(--light-t4)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Projektinfo
               </div>
               <button
@@ -542,7 +555,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                 style={{
                   fontSize: 11,
                   fontWeight: 600,
-                  color: redigeraInfo ? 'var(--green)' : 'var(--muted-custom)',
+                  color: redigeraInfo ? 'var(--light-green)' : 'var(--light-amber)',
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
@@ -556,28 +569,28 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
             {redigeraInfo ? (
               <div className="space-y-2">
                 <div>
-                  <label style={{ fontSize: 11, color: 'var(--slate)', display: 'block', marginBottom: 2 }}>Nätbolag</label>
-                  <input value={editNätbolag} onChange={e => setEditNätbolag(e.target.value)} placeholder="T.ex. Vattenfall, Ellevio..." style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 12 }} />
+                  <label style={{ fontSize: 11, color: 'var(--light-t3)', display: 'block', marginBottom: 2 }}>Nätbolag</label>
+                  <input value={editNätbolag} onChange={e => setEditNätbolag(e.target.value)} placeholder="T.ex. Vattenfall, Ellevio..." style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 12 }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: 'var(--slate)', display: 'block', marginBottom: 2 }}>Kundens namn</label>
-                  <input value={editKundNamn} onChange={e => setEditKundNamn(e.target.value)} placeholder="Kundens namn" style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 12 }} />
+                  <label style={{ fontSize: 11, color: 'var(--light-t3)', display: 'block', marginBottom: 2 }}>Kundens namn</label>
+                  <input value={editKundNamn} onChange={e => setEditKundNamn(e.target.value)} placeholder="Kundens namn" style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 12 }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: 'var(--slate)', display: 'block', marginBottom: 2 }}>E-post (för notiser)</label>
-                  <input value={editKundEpost} onChange={e => setEditKundEpost(e.target.value)} placeholder="kund@example.se" style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 12 }} />
+                  <label style={{ fontSize: 11, color: 'var(--light-t3)', display: 'block', marginBottom: 2 }}>E-post (för notiser)</label>
+                  <input value={editKundEpost} onChange={e => setEditKundEpost(e.target.value)} placeholder="kund@example.se" style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 12 }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: 'var(--slate)', display: 'block', marginBottom: 2 }}>Telefon</label>
-                  <input value={editKundTelefon} onChange={e => setEditKundTelefon(e.target.value)} placeholder="070-xxx xx xx" style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--navy-mid)', border: '1px solid var(--navy-border)', color: 'var(--white)', fontSize: 12 }} />
+                  <label style={{ fontSize: 11, color: 'var(--light-t3)', display: 'block', marginBottom: 2 }}>Telefon</label>
+                  <input value={editKundTelefon} onChange={e => setEditKundTelefon(e.target.value)} placeholder="070-xxx xx xx" style={{ width: '100%', padding: '6px 10px', borderRadius: 6, background: 'var(--light-bg)', border: '1px solid var(--light-border)', color: 'var(--light-t1)', fontSize: 12 }} />
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer" style={{ fontSize: 12, color: 'var(--soft)', marginTop: 4 }}>
-                  <input type="checkbox" checked={editNotifiera} onChange={e => setEditNotifiera(e.target.checked)} style={{ accentColor: 'var(--yellow)' }} />
+                <label className="flex items-center gap-2 cursor-pointer" style={{ fontSize: 12, color: 'var(--light-t2)', marginTop: 4 }}>
+                  <input type="checkbox" checked={editNotifiera} onChange={e => setEditNotifiera(e.target.checked)} style={{ accentColor: 'var(--light-amber)' }} />
                   Skicka e-postnotiser till kunden
                 </label>
                 <button
                   onClick={() => setRedigeraInfo(false)}
-                  style={{ fontSize: 11, color: 'var(--muted-custom)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4 }}
+                  style={{ fontSize: 11, color: 'var(--light-t3)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4 }}
                 >
                   Avbryt
                 </button>
@@ -585,31 +598,31 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
             ) : (
               <>
                 {jobbInfo?.typiskHandlaggningstid && (
-                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--soft)', marginBottom: 6 }}>
+                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--light-t2)', marginBottom: 6 }}>
                     <span>⏱</span>
-                    <span>Handläggningstid: <strong style={{ color: 'var(--white)' }}>{jobbInfo.typiskHandlaggningstid}</strong></span>
+                    <span>Handläggningstid: <strong style={{ color: 'var(--light-t1)' }}>{jobbInfo.typiskHandlaggningstid}</strong></span>
                   </div>
                 )}
                 {fp.nätbolag && (
-                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--soft)', marginBottom: 6 }}>
+                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--light-t2)', marginBottom: 6 }}>
                     <span>🏢</span>
-                    <span>Nätbolag: <strong style={{ color: 'var(--white)' }}>{fp.nätbolag}</strong></span>
+                    <span>Nätbolag: <strong style={{ color: 'var(--light-t1)' }}>{fp.nätbolag}</strong></span>
                   </div>
                 )}
                 {fp.kund_epost && (
-                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--soft)', marginBottom: 6 }}>
+                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--light-t2)', marginBottom: 6 }}>
                     <span>🔔</span>
-                    <span>Kundnotiser: <strong style={{ color: 'var(--white)' }}>{fp.kund_epost}</strong></span>
+                    <span>Kundnotiser: <strong style={{ color: 'var(--light-t1)' }}>{fp.kund_epost}</strong></span>
                   </div>
                 )}
                 {fp.kund_namn && (
-                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--soft)', marginBottom: 6 }}>
+                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--light-t2)', marginBottom: 6 }}>
                     <span>👤</span>
-                    <span>Kund: <strong style={{ color: 'var(--white)' }}>{fp.kund_namn}</strong></span>
+                    <span>Kund: <strong style={{ color: 'var(--light-t1)' }}>{fp.kund_namn}</strong></span>
                   </div>
                 )}
                 {dagar > 0 && fp.nuvarande_steg !== 'klar' && (
-                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: stegFastnat ? 'var(--orange)' : 'var(--soft)' }}>
+                  <div className="flex items-center gap-2" style={{ fontSize: 13, color: stegFastnat ? 'var(--light-orange)' : 'var(--light-t2)' }}>
                     <span>{stegFastnat ? '⚠' : '📅'}</span>
                     <span>{dagar} dagar på nuvarande steg{stegFastnat ? ' — kontakta nätbolaget?' : ''}</span>
                   </div>
@@ -624,8 +637,8 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
           <div
             className="flex items-start gap-3"
             style={{
-              background: 'var(--orange-bg)',
-              border: '1px solid rgba(255,140,66,0.3)',
+              background: 'var(--light-orange-bg)',
+              border: '1px solid var(--light-orange)',
               borderRadius: 10,
               padding: '14px 18px',
               marginBottom: 16,
@@ -634,8 +647,8 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
           >
             <span style={{ fontSize: 18, flexShrink: 0 }}>⏰</span>
             <div>
-              <div style={{ fontWeight: 700, color: 'var(--orange)', marginBottom: 2 }}>Fastnad i {dagar} dagar</div>
-              <div style={{ color: 'var(--muted-custom)' }}>
+              <div style={{ fontWeight: 700, color: 'var(--light-orange)', marginBottom: 2 }}>Fastnad i {dagar} dagar</div>
+              <div style={{ color: 'var(--light-t3)' }}>
                 Har du hört av {fp.nätbolag || 'nätbolaget'} om detta ärende? Normal handläggningstid är {jobbInfo?.typiskHandlaggningstid ?? 'okänd'}.
               </div>
             </div>
@@ -644,25 +657,25 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
 
         {/* Aktivitetslogg */}
         {fp.foranmalan_steg_logg.length > 0 && (
-          <div style={{ borderTop: '1px solid var(--navy-border)', paddingTop: 14, marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--slate)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+          <div style={{ borderTop: '1px solid var(--light-border)', paddingTop: 14, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-t4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
               Aktivitetslogg
             </div>
             {[...fp.foranmalan_steg_logg]
               .sort((a, b) => new Date(b.skapad).getTime() - new Date(a.skapad).getTime())
               .slice(0, 5)
               .map(logg => (
-                <div key={logg.id} className="flex items-center gap-3" style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 6 }}>
-                  <span className="font-mono" style={{ fontSize: 11, flexShrink: 0, width: 50 }}>
+                <div key={logg.id} className="flex items-center gap-3" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 6 }}>
+                  <span className="font-mono" style={{ fontSize: 11, flexShrink: 0, width: 50, color: 'var(--light-t4)' }}>
                     {new Date(logg.skapad).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' })}
                   </span>
-                  <span style={{ color: 'var(--slate)' }}>·</span>
-                  <span style={{ fontWeight: 600 }}>{FORANMALAN_STEG.find(s => s.id === logg.steg)?.emoji} {FORANMALAN_STEG.find(s => s.id === logg.steg)?.label}</span>
+                  <span style={{ color: 'var(--light-t4)' }}>·</span>
+                  <span style={{ fontWeight: 600, color: 'var(--light-t2)' }}>{FORANMALAN_STEG.find(s => s.id === logg.steg)?.emoji} {FORANMALAN_STEG.find(s => s.id === logg.steg)?.label}</span>
                   {logg.kommentar && (
-                    <span style={{ color: 'var(--soft)' }}>— {logg.kommentar}</span>
+                    <span style={{ color: 'var(--light-t2)' }}>— {logg.kommentar}</span>
                   )}
                   {logg.notis_skickad && (
-                    <span style={{ color: 'var(--green)', marginLeft: 'auto', flexShrink: 0, fontSize: 11 }}>✉ notis skickad</span>
+                    <span style={{ color: 'var(--light-green)', marginLeft: 'auto', flexShrink: 0, fontSize: 11 }}>✉ notis skickad</span>
                   )}
                 </div>
               ))
@@ -675,29 +688,29 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
           <Button
             onClick={() => setDialogOpen(true)}
             className="w-full"
-            style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700, fontSize: 14, padding: '12px 24px' }}
+            style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700, fontSize: 14, padding: '12px 24px' }}
           >
             {nästaStegInfo.emoji} Uppdatera till: {nästaStegInfo.label} →
           </Button>
         )}
 
         {fp.nuvarande_steg === 'klar' && (
-          <div className="text-center" style={{ padding: '12px 0' }}>
-            <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--green)' }}>⚡ Projekt avslutat — Nätbolag godkänt</span>
+          <div style={{ padding: '14px 18px', borderRadius: 10, background: 'var(--light-green-bg)', border: '1px solid var(--light-green)', textAlign: 'center' }}>
+            <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--light-green)' }}>⚡ Projekt avslutat — Nätbolag godkänt</span>
           </div>
         )}
       </div>
 
       {/* Dialog för steguppdatering */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ background: 'var(--navy-mid)', border: '1px solid var(--navy-border)' }}>
+        <DialogContent style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)' }}>
           <DialogHeader>
-            <DialogTitle>{nästaStegInfo?.emoji} {nästaStegInfo?.label}</DialogTitle>
+            <DialogTitle style={{ color: 'var(--light-t1)' }}>{nästaStegInfo?.emoji} {nästaStegInfo?.label}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4" style={{ marginTop: 12 }}>
             {/* Kommentar */}
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-custom)', marginBottom: 4, display: 'block' }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--light-t3)', marginBottom: 4, display: 'block' }}>
                 Kommentar (valfri)
               </label>
               <textarea
@@ -709,9 +722,9 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                   width: '100%',
                   padding: '8px 12px',
                   borderRadius: 8,
-                  background: 'var(--navy)',
-                  border: '1px solid var(--navy-border)',
-                  color: 'var(--white)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
+                  color: 'var(--light-t1)',
                   fontSize: 13,
                   resize: 'none',
                 }}
@@ -723,7 +736,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
               <Button
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
+                style={{ borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}
               >
                 Avbryt
               </Button>
@@ -731,7 +744,7 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                 onClick={uppdateraSteg}
                 disabled={uppdaterar}
                 className="flex-1"
-                style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700 }}
+                style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700 }}
               >
                 {uppdaterar ? 'Uppdaterar...' : 'Bekräfta'}
               </Button>
