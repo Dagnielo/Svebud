@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 1 maj 2026 — Landing v6+v7 LIVE + Etapp A LIVE på svebud.se
+**Senast uppdaterad:** 2 maj 2026 — App-redesign Steg 1A → 3A LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -12,12 +12,15 @@
 | Yta | Färdig | Återstår |
 |-----|--------|----------|
 | **Landningssida** | 100% | Eventuella strukturella tillägg (Om oss-sida, trial-längd 30 dagar) — i backlog |
-| **Dashboard** | 75% | Uppföljnings-banner (#4) |
-| **Statistik-sida** | 100% | — |
-| **Projekt-detaljvy** | 70% | Email-kanal-källa (#5), uppföljnings-knappar (#4) |
-| **Profil-systemet** | 0% | Hela Features #11 — 5 etapper (A–E), 7–8 dagar |
+| **Dashboard (Pipeline)** | 100% | — (ljus design klar i Steg 2A) |
+| **Alla projekt** | 100% | — (ljus design + sortering klar i Steg 2B) |
+| **Statistik-sida** | 60% | Steg 4 — ljus design (Steg 2A-tokens portas) |
+| **Projekt-detaljvyn** | 25% | Steg 3B-3E — visuell migration + tab-innehåll (arkitektur klar i 3A) |
+| **Profil-systemet** | 60% | Steg 4 — ljus design + Etapp B–E (cert/team/benchmarks/mallar) |
+| **Certifikat** | 50% | Steg 4 — ljus design + AI-extraktion (Etapp B) |
+| **Inställningar** | 50% | Steg 4 — ljus design |
 | **Backend / agenter** | 80% | Firecrawl-scrapers (#6), prisförslag (#9) |
-| **Analytics** | 100% | — |
+| **Analytics** | 90% | PostHog-events på detaljvyn (Steg 3) |
 
 **Översättning:**
 Två stora produkt-pelare återstår: **Profil-systemet** (helt nytt) och **Tillväxt-features** (uppföljning, email-kanal, prisförslag, referral). Landningssidan är komplett.
@@ -167,13 +170,62 @@ Sammanslagen design-migrering + audit-applicering på live svebud.se.
 - `public/favicon.svg` — ny SVG-favicon
 - `CLAUDE.md` — ny `## Designprinciper`-sektion
 
+### 1 maj 2026 — App-redesign Steg 1A → 3A LIVE ✅
+
+**Bakgrund:** Hela inloggade appen migrerades från mörk navy-design till ljus designspråk. Sju steg körda med visuell verifiering före varje commit. Designprincip "yrkesverktyg byggt av människor som förstår elinstallation" förankrad i CLAUDE.md (från Landing v7).
+
+**Levererat i 13 commits på main:**
+
+- ✅ **Steg 1A — Designtokens** parallellt med mörka tokens i `app/globals.css` (25+ `--light-*` tokens inkl. amber/green/red/orange/blue + bg-varianter + text t1-t4 + cream/off-bakgrunder)
+- ✅ **Steg 1B + 1B-2 — Central layout via route-grupper.** `app/(app)/(authenticated)/layout.tsx` (Server Component med server-side auth + Sidebar), `lib/types/user.ts`, `app/api/logout/route.ts`. Refaktorerade 8 page.tsx. Route-grupp-arkitektur: `app/(app)/(authenticated)/` för 8 auth-sidor, `app/(app)/projekt/[projektId]/` för stripped detaljvy, 6 publika sidor utanför `(authenticated)/`
+- ✅ **Steg 1C — Sidebar** redesign med Phosphor-ikoner (`Lightning`, `Plus`, `Folders`, `ChartBar`, `Buildings`, `Certificate`, `Gear`). Wordmark "SveBud." + amber-prick som logo. Form-action `/api/logout` istället för client-side
+- ✅ **Steg 1D — KpiKort** extraherad till `components/KpiKort.tsx` med färg-prop-API (amber/green/red/orange/blue/neutral) och valfri Phosphor-ikon
+- ✅ **Steg 2A — Pipeline-vyn** komplett redesign med 7 nya features:
+  - `NotifikationsBell` (förfallna uppföljningar, badge med antal)
+  - `PipelineFilter` (3 filter-grupper: pipeline-status, kundtyp, anbudsläge)
+  - `PipelineSortera` (4 alternativ: deadline, skapad, anbudsläge, värde)
+  - `bestämCta`-helper i `lib/projekt-status.ts` för status-baserade CTA:er
+  - Konsoliderade `Projekt`-typ till `lib/types/projekt.ts` (3 driftade typer eliminerade)
+  - 7 design-iterationer på live (cream/vit/cream-hierarki, kolumn-pills, vänster-stripes, text-färger, sektion-header, neutral KPI, centrering)
+  - Ny `--light-card`-token (#EAE5DA) för cream-toned kort-bg
+- ✅ **Steg 2B — Alla projekt-vyn** ljus design med klickbar kolumn-sortering (Värde/Deadline/Skapad). Pills för anbudsläge (STARKT/BRA/OSÄKERT/SVÅRT), text för process-state (Analyserar/Analyserad/Ej analyserad). Phosphor ersätter alla 5 emojis (📁📄⚠️🔥📅 → FolderOpen/FileText/Warning/Fire/Calendar). Null-deadline alltid sist oavsett asc/desc.
+- ✅ **Steg 3A — Projekt-detaljvyn arkitektur-städning.** `ProjektDetalj`-typ separerad från `Projekt` i `lib/types/projekt.ts` (rekommendation, anbudsutkast, anbudsutkast_redigerat, inskickningar, uppdaterad). Tre komponenter utbrutna från 1632-radersfilen: `components/SidePanel.tsx`, `components/AktivitetsLogg.tsx`, `components/ProjektDetaljHeader.tsx`. **INGA visuella ändringar** — pixel-perfekt match mot live-versionen verifierad. Sidan fortfarande mörk navy — Steg 3B migrerar till ljus.
+- ✅ **Bug-fix: Datum-prioritet i ProjektKort** respekterar nu `pipeline_status` (visade "Beslut [datum]" på projekt som flyttats tillbaka från Tilldelning till tidigare status — `tilldelning_datum` finns kvar i DB även efter status-byte)
+
+**Filer som tillkom/ändrades:**
+- Nya: `lib/types/projekt.ts`, `lib/types/user.ts`, `lib/projekt-status.ts`, `app/(app)/(authenticated)/layout.tsx`, `app/(app)/projekt/[projektId]/layout.tsx`, `app/api/logout/route.ts`, `components/{KpiKort,NotifikationsBell,PipelineFilter,PipelineSortera,SidePanel,AktivitetsLogg,ProjektDetaljHeader}.tsx`
+- Migrerade: 8 page.tsx (auth-sidor), `components/{Sidebar,ProjektKort}.tsx`, `lib/verdict.ts` (light-tokens i `bedömningsVisning`)
+- Tokens: 25+ `--light-*` i `app/globals.css` parallellt med mörka tokens
+
+**Commits (kronologisk):**
+- `01b91f6` Steg 1A — introducera ljusa designtokens parallellt
+- `b4e6cb3` Steg 1B — central layout + server-side auth
+- `b8e6790` Steg 1B-2 — nestlad layout för projekt-detalj + fix av publika sidor
+- `59f2e2e` Steg 1C — Sidebar redesign med Phosphor + ljusa tokens
+- `bc46751` Steg 1D — KpiKort extraherad till delad komponent
+- `82ccf92` Steg 2A del 1/2 — typkonsolidering + bestämCta-helper + ljusa verdict-tokens
+- `c7385d8` Steg 2A del 2/2 — ProjektKort redesign (ljus + CTA + anbudsläge-badge)
+- `b38ba31` Bug-fix datum-prioritet i ProjektKort
+- `4ebd43d` Steg 2A del 2/2 — header + KPI-strip + filter/sortera + bell
+- `eb04e49` Steg 2A polish — Pipeline-vy hierarki + läsbarhet
+- `da4de70` Steg 2A polish (forts) — sektion-header + neutral KPI + centrering
+- `6dc2051` Steg 2B — Alla projekt-vyn ljus + sortering
+- `b243011` Steg 3A — typkonsolidering + komponent-extraktion (refactor, no visual change)
+
 ---
 
 ## Nästa steg — vart är vi på väg?
 
-### Just nu — Strukturella tillägg
+### Just nu — App-redesign Steg 3 (detaljvyn)
 
-Sprint-pipeline tom efter Features #4. Nästa naturliga steg ligger i "Vecka därefter"-blocket nedan. Hoppa direkt dit eller välj nästa arbete baserat på prioritet.
+| # | Arbete | Fil | Tid |
+|---|--------|-----|-----|
+| 1 | **Steg 3B** — Page-bg + Header + Stepper + höger-panel ljus | `app/(app)/projekt/[projektId]/page.tsx` + 3 utbrutna komponenter | 0,5–1 dag |
+| 2 | **Steg 3C** — Tab 1 (Dokument) + AnbudsUppladdning + KvalitetsPanel ljus | `components/{AnbudsUppladdning,KvalitetsPanel}.tsx` | 0,5–1 dag |
+| 3 | **Steg 3D** — Tab 2 (Analys) — GranskningSida + SnabboffertVy + RotKalkyl ljus | `components/{GranskningSida,SnabboffertVy,RotKalkyl}.tsx` | 1 dag |
+| 4 | **Steg 3E** — Tab 3 (Anbud) + Tab 4 (Föranmälan) — KalkylVy + ForanmalanTracker ljus | `components/{KalkylVy,ForanmalanTracker}.tsx` | 1–1,5 dag |
+
+**Total Steg 3: 3–5 dagar.** Sen: **Steg 4** (Statistik + Profil + Certifikat + Inställningar — bara estetik, en spec).
 
 ### Vecka därefter — Strukturella tillägg + Email-kanal
 
@@ -395,6 +447,79 @@ som ändå skulle skrotas. v7 var den ärliga migreringen.
 4. Om migrering behövs: skriv en separat migrations-spec FÖRST,
    sen audit-fixar PÅ den migrerade filen
 
+### Spec-bug, sjätte lager: Spec-kod är förslag, live ÄR sanningen (1 maj 2026)
+
+I Steg 3A (refaktor utan visuella ändringar) skrev specen kod för
+`ProjektDetaljHeader.tsx` med uppfunna CSS-tokens (`var(--white-custom)`,
+`var(--steel-glow)`, `var(--blue-glow)`) som inte fanns i `globals.css`.
+Specen sa även snabboffert-badge är blå — live är grön. Och den
+saknade 14 styling-detaljer som live hade (3px gul borderBottom,
+beskrivning/skapad-undertitel, "Sätt deadline →"-text, 📅-emoji,
+doljs-på-föranmälan-villkor m.fl.).
+
+Vid ren refaktorering ÄR den existerande live-koden den enda
+sanningen. Spec-kod skriven från minnet är **förslag**, inte
+specifikation.
+
+**Regel framåt:**
+
+- Vid refaktor-specer: skriv prop-interface (designat) men markera
+  kod-block som **"Implementation: kopiera EXAKT från live"**
+- Vid redesign-specer: skriv styling-detaljer som **"riktning + exempel"**,
+  inte som **"så ska det se ut"**
+- Verifiera CSS-tokens mot `globals.css` innan de används i spec-kod
+- Plan mode i Claude Code måste flagga divergens mellan spec och live
+  INNAN implementation startar
+
+### Spec-bug, sjunde lager: Stop-checkpoint måste matcha kompilerings-grafen (1 maj 2026)
+
+Steg 2B-specen sa "stop efter Op 7 för visuell verifiering". Op 7
+anropade `<ProjektRad>` som först definierades i Op 8. Vid Op 7-stopp
+skulle koden inte kompilera — alltså omöjligt att visuellt verifiera.
+
+Stop-checkpoints får inte sättas mitt i en kompilerings-graf. När
+Op N refererar till komponenter eller helpers som introduceras i
+Op N+1, N+2... måste stoppet vara EFTER alla dessa.
+
+**Regel framåt:**
+
+- När en spec skrivs med stop-checkpoint: läs igenom alla operationer
+  EFTER stoppet och verifiera att inget av dem introducerar referenser
+  till dependencies från före-operationer.
+- Plan mode i Claude Code ska identifiera och föreslå korrekt
+  stop-position om specen är fel.
+- För Steg 2B blev korrekt stopp efter Op 11 (alla helpers + komponenter
+  klara, innan städning + build + commit).
+
+### Spec-bug, åttonde lager: Datum-prioritet måste villkoras med pipeline_status (1 maj 2026)
+
+ProjektKort visade "Beslut 15 apr." på projekt som inte var i
+tilldelnings-status. Orsak: `tilldelning_datum` finns kvar i databasen
+även efter att projekt flyttats tillbaka från Tilldelning till tidigare
+status. Logiken kollade bara om datum-fältet hade värde, inte om
+projektet faktiskt var i rätt status.
+
+Datum-baserad rendering måste villkoras med tillstånds-baserad logik
+när tillstånd kan ändras men databas-fält behålls.
+
+**Regel framåt:**
+
+- `skickat_datum` får ENDAST visas om `pipeline_status === 'inskickat'`
+- `tilldelning_datum` får ENDAST visas om `pipeline_status === 'tilldelning'`
+- Generell princip: när status-fält och tidsstämpel-fält co-existerar
+  i samma rad, alltid villkora visning på status först
+
+```typescript
+// Korrekt prioritet:
+if (pipeline_status === 'inskickat' && skickat_datum) {
+  visa "Skickat {datum}"
+} else if (pipeline_status === 'tilldelning' && tilldelning_datum) {
+  visa "Beslut {datum}"
+} else if (deadline) {
+  visa deadline
+}
+```
+
 ---
 
 ## Så använder du denna struktur i Claude Code
@@ -520,4 +645,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 1 maj 2026 (sen kväll) — Landing v6+v7 LIVE + Etapp A LIVE på svebud.se. Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 2 maj 2026 (morgon) — App-redesign Steg 1A → 3A LIVE på svebud.se. Uppdatera denna fil efter varje slutförd sprint.*
