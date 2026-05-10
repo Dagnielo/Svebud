@@ -15,7 +15,7 @@ type AktivitetsLoggProps = {
 
 export default function AktivitetsLogg({ logg, max = 5 }: AktivitetsLoggProps) {
   if (logg.length === 0) {
-    return <div style={{ fontSize: 12, color: 'var(--slate)' }}>Ingen aktivitet ännu</div>
+    return <div style={{ fontSize: 12, color: 'var(--light-t4)' }}>Ingen aktivitet ännu</div>
   }
 
   return (
@@ -24,12 +24,12 @@ export default function AktivitetsLogg({ logg, max = 5 }: AktivitetsLoggProps) {
         <div
           key={l.id}
           className="flex gap-2.5"
-          style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 10 }}
+          style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 10 }}
         >
-          <span className="font-mono flex-shrink-0" style={{ fontSize: 10, marginTop: 1 }}>
+          <span className="font-mono flex-shrink-0" style={{ fontSize: 10, marginTop: 1, color: 'var(--light-t4)' }}>
             {new Date(l.skapad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
           </span>
-          <span style={{ color: 'var(--soft)' }}>
+          <span style={{ color: 'var(--light-t2)' }}>
             {l.meddelande ?? `${l.steg}: ${l.status}`}
           </span>
         </div>

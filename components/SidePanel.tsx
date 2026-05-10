@@ -13,11 +13,12 @@ export default function SidePanel({ title, children, räknare, bgFärg }: SidePa
   return (
     <div
       style={{
-        background: bgFärg ?? 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
+        background: bgFärg ?? 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
         borderRadius: 12,
         padding: 16,
         marginBottom: 14,
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}
     >
       <div
@@ -26,7 +27,7 @@ export default function SidePanel({ title, children, räknare, bgFärg }: SidePa
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.07em',
-          color: 'var(--muted-custom)',
+          color: 'var(--light-t3)',
           marginBottom: 12,
         }}
       >

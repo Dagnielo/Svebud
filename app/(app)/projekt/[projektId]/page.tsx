@@ -23,6 +23,7 @@ import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 import { posthog } from '@/lib/posthog'
 import UtfallsKnappar from '@/components/UtfallsKnappar'
+import { ArrowLeft, Check, Lightning } from '@phosphor-icons/react'
 
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
 
@@ -495,7 +496,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--light-cream)' }}>
       <ProjektDetaljHeader
         projekt={projekt}
         bedömning={bedömning}
@@ -520,40 +521,40 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                 <button onClick={() => setAktivTab(tabMap[i])} className="flex flex-col items-center w-full" style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
                   <div className="flex items-center justify-center relative z-[2]" style={{
                     width: 40, height: 40, borderRadius: '50%',
-                    border: `2px solid ${done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--steel)'}`,
-                    background: done ? 'var(--green)' : active ? 'var(--yellow-glow)' : 'var(--navy-mid)',
-                    color: done ? 'var(--navy)' : active ? 'var(--yellow)' : 'var(--muted-custom)',
-                    fontSize: 14, fontWeight: 800, boxShadow: active ? '0 0 0 4px var(--yellow-glow)' : 'none', transition: 'all 0.2s',
+                    border: `2px solid ${done ? 'var(--light-green)' : active ? 'var(--light-amber)' : 'var(--light-border)'}`,
+                    background: done ? 'var(--light-green)' : active ? 'var(--light-amber-glow)' : 'var(--light-bg)',
+                    color: done ? 'var(--light-bg)' : active ? 'var(--light-amber)' : 'var(--light-t4)',
+                    fontSize: 14, fontWeight: 800, boxShadow: active ? '0 0 0 4px var(--light-amber-glow)' : 'none', transition: 'all 0.2s',
                   }}>
                     {nr}
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: done ? 'var(--green)' : active ? 'var(--yellow)' : 'var(--muted-custom)' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: done ? 'var(--light-green)' : active ? 'var(--light-amber)' : 'var(--light-t4)' }}>
                     {label}
                   </span>
-                  <span style={{ fontSize: 10, marginTop: 2, color: done ? 'var(--green)' : active ? 'var(--soft)' : 'var(--slate)' }}>
-                    {done ? 'Klart ✓' : active ? '← Du är här' : ''}
+                  <span style={{ fontSize: 10, marginTop: 2, color: done ? 'var(--light-green)' : active ? 'var(--light-t2)' : 'var(--light-t4)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                    {done ? <>Klart <Check size={11} weight="bold" /></> : active ? <><ArrowLeft size={11} weight="bold" /> Du är här</> : ''}
                   </span>
                 </button>
                 {!isLast && (
-                  <div className="absolute z-[1]" style={{ top: 20, left: 'calc(50% + 20px)', right: 'calc(-50% + 20px)', height: 2, background: done ? 'var(--green)' : 'var(--steel)' }} />
+                  <div className="absolute z-[1]" style={{ top: 20, left: 'calc(50% + 20px)', right: 'calc(-50% + 20px)', height: 2, background: done ? 'var(--light-green)' : 'var(--light-border)' }} />
                 )}
               </div>
             )
           })}
           {/* Föranmälan-flik — visas bara vid vunnet anbud */}
           {projekt.tilldelning_status === 'vunnet' && (
-            <div className="flex items-center" style={{ paddingLeft: 16, marginLeft: 16, borderLeft: '2px solid var(--steel)' }}>
+            <div className="flex items-center" style={{ paddingLeft: 16, marginLeft: 16, borderLeft: '2px solid var(--light-border)' }}>
               <button onClick={() => setAktivTab('foranmalan')} className="flex flex-col items-center" style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
                 <div className="flex items-center justify-center" style={{
                   width: 40, height: 40, borderRadius: '50%',
-                  border: `2px solid ${aktivTab === 'foranmalan' ? 'var(--blue-accent, #4A9EFF)' : 'var(--steel)'}`,
-                  background: aktivTab === 'foranmalan' ? 'rgba(74,158,255,0.15)' : 'var(--navy-mid)',
-                  color: aktivTab === 'foranmalan' ? '#4A9EFF' : 'var(--muted-custom)',
-                  fontSize: 16, transition: 'all 0.2s',
+                  border: `2px solid ${aktivTab === 'foranmalan' ? 'var(--light-blue)' : 'var(--light-border)'}`,
+                  background: aktivTab === 'foranmalan' ? 'var(--light-blue-bg)' : 'var(--light-bg)',
+                  color: aktivTab === 'foranmalan' ? 'var(--light-blue)' : 'var(--light-t4)',
+                  transition: 'all 0.2s',
                 }}>
-                  ⚡
+                  <Lightning size={20} weight="bold" />
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: aktivTab === 'foranmalan' ? '#4A9EFF' : 'var(--muted-custom)' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: aktivTab === 'foranmalan' ? 'var(--light-blue)' : 'var(--light-t4)' }}>
                   Föranmälan
                 </span>
               </button>
@@ -562,11 +563,11 @@ hr{border:none;border-top:1pt solid #e0e0e0}
         </div>
 
         {/* Instruktionsruta — baseras på vilken flik man tittar på */}
-        <div style={{ marginTop: 16, padding: '14px 18px', borderRadius: 10, background: 'var(--yellow-glow)', border: '1px solid rgba(245,196,0,0.3)' }}>
+        <div style={{ marginTop: 16, padding: '14px 18px', borderRadius: 10, background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)' }}>
           <div className="flex items-center gap-3">
             <span style={{ fontSize: 18 }}>{aktivTab === 'dokument' ? '📎' : aktivTab === 'analys' ? '📊' : aktivTab === 'foranmalan' ? '⚡' : '📋'}</span>
             <div className="flex-1">
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-amber)' }}>
                 {aktivTab === 'dokument' && 'Steg 1: Ladda upp förfrågningsunderlaget'}
                 {aktivTab === 'analys' && 'Steg 2: Analys, kalkyl och bedömning'}
                 {aktivTab === 'anbud' && 'Steg 3: Granska anbudsutkast, justera och skicka'}
@@ -574,18 +575,18 @@ hr{border:none;border-top:1pt solid #e0e0e0}
               </div>
             </div>
             {aktivTab === 'dokument' && anbud.length > 0 && (
-              <Button onClick={körAnalys} disabled={analysLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
+              <Button onClick={körAnalys} disabled={analysLaddar} style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
                 {analysLaddar ? '⏳ Analyserar...' : '🔍 Analysera förfrågan →'}
               </Button>
             )}
             {aktivTab === 'analys' && projekt.jämförelse_status === 'klar' && (
-              <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} style={{ background: 'var(--yellow)', color: 'var(--navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
+              <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
                 {anbudLaddar ? '⏳ Genererar...' : 'Generera anbud →'}
               </Button>
             )}
           </div>
 
-          <p style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(245,196,0,0.15)', fontSize: 12, color: 'var(--soft)' }}>
+          <p style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--light-amber-border)', fontSize: 12, color: 'var(--light-t2)' }}>
             {aktivTab === 'dokument' && 'Ladda upp PDF, Word eller Excel — eller klistra in text. AI:n analyserar och matchar mot er profil.'}
             {aktivTab === 'analys' && 'Granska AI:ns analys, justera priser och moment, aktivera avdrag och generera anbudsutkast.'}
             {aktivTab === 'anbud' && 'Förhandsgranska, redigera, ladda ner PDF och markera som skickat.'}
@@ -1430,22 +1431,22 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
         <div style={{ padding: 24, display: aktivTab === 'foranmalan' ? 'none' : 'block' }}>
           <SidePanel title="Dokument" räknare={anbud.length}>
             {anbud.length === 0 ? (
-              <div style={{ fontSize: 12, color: 'var(--slate)' }}>Inga filer uppladdade</div>
+              <div style={{ fontSize: 12, color: 'var(--light-t4)' }}>Inga filer uppladdade</div>
             ) : anbud.map(a => (
               <div key={a.id} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 8 }}>
-                <span style={{ color: 'var(--blue-accent)' }}>📄</span>
-                <span className="truncate" style={{ color: 'var(--soft)' }}>{a.filnamn}</span>
-                <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: a.extraktion_status === 'extraherad' ? 'var(--green)' : 'var(--yellow)' }} />
+                <span style={{ color: 'var(--light-blue)' }}>📄</span>
+                <span className="truncate" style={{ color: 'var(--light-t2)' }}>{a.filnamn}</span>
+                <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: a.extraktion_status === 'extraherad' ? 'var(--light-green)' : 'var(--light-amber)' }} />
               </div>
             ))}
           </SidePanel>
 
           {kravmatch && (
             <SidePanel title="Analys">
-              <div style={{ fontSize: 12, color: bedömning?.färg ?? 'var(--muted-custom)', fontWeight: 700, marginBottom: 8 }}>
+              <div style={{ fontSize: 12, color: bedömning?.färg ?? 'var(--light-t3)', fontWeight: 700, marginBottom: 8 }}>
                 {bedömning?.label ?? 'Analyserad'}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--soft)' }}>{(kravmatch as Record<string, unknown>).sammanfattning as string}</div>
+              <div style={{ fontSize: 12, color: 'var(--light-t2)' }}>{(kravmatch as Record<string, unknown>).sammanfattning as string}</div>
             </SidePanel>
           )}
 

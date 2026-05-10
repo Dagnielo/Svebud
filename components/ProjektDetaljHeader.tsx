@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import type { ProjektDetalj } from '@/lib/types/projekt'
+import { ArrowLeft, Calendar } from '@phosphor-icons/react'
 
 type ProjektDetaljHeaderProps = {
   projekt: ProjektDetalj
@@ -25,26 +26,30 @@ export default function ProjektDetaljHeader({
   const router = useRouter()
 
   return (
-    <div style={{ background: 'var(--navy-mid)', borderBottom: '3px solid var(--yellow)', padding: '20px 32px' }}>
+    <div style={{ background: 'var(--light-bg)', borderBottom: '1px solid var(--light-border)', padding: '20px 32px' }}>
       <div className="flex items-center gap-4">
         <button
           onClick={() => router.push('/dashboard')}
           style={{
             fontSize: 12,
-            color: 'var(--muted-custom)',
+            color: 'var(--light-t2)',
             fontWeight: 600,
-            background: 'var(--navy)',
-            border: '1px solid var(--navy-border)',
+            background: 'transparent',
+            border: '1px solid var(--light-border)',
             borderRadius: 6,
             padding: '4px 10px',
             cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
           }}
         >
-          ← Pipeline
+          <ArrowLeft size={12} weight="bold" />
+          Tillbaka
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', margin: 0, color: 'var(--light-t1)' }}>
               {projekt.namn}
             </h1>
             {kundtyp && (
@@ -54,9 +59,9 @@ export default function ProjektDetaljHeader({
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: 4,
-                  background: 'var(--navy)',
-                  border: '1px solid var(--navy-border)',
-                  color: 'var(--muted-custom)',
+                  background: 'var(--light-cream)',
+                  border: '1px solid var(--light-border)',
+                  color: 'var(--light-t2)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}
@@ -71,9 +76,9 @@ export default function ProjektDetaljHeader({
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: 4,
-                  background: 'rgba(0,198,122,0.1)',
-                  border: '1px solid rgba(0,198,122,0.3)',
-                  color: 'var(--green)',
+                  background: 'var(--light-green-bg)',
+                  border: '1px solid var(--light-green)',
+                  color: 'var(--light-green)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}
@@ -98,10 +103,10 @@ export default function ProjektDetaljHeader({
           </div>
           <div className="flex items-center gap-3" style={{ marginTop: 4 }}>
             {projekt.beskrivning && (
-              <p style={{ fontSize: 12, color: 'var(--muted-custom)', margin: 0 }}>{projekt.beskrivning}</p>
+              <p style={{ fontSize: 12, color: 'var(--light-t3)', margin: 0 }}>{projekt.beskrivning}</p>
             )}
             {projekt.skapad && (
-              <span style={{ fontSize: 11, color: 'var(--slate)' }}>
+              <span style={{ fontSize: 11, color: 'var(--light-t4)' }}>
                 Skapad {new Date(projekt.skapad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             )}
@@ -110,9 +115,9 @@ export default function ProjektDetaljHeader({
         {/* Deadline — dölj på föranmälan-fliken */}
         {aktivTab !== 'foranmalan' && (
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: 12 }}>📅</span>
+            <Calendar size={14} weight="bold" color="var(--light-t3)" />
             {!projekt.deadline && (
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--yellow)', marginRight: 4 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--light-amber)', marginRight: 4 }}>
                 Sätt deadline →
               </span>
             )}
@@ -121,13 +126,14 @@ export default function ProjektDetaljHeader({
               value={projekt.deadline ?? ''}
               onChange={(e) => onDeadlineChange(e.target.value || null)}
               style={{
-                background: 'var(--navy)',
-                border: projekt.deadline ? '1px solid var(--navy-border)' : '1px dashed var(--yellow)',
+                background: 'var(--light-bg)',
+                border: projekt.deadline ? '1px solid var(--light-border)' : '1px dashed var(--light-amber)',
                 borderRadius: 6,
-                color: projekt.deadline ? 'var(--white)' : 'var(--yellow)',
+                color: projekt.deadline ? 'var(--light-t1)' : 'var(--light-amber)',
                 fontSize: 12,
                 padding: '4px 8px',
                 cursor: 'pointer',
+                colorScheme: 'light',
               }}
             />
           </div>
