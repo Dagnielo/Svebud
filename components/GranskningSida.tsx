@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
+import { CheckCircle, Warning, XCircle, ListBullets, ClipboardText, CaretUp, CaretDown, Check, Sparkle, Lightbulb } from '@phosphor-icons/react'
 
 type MatchatKrav = {
   krav: string
@@ -152,17 +153,17 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
         {/* Krav-statistik */}
         <div className="flex gap-4" style={{ marginTop: 12 }}>
-          <StatBox label="Matchade" count={data.matchade_krav.length} color="var(--light-green)" icon="✅" />
-          <StatBox label="Att bekräfta" count={data.kräver_bekräftelse.length} color="var(--light-orange)" icon="⚠️" />
-          <StatBox label="Ej uppfyllda" count={data.ej_uppfyllda.length} color="var(--light-red)" icon="❌" />
-          <StatBox label="Totalt" count={totalKrav} color="var(--light-t3)" icon="📋" />
+          <StatBox label="Matchade" count={data.matchade_krav.length} color="var(--light-green)" icon={<CheckCircle size={12} weight="bold" style={{ color: 'var(--light-green)' }} />} />
+          <StatBox label="Att bekräfta" count={data.kräver_bekräftelse.length} color="var(--light-orange)" icon={<Warning size={12} weight="bold" style={{ color: 'var(--light-orange)' }} />} />
+          <StatBox label="Ej uppfyllda" count={data.ej_uppfyllda.length} color="var(--light-red)" icon={<XCircle size={12} weight="bold" style={{ color: 'var(--light-red)' }} />} />
+          <StatBox label="Totalt" count={totalKrav} color="var(--light-t3)" icon={<ListBullets size={12} weight="bold" style={{ color: 'var(--light-t3)' }} />} />
         </div>
       </div>
 
       {/* Projektinfo */}
       <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
-        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)', fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>
-          📋 Projektinformation
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)', fontSize: 14, fontWeight: 700, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 8, width: '100%' }}>
+          <ClipboardText size={16} weight="bold" /> Projektinformation
         </div>
         <div style={{ padding: '12px 18px' }}>
           <div className="grid grid-cols-2 gap-3">
@@ -182,7 +183,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
       {data.kräver_bekräftelse.length > 0 && (
         <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-orange)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
           <div className="flex items-center gap-2" style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)' }}>
-            <span style={{ fontSize: 16 }}>⚠️</span>
+            <Warning size={16} weight="bold" style={{ color: 'var(--light-orange)' }} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-orange)' }}>
               {data.kräver_bekräftelse.length} krav behöver din bekräftelse
             </span>
@@ -191,7 +192,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
             {data.kräver_bekräftelse.map((k, i) => (
               <div key={i} style={{ padding: '12px 8px', marginBottom: 4, borderRadius: 8, background: 'var(--light-off)' }}>
                 <div className="flex items-start gap-3">
-                  <span style={{ fontSize: 14, marginTop: 1 }}>⚠️</span>
+                  <span style={{ marginTop: 1, display: 'inline-flex', alignItems: 'center' }}><Warning size={14} weight="bold" style={{ color: 'var(--light-orange)' }} /></span>
                   <div className="flex-1">
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--light-t1)' }}>{k.krav}</div>
                     <div style={{ fontSize: 12, color: 'var(--light-orange)', marginTop: 4 }}>{k.matchning}</div>
@@ -208,7 +209,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
       {data.ej_uppfyllda.length > 0 && (
         <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-red)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
           <div className="flex items-center gap-2" style={{ padding: '14px 18px', borderBottom: '1px solid var(--light-border)' }}>
-            <span style={{ fontSize: 16 }}>❌</span>
+            <XCircle size={16} weight="bold" style={{ color: 'var(--light-red)' }} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-red)' }}>
               {data.ej_uppfyllda.length} krav uppfylls inte
             </span>
@@ -217,7 +218,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
             {data.ej_uppfyllda.map((k, i) => (
               <div key={i} style={{ padding: '12px 8px', marginBottom: 4, borderRadius: 8, background: 'var(--light-off)' }}>
                 <div className="flex items-start gap-3">
-                  <span style={{ fontSize: 14, marginTop: 1 }}>❌</span>
+                  <span style={{ marginTop: 1, display: 'inline-flex', alignItems: 'center' }}><XCircle size={14} weight="bold" style={{ color: 'var(--light-red)' }} /></span>
                   <div className="flex-1">
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--light-t1)' }}>{k.krav}</div>
                     <div style={{ fontSize: 12, color: 'var(--light-red)', marginTop: 4 }}>{k.matchning}</div>
@@ -237,19 +238,19 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
           className="flex items-center gap-2 w-full"
           style={{ padding: '14px 18px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
         >
-          <span style={{ fontSize: 16 }}>✅</span>
+          <CheckCircle size={16} weight="bold" style={{ color: 'var(--light-green)' }} />
           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-green)', flex: 1 }}>
             {data.matchade_krav.length} krav automatiskt matchade
           </span>
-          <span style={{ fontSize: 12, color: 'var(--light-t3)' }}>
-            {visaMatchade ? '▲ Dölj' : '▼ Visa alla'}
+          <span style={{ fontSize: 12, color: 'var(--light-t3)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            {visaMatchade ? <><CaretUp size={11} weight="bold" /> Dölj</> : <><CaretDown size={11} weight="bold" /> Visa alla</>}
           </span>
         </button>
         {visaMatchade && (
           <div style={{ padding: '0 12px 12px' }}>
             {data.matchade_krav.map((k, i) => (
               <div key={i} className="flex items-start gap-2" style={{ padding: '6px 8px', fontSize: 12 }}>
-                <span style={{ color: 'var(--light-green)', flexShrink: 0 }}>✓</span>
+                <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}><Check size={12} weight="bold" style={{ color: 'var(--light-green)' }} /></span>
                 <span style={{ color: 'var(--light-t2)', flex: 1 }}>{k.krav}</span>
                 <span style={{ color: 'var(--light-t4)', fontSize: 10 }}>{k.matchning}</span>
               </div>
@@ -263,7 +264,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
         <div className="grid grid-cols-2 gap-4">
           {data.risker.length > 0 && (
             <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-orange)', marginBottom: 8 }}>⚠ Risker</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-orange)', marginBottom: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Warning size={16} weight="bold" /> Risker</div>
               {data.risker.map((r, i) => (
                 <div key={i} style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 4 }}>• {r}</div>
               ))}
@@ -271,7 +272,7 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
           )}
           {data.möjligheter.length > 0 && (
             <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-green)', marginBottom: 8 }}>✦ Möjligheter</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-green)', marginBottom: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Sparkle size={16} weight="bold" /> Möjligheter</div>
               {data.möjligheter.map((m, i) => (
                 <div key={i} style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 4 }}>• {m}</div>
               ))}
@@ -282,17 +283,19 @@ export default function GranskningSida({ projektId, externtScanning, onAnalysKla
 
       {/* Rekommendation */}
       <div style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)', borderRadius: 12, padding: '16px 18px', boxShadow: '0 1px 2px rgba(14,27,46,.04)' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--light-t1)' }}>💡 Rekommendation</div>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lightbulb size={16} weight="bold" style={{ color: 'var(--light-amber)' }} /> Rekommendation</div>
         <div style={{ fontSize: 13, color: 'var(--light-t2)', lineHeight: 1.6 }}>{data.rekommendation}</div>
       </div>
     </div>
   )
 }
 
-function StatBox({ label, count, color, icon }: { label: string; count: number; color: string; icon: string }) {
+function StatBox({ label, count, color, icon }: { label: string; count: number; color: string; icon: ReactNode }) {
   return (
     <div className="flex-1" style={{ background: 'var(--light-off)', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
-      <div style={{ fontSize: 10, color: 'var(--light-t4)', marginBottom: 4 }}>{icon} {label}</div>
+      <div style={{ fontSize: 10, color: 'var(--light-t4)', marginBottom: 4, display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+        {icon} {label}
+      </div>
       <div style={{ fontSize: 20, fontWeight: 800, color }}>{count}</div>
     </div>
   )

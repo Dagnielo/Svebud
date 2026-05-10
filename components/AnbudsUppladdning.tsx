@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { FolderOpen, ClipboardText, FloppyDisk, X } from '@phosphor-icons/react'
+import { FolderOpen, ClipboardText, FloppyDisk, X, CheckCircle, Spinner, Warning, Pause, XCircle } from '@phosphor-icons/react'
 
 type UppladdningsStatus = 'idle' | 'laddar_upp' | 'klar' | 'fel'
 
@@ -275,8 +275,12 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
                 className="flex items-center gap-2"
                 style={{ padding: '6px 0', borderBottom: i < filer.length - 1 ? '1px solid var(--light-border)' : 'none' }}
               >
-                <span style={{ fontSize: 12 }}>
-                  {f.status === 'klar' ? '✅' : f.status === 'laddar' ? '⏳' : f.status === 'varning' ? '⚠️' : f.status === 'väntar' ? '⏸️' : '❌'}
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  {f.status === 'klar' ? <CheckCircle size={14} weight="bold" style={{ color: 'var(--light-green)' }} />
+                    : f.status === 'laddar' ? <Spinner size={14} weight="bold" className="animate-spin" style={{ color: 'var(--light-amber)' }} />
+                    : f.status === 'varning' ? <Warning size={14} weight="bold" style={{ color: 'var(--light-orange)' }} />
+                    : f.status === 'väntar' ? <Pause size={14} weight="bold" style={{ color: 'var(--light-t3)' }} />
+                    : <XCircle size={14} weight="bold" style={{ color: 'var(--light-red)' }} />}
                 </span>
                 <span style={{ fontSize: 12, color: 'var(--light-t2)', flex: 1 }} className="truncate">{f.namn}</span>
                 {f.meddelande && (
@@ -289,7 +293,7 @@ export default function AnbudsUppladdning({ projektId, onUppladdat }: Props) {
                   background: f.status === 'klar' ? 'var(--light-green-bg)' : f.status === 'fel' ? 'var(--light-red-bg)' : f.status === 'laddar' ? 'var(--light-amber-glow)' : 'var(--light-cream)',
                   color: f.status === 'klar' ? 'var(--light-green)' : f.status === 'fel' ? 'var(--light-red)' : f.status === 'laddar' ? 'var(--light-amber)' : 'var(--light-t3)',
                 }}>
-                  {f.status === 'klar' ? 'OK' : f.status === 'laddar' ? '...' : f.status === 'varning' ? '⚠' : f.status === 'väntar' ? 'Väntar' : 'Fel'}
+                  {f.status === 'klar' ? 'OK' : f.status === 'laddar' ? '...' : f.status === 'varning' ? 'Varning' : f.status === 'väntar' ? 'Väntar' : 'Fel'}
                 </span>
               </div>
             ))}

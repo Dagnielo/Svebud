@@ -1,15 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
 import type { KvalitetsResultat, GranskningsPunkt } from '@/lib/kvalitetsagent'
 import { Button } from '@/components/ui/button'
-import { MagnifyingGlass } from '@phosphor-icons/react'
+import { MagnifyingGlass, CheckCircle, Lightbulb, Warning, XCircle, CaretUp, CaretDown } from '@phosphor-icons/react'
 
-const allvarlighetConfig: Record<string, { färg: string; bg: string; ikon: string; label: string }> = {
-  bra: { färg: 'var(--light-green)', bg: 'var(--light-green-bg)', ikon: '✅', label: 'Bra' },
-  tips: { färg: 'var(--light-blue)', bg: 'var(--light-blue-bg)', ikon: '💡', label: 'Tips' },
-  varning: { färg: 'var(--light-orange)', bg: 'var(--light-orange-bg)', ikon: '⚠️', label: 'Varning' },
-  fel: { färg: 'var(--light-red)', bg: 'var(--light-red-bg)', ikon: '❌', label: 'Fel' },
+type IconComponent = ComponentType<{ size?: number; weight?: 'bold'; style?: React.CSSProperties }>
+
+const allvarlighetConfig: Record<string, { färg: string; bg: string; IconComponent: IconComponent; label: string }> = {
+  bra: { färg: 'var(--light-green)', bg: 'var(--light-green-bg)', IconComponent: CheckCircle, label: 'Bra' },
+  tips: { färg: 'var(--light-blue)', bg: 'var(--light-blue-bg)', IconComponent: Lightbulb, label: 'Tips' },
+  varning: { färg: 'var(--light-orange)', bg: 'var(--light-orange-bg)', IconComponent: Warning, label: 'Varning' },
+  fel: { färg: 'var(--light-red)', bg: 'var(--light-red-bg)', IconComponent: XCircle, label: 'Fel' },
 }
 
 const kategoriLabel: Record<string, string> = {
@@ -192,8 +194,8 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
               ✅ {resultat.antal_bra}
             </span>
           </div>
-          <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
-            {expanderad ? '▲' : '▼'}
+          <span style={{ fontSize: 11, color: 'var(--light-t3)', display: 'inline-flex', alignItems: 'center' }}>
+            {expanderad ? <CaretUp size={12} weight="bold" /> : <CaretDown size={12} weight="bold" />}
           </span>
         </div>
       </div>
@@ -218,7 +220,17 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                   cursor: 'pointer',
                 }}
               >
-                {f === 'alla' ? `Alla (${resultat.punkter.length})` : `${allvarlighetConfig[f]?.ikon} ${f === 'fel' ? resultat.antal_fel : f === 'varning' ? resultat.antal_varningar : f === 'tips' ? resultat.antal_tips : resultat.antal_bra}`}
+                {f === 'alla' ? (
+                  `Alla (${resultat.punkter.length})`
+                ) : (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    {(() => {
+                      const Icon = allvarlighetConfig[f]?.IconComponent
+                      return Icon ? <Icon size={12} weight="bold" /> : null
+                    })()}
+                    {f === 'fel' ? resultat.antal_fel : f === 'varning' ? resultat.antal_varningar : f === 'tips' ? resultat.antal_tips : resultat.antal_bra}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -238,7 +250,9 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                     border: `1px solid ${config.färg}30`,
                   }}
                 >
-                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{config.ikon}</span>
+                  <span style={{ flexShrink: 0, marginTop: 1, display: 'inline-flex', alignItems: 'center' }}>
+                    <config.IconComponent size={14} weight="bold" style={{ color: config.färg }} />
+                  </span>
                   <div style={{ flex: 1 }}>
                     <div className="flex items-center gap-2" style={{ marginBottom: 2 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: config.färg }}>{punkt.titel}</span>

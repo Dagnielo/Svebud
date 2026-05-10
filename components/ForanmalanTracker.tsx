@@ -337,7 +337,8 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
           <div className="flex justify-between" style={{ position: 'relative' }}>
             {FORANMALAN_STEG.map((steg, i) => {
               const klar = i < nuvarandeStegIdx
-              const aktiv = i === nuvarandeStegIdx
+                || (i === nuvarandeStegIdx && fp.nuvarande_steg === 'klar')
+              const aktiv = i === nuvarandeStegIdx && fp.nuvarande_steg !== 'klar'
               const klickbar = klar || aktiv
               const vald = valtSteg === steg.id
               // Hitta datum för detta steg från loggen

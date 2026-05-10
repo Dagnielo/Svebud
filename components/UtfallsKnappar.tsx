@@ -11,6 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { Check, X, Hourglass } from '@phosphor-icons/react'
 
 type Utfall = 'vunnet' | 'förlorat' | 'vantar'
 
@@ -108,9 +109,12 @@ export default function UtfallsKnappar({ projekt, onChange, kompakt = false }: P
             color: projekt.tilldelning_status === 'vunnet' ? 'var(--navy)' : 'var(--green)',
             border: '1px solid var(--green)',
             cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
           }}
         >
-          ✓ Vi vann
+          <Check size={14} weight="bold" /> Vi vann
         </button>
         <button
           onClick={() => setOpenForlorat(true)}
@@ -121,9 +125,12 @@ export default function UtfallsKnappar({ projekt, onChange, kompakt = false }: P
             color: projekt.tilldelning_status === 'förlorat' ? 'var(--white)' : 'var(--red)',
             border: '1px solid var(--red)',
             cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
           }}
         >
-          ✗ Vi förlorade
+          <X size={14} weight="bold" /> Vi förlorade
         </button>
         <button
           onClick={() => spara('vantar')}
@@ -134,9 +141,12 @@ export default function UtfallsKnappar({ projekt, onChange, kompakt = false }: P
             color: projekt.tilldelning_status === 'vantar' ? 'var(--navy)' : 'var(--muted-custom)',
             border: '1px solid var(--muted-custom)',
             cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
           }}
         >
-          ⏳ Väntar
+          <Hourglass size={14} weight="bold" /> Väntar
         </button>
       </div>
 
