@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 2 maj 2026 — App-redesign Steg 1A → 3A LIVE på svebud.se
+**Senast uppdaterad:** 2 maj 2026 (kväll) — App-redesign Steg 3B → 3D LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -15,7 +15,7 @@
 | **Dashboard (Pipeline)** | 100% | — (ljus design klar i Steg 2A) |
 | **Alla projekt** | 100% | — (ljus design + sortering klar i Steg 2B) |
 | **Statistik-sida** | 60% | Steg 4 — ljus design (Steg 2A-tokens portas) |
-| **Projekt-detaljvyn** | 25% | Steg 3B-3E — visuell migration + tab-innehåll (arkitektur klar i 3A) |
+| **Projekt-detaljvyn** | 75% | Steg 3E (Tab 3 Anbud + Tab 4 Föranmälan) + Steg 3F (Phosphor-skuld) |
 | **Profil-systemet** | 60% | Steg 4 — ljus design + Etapp B–E (cert/team/benchmarks/mallar) |
 | **Certifikat** | 50% | Steg 4 — ljus design + AI-extraktion (Etapp B) |
 | **Inställningar** | 50% | Steg 4 — ljus design |
@@ -212,20 +212,53 @@ Sammanslagen design-migrering + audit-applicering på live svebud.se.
 - `6dc2051` Steg 2B — Alla projekt-vyn ljus + sortering
 - `b243011` Steg 3A — typkonsolidering + komponent-extraktion (refactor, no visual change)
 
+### 2 maj 2026 — App-redesign Steg 3B → 3D LIVE ✅
+
+**Bakgrund:** Tre stegs visuell migration av Projekt-detaljvyn (`/projekt/[id]`) på en dag. 3 av 4 tabs (Dokument, Analys + ramen) är nu ljusa. Tab 3 (Anbud-utkast) och Tab 4 (Föranmälan) återstår för 3E. Phosphor-skuld har växt till ~35 emojis i 5+ platser — hanteras dedikerat i Steg 3F.
+
+**Levererat i 3 commits på main:**
+
+- ✅ **Steg 3B (`9b05cd6`) — Ramen ljus.** Page-bg cream, header vit (1px ljus border, 3px gul accent borta), stepper i light-tokens (3 states: done/active/inaktiv med amber-glow ring runt aktiv cirkel), Föranmälan-flik bevarar vertikal-stepper-struktur, instruktionsruta amber-glow + amber-knappar, höger-panel vita kort med subtil shadow. Phosphor: Calendar/Lightning/ArrowLeft/Check ersätter 4 emojis i ramen
+- ✅ **Steg 3C (`b3b905f`) — Dokument-tab + AnbudsUppladdning + KvalitetsPanel.** Dokumentlista vit-card-rader med shadow, AnbudsUppladdning Card vit (drag-zon **bevarar live UX** — subtil idle / amber vid drag), KvalitetsPanel **bevarar 4-nivå-betyg-trösklar** (≥9/≥7/≥5/<5 + 5 labels). Phosphor: FolderOpen/ClipboardText/FloppyDisk/X/MagnifyingGlass/FileText/CaretUp/CaretDown/Check ersätter knapp-ikoner
+- ✅ **Steg 3D (`c1f2973`) — Analys-tab + 3 komponenter + gating-rutor.** GranskningSida ren färg-migration (alla strukturer bevarade — anbudsläge-kort med 64px procent-cirkel, 4 StatBox, krav-listor, Risker/Möjligheter, Rekommendation, ScanningIndikator), SnabboffertVy + RotKalkyl (5-grid ROT-typer som segmented buttons + 3-grid inställningar), Kundfrågor-sektion med Phosphor `Question` + `Plus`. Op 5.5: Gating-rutor på Tab 3 ("Analysera förfrågan först") till ljus — bug fångad av användaren
+
+**Designprincip-konsekvens:**
+
+- Pixel-perfekt match mot Pipeline-vyn + Alla projekt-vyn på alla migrerade ytor
+- 64px procent-cirkel + `bedömningsVisning` bevarad i GranskningSida (specens GO/NO-GO-design ignorerad — bryter bedömnings-metaforen som finns på rest-av-appen)
+- 4-nivå-betyg-trösklar bevarade i KvalitetsPanel (Utmärkt/Bra/Godkänt/Bristfälligt/Allvarliga brister)
+- Drag-drop-UX i AnbudsUppladdning bevarad (subtil idle / amber vid drag — inte specens "amber alltid")
+
+**Filer som migrerades:**
+- `app/(app)/projekt/[projektId]/page.tsx` — Tab 1 + Tab 2-blocket + Kundfrågor + Tab 3-gating
+- `components/SidePanel.tsx`, `components/AktivitetsLogg.tsx`, `components/ProjektDetaljHeader.tsx` (3B)
+- `components/AnbudsUppladdning.tsx`, `components/KvalitetsPanel.tsx` (3C)
+- `components/GranskningSida.tsx`, `components/SnabboffertVy.tsx`, `components/RotKalkyl.tsx` (3D)
+
+**Phosphor-skuld efter 3D (~35 emojis i 5+ platser):**
+- Stepper instruktionsruta: 📎📊⚡📋 + 🔍⏳
+- AnbudsUppladdning fil-status: ✅⏳⚠️⏸️❌
+- KvalitetsPanel allvarlighet + statistik + åtgärds-knappar: ✅💡⚠️❌🔄▲
+- GranskningSida: ✅⚠️❌📋✓▲▼✦💡 + ⚠ + ℹ
+- SnabboffertVy moment-typer: ⚡🔌💡🔨☀️🚨🏢🔍🔧
+- ROT_TYPER (i lib/rot-regler.ts): emojis per ROT-typ
+
+Hanteras dedikerat i **Steg 3F** (rensnings-commit efter 3E).
+
 ---
 
 ## Nästa steg — vart är vi på väg?
 
-### Just nu — App-redesign Steg 3 (detaljvyn)
+### Just nu — App-redesign Steg 3 (detaljvyn) — 3 av 4 tabs ljusa
+
+Steg 3A-3D klara och live på svebud.se. Återstår:
 
 | # | Arbete | Fil | Tid |
 |---|--------|-----|-----|
-| 1 | **Steg 3B** — Page-bg + Header + Stepper + höger-panel ljus | `app/(app)/projekt/[projektId]/page.tsx` + 3 utbrutna komponenter | 0,5–1 dag |
-| 2 | **Steg 3C** — Tab 1 (Dokument) + AnbudsUppladdning + KvalitetsPanel ljus | `components/{AnbudsUppladdning,KvalitetsPanel}.tsx` | 0,5–1 dag |
-| 3 | **Steg 3D** — Tab 2 (Analys) — GranskningSida + SnabboffertVy + RotKalkyl ljus | `components/{GranskningSida,SnabboffertVy,RotKalkyl}.tsx` | 1 dag |
-| 4 | **Steg 3E** — Tab 3 (Anbud) + Tab 4 (Föranmälan) — KalkylVy + ForanmalanTracker ljus | `components/{KalkylVy,ForanmalanTracker}.tsx` | 1–1,5 dag |
+| 1 | **Steg 3E** — Tab 3 (Anbud) + Tab 4 (Föranmälan) — KalkylVy + ForanmalanTracker + utkast-redigering + prisöversikt + kontakt + kvalitet + skicka + historik | `app/(app)/projekt/[projektId]/page.tsx` + `components/{KalkylVy,ForanmalanTracker}.tsx` | 1–1,5 dag |
+| 2 | **Steg 3F** — Phosphor-skuld-rensning (~35 emojis i 5+ platser) | Alla migrerade filer från 3B–3E | 0,5 dag |
 
-**Total Steg 3: 3–5 dagar.** Sen: **Steg 4** (Statistik + Profil + Certifikat + Inställningar — bara estetik, en spec).
+**Total kvar för Steg 3: 1,5–2 dagar.** Sen: **Steg 4** (Statistik + Profil + Certifikat + Inställningar — bara estetik, en spec).
 
 ### Vecka därefter — Strukturella tillägg + Email-kanal
 
@@ -520,6 +553,86 @@ if (pipeline_status === 'inskickat' && skickat_datum) {
 }
 ```
 
+### Spec-bug, nionde lager: Hela sektioner kan vara fundamentalt fel (2 maj 2026)
+
+I Steg 3D antog specen att GranskningSida hade en GO/NO-GO/VILLKORLIG-
+badge med Phosphor CheckCircle/XCircle/Warning. Live hade INGEN sådan
+sektion — komponenten använder `bedömningsVisning(anbudsläge)` från
+`lib/verdict.ts` (samma helper som ProjektDetaljHeader) för att visa
+en stor anbudsläge-kort med 64px procent-cirkel och visning.label
+("Starkt läge" / "Bra läge" / "Osäkert läge" / "Svårt läge").
+
+Specen var inte bara fel om färger eller tokens — den antog en helt
+annan UI-design som inte fanns. Att introducera GO/NO-GO i 3D skulle
+ha brutit bedömnings-metaforen som finns på rest-av-appen.
+
+Också: specens "match-procent-trösklar (≥80/60-80/<60)" var irrelevanta
+— procent-färgen kommer från anbudsläge, inte trösklar.
+
+**Regel framåt:**
+
+- Innan en designspec skrivs för en EXISTERANDE komponent: läs alltid
+  hela live-koden för komponenten, inte bara från minnet eller från
+  3A-inventeringen
+- För migrations-specer (mörk → ljus utan UX-ändringar): ENBART
+  färg-byten — ingen ny struktur, ingen ny logik, ingen ny UI
+- Plan mode i Claude Code måste flagga när specen antar struktur som
+  inte finns i live, INNAN implementation startar
+- "Live ÄR sanningen" gäller också på sektion-nivå, inte bara
+  styling-nivå
+
+### Spec-bug, tionde lager: Inline-blocks i page.tsx missas av komponent-fokuserade specer (2 maj 2026)
+
+Steg 3D-specen täckte 4 filer (page.tsx Tab 2-blocket + 3 specialkomponenter)
+men missade gating-rutan i Tab 3 (Anbud) som visar "Analysera förfrågan
+först" / "Redo att generera anbud" när `!utkast`. Den var inline-renderad
+i page.tsx (rad 817-839), inte separat komponent. Efter Steg 3B-3D var
+ramen + Tab 1 + Tab 2 ljusa — men Tab 3-gating-rutan var fortfarande
+mörk navy. Användaren upptäckte buggen via skärmdump.
+
+Lösning: Op 5.5 lades till mitt i 3D för att migrera gating-rutorna.
+
+**Regel framåt:**
+
+- Strukturella specer som fokuserar på komponenter måste ALLTID scanna
+  page.tsx för inline-blocks som visas conditionally
+- Vanliga inline-blocks att leta efter: gating-rutor, empty-states,
+  loading-states, conditional-renderings inom samma TabsContent
+- För detaljvyer med många tabs: lista alla "icke-komponent"-rutor
+  per tab i 3A-inventeringen så de inte glöms i 3B-3E
+
+```bash
+# Scanna page.tsx för inline-block-mönster:
+grep -n 'background:\|border:\|borderRadius:' page.tsx | grep -v 'components/'
+```
+
+### Meta-lärdom: Plan mode + visuell verifiering = säkraste flödet (2 maj 2026)
+
+Sju spec-buggar fångade på 2 dagar (1 maj till 2 maj) utan en enda
+produktionsincident:
+
+- 6:e lager: Spec-kod är förslag, live ÄR sanningen
+- 7:e lager: Stop-checkpoint måste matcha kompilerings-grafen
+- 8:e lager: Datum-prioritet måste villkoras med pipeline_status
+- 9:e lager: Hela sektioner kan vara fundamentalt fel (GO/NO-GO i GranskningSida)
+- 10:e lager: Inline-blocks missas av komponent-fokuserade specer
+
+Mönstret som fungerar:
+
+1. **Plan mode** flaggar avvikelser mellan spec och live INNAN implementation
+2. **Stop-checkpoints** mellan operationer låter användaren visuellt verifiera
+3. **Skärmdumpar + visuell verifiering** fångar buggar som inte syns i kod-review
+4. **Lokal commit + push först efter visuell OK** = ingen produktionsincident
+5. **"Live ÄR sanningen"** är inte ett slogan, det är ett verktyg —
+   tillämpas på styling, struktur, och sektioner
+
+**Regel framåt:**
+
+- Behåll detta flöde för Steg 3E + 3F + Steg 4
+- Fortsätt nummerera lärdomar för att se mönstret över tid
+- Vid 15:e lager (om det kommer): överväg om spec-formatet behöver
+  fundamental omarbetning, inte bara fler regler
+
 ---
 
 ## Så använder du denna struktur i Claude Code
@@ -645,4 +758,4 @@ Om någon av dessa frestelser uppstår — stanna, öppna denna fil, påminn dig
 
 ---
 
-*Senast uppdaterad: 2 maj 2026 (morgon) — App-redesign Steg 1A → 3A LIVE på svebud.se. Uppdatera denna fil efter varje slutförd sprint.*
+*Senast uppdaterad: 2 maj 2026 (kväll) — App-redesign Steg 3B → 3D LIVE på svebud.se. Uppdatera denna fil efter varje slutförd sprint.*
