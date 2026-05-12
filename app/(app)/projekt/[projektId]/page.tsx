@@ -516,6 +516,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
             const active = aktivtSteg === nr && !done
             const isLast = i === stegLabels.length - 1
             const tabMap = ['dokument', 'analys', 'anbud']
+            const valdTab = aktivTab === tabMap[i]
             return (
               <div key={label} className="flex-1 relative">
                 <button onClick={() => setAktivTab(tabMap[i])} className="flex flex-col items-center w-full" style={{ padding: '0 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -524,15 +525,15 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     border: `2px solid ${done ? 'var(--light-green)' : active ? 'var(--light-amber)' : 'var(--light-border)'}`,
                     background: done ? 'var(--light-green)' : active ? 'var(--light-amber-glow)' : 'var(--light-bg)',
                     color: done ? 'var(--light-bg)' : active ? 'var(--light-amber)' : 'var(--light-t4)',
-                    fontSize: 14, fontWeight: 800, boxShadow: active ? '0 0 0 4px var(--light-amber-glow)' : 'none', transition: 'all 0.2s',
+                    fontSize: 14, fontWeight: 800, boxShadow: valdTab ? '0 0 0 5px var(--light-green-bg)' : active ? '0 0 0 4px var(--light-amber-glow)' : 'none', transition: 'all 0.2s',
                   }}>
                     {nr}
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: done ? 'var(--light-green)' : active ? 'var(--light-amber)' : 'var(--light-t4)' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, marginTop: 8, textAlign: 'center', color: valdTab ? 'var(--light-green)' : done ? 'var(--light-green)' : active ? 'var(--light-amber)' : 'var(--light-t4)' }}>
                     {label}
                   </span>
-                  <span style={{ fontSize: 10, marginTop: 2, color: done ? 'var(--light-green)' : active ? 'var(--light-t2)' : 'var(--light-t4)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
-                    {done ? <>Klart <Check size={11} weight="bold" /></> : active ? <><ArrowLeft size={11} weight="bold" /> Du är här</> : ''}
+                  <span style={{ fontSize: 10, marginTop: 2, color: valdTab ? 'var(--light-green)' : done ? 'var(--light-green)' : active ? 'var(--light-t2)' : 'var(--light-t4)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                    {valdTab ? <><ArrowLeft size={11} weight="bold" /> Du tittar här</> : done ? <>Klart <Check size={11} weight="bold" /></> : active ? <><ArrowLeft size={11} weight="bold" /> Du är här</> : ''}
                   </span>
                 </button>
                 {!isLast && (
