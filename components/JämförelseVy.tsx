@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
+import { CheckCircle, XCircle, Question, Lightning, Check, X } from '@phosphor-icons/react'
 
 type Krav = {
   krav: string
@@ -56,8 +57,10 @@ function KravRad({ krav }: { krav: Krav }) {
         fontSize: 13,
       }}
     >
-      <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>
-        {krav.uppfyllt === true ? '✅' : krav.uppfyllt === false ? '❌' : '❓'}
+      <span style={{ flexShrink: 0, marginTop: 1, display: 'inline-flex' }}>
+        {krav.uppfyllt === true ? <CheckCircle size={14} weight="bold" style={{ color: 'var(--green)' }} />
+          : krav.uppfyllt === false ? <XCircle size={14} weight="bold" style={{ color: 'var(--red)' }} />
+          : <Question size={14} weight="bold" style={{ color: 'var(--slate)' }} />}
       </span>
       <div className="flex-1">
         <div style={{ fontWeight: 600, color: 'var(--white)' }}>{krav.krav}</div>
@@ -100,7 +103,7 @@ export default function JämförelseVy({ projektId, data, onKörMatchning, ladda
           disabled={laddar}
           style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
         >
-          {laddar ? 'Analyserar krav...' : '⚡ Kör kravmatchning'}
+          {laddar ? 'Analyserar krav...' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lightning size={14} weight="bold" /> Kör kravmatchning</span>}
         </Button>
       </div>
     )
@@ -168,7 +171,7 @@ export default function JämförelseVy({ projektId, data, onKörMatchning, ladda
               ? <p style={{ fontSize: 12, color: 'var(--slate)' }}>Inga matchade</p>
               : data.matchade_certifikat.map((c, i) => (
                   <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 6 }}>
-                    <span style={{ color: 'var(--green)' }}>✓</span>
+                    <Check size={12} weight="bold" style={{ color: 'var(--green)', flexShrink: 0 }} />
                     <span style={{ color: 'var(--soft)' }}>{c}</span>
                   </div>
                 ))
@@ -185,7 +188,7 @@ export default function JämförelseVy({ projektId, data, onKörMatchning, ladda
               ? <p style={{ fontSize: 12, color: 'var(--green)' }}>Alla krav uppfyllda!</p>
               : data.saknade_certifikat.map((c, i) => (
                   <div key={i} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 6 }}>
-                    <span style={{ color: 'var(--red)' }}>✗</span>
+                    <X size={12} weight="bold" style={{ color: 'var(--red)', flexShrink: 0 }} />
                     <span style={{ color: 'var(--soft)' }}>{c}</span>
                   </div>
                 ))

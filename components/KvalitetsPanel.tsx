@@ -3,7 +3,7 @@
 import { useState, type ComponentType } from 'react'
 import type { KvalitetsResultat, GranskningsPunkt } from '@/lib/kvalitetsagent'
 import { Button } from '@/components/ui/button'
-import { MagnifyingGlass, CheckCircle, Lightbulb, Warning, XCircle, CaretUp, CaretDown } from '@phosphor-icons/react'
+import { MagnifyingGlass, CheckCircle, Lightbulb, Warning, XCircle, CaretUp, CaretDown, ArrowsClockwise } from '@phosphor-icons/react'
 
 type IconComponent = ComponentType<{ size?: number; weight?: 'bold'; style?: React.CSSProperties }>
 
@@ -176,22 +176,22 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
           {/* Statistik-badges */}
           <div className="flex gap-1.5">
             {resultat.antal_fel > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-red-bg)', color: 'var(--light-red)' }}>
-                ❌ {resultat.antal_fel}
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-red-bg)', color: 'var(--light-red)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                <XCircle size={10} weight="bold" /> {resultat.antal_fel}
               </span>
             )}
             {resultat.antal_varningar > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-orange-bg)', color: 'var(--light-orange)' }}>
-                ⚠️ {resultat.antal_varningar}
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-orange-bg)', color: 'var(--light-orange)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                <Warning size={10} weight="bold" /> {resultat.antal_varningar}
               </span>
             )}
             {resultat.antal_tips > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-blue-bg)', color: 'var(--light-blue)' }}>
-                💡 {resultat.antal_tips}
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-blue-bg)', color: 'var(--light-blue)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                <Lightbulb size={10} weight="bold" /> {resultat.antal_tips}
               </span>
             )}
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-green-bg)', color: 'var(--light-green)' }}>
-              ✅ {resultat.antal_bra}
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--light-green-bg)', color: 'var(--light-green)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+              <CheckCircle size={10} weight="bold" /> {resultat.antal_bra}
             </span>
           </div>
           <span style={{ fontSize: 11, color: 'var(--light-t3)', display: 'inline-flex', alignItems: 'center' }}>
@@ -276,7 +276,9 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                           lineHeight: 1.5,
                         }}
                       >
-                        💡 <strong>Förslag:</strong> {punkt.åtgärd}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <Lightbulb size={12} weight="bold" /> <strong>Förslag:</strong> {punkt.åtgärd}
+                        </span>
                       </div>
                     )}
                     {punkt.allvarlighet !== 'bra' && (
@@ -306,14 +308,18 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
               variant="outline"
               style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}
             >
-              🔄 Granska igen
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <ArrowsClockwise size={12} weight="bold" /> Granska igen
+              </span>
             </Button>
             <Button
               onClick={() => setExpanderad(false)}
               variant="outline"
               style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}
             >
-              ▲ Stäng
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <CaretUp size={12} weight="bold" /> Stäng
+              </span>
             </Button>
           </div>
         </div>

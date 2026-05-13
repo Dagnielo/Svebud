@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useUppföljningar } from '@/lib/hooks/useUppföljningar'
 import { posthog } from '@/lib/posthog'
+import { Bell } from '@phosphor-icons/react'
 
 export default function UppföljningsBanner() {
   const { uppföljningar, loading, fel } = useUppföljningar()
@@ -44,7 +45,7 @@ export default function UppföljningsBanner() {
       }}
     >
       <div className="flex items-center gap-3">
-        <span style={{ fontSize: 18 }}>🔔</span>
+        <Bell size={18} weight="bold" style={{ color: 'var(--yellow)' }} />
         <span style={{ fontSize: 14, color: 'var(--dt1)' }}>
           <strong>{count}</strong> anbud kräver åtgärd
         </span>

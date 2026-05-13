@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Separator } from '@/components/ui/separator'
+import { Warning, Check, Question, X } from '@phosphor-icons/react'
 
 type KalkylMoment = {
   beskrivning: string
@@ -93,8 +94,8 @@ export default function RekommendationsVy({ data, onGenerera, onExportera, ladda
         <CardContent>
           <p className="text-sm">{data.sammanfattning}</p>
           {data.beslut === 'PRELIMINÄRT' && (
-            <p className="text-sm text-orange-600 dark:text-orange-400 italic mt-2">
-              ⚠ Beslutet baseras på ofullständig data.
+            <p className="text-sm text-orange-600 dark:text-orange-400 italic mt-2 inline-flex items-center gap-1">
+              <Warning size={12} weight="bold" /> Beslutet baseras på ofullständig data.
             </p>
           )}
         </CardContent>
@@ -110,7 +111,11 @@ export default function RekommendationsVy({ data, onGenerera, onExportera, ladda
             {data.certifikat_uppfyllda.map((c, i) => (
               <div key={i} className="flex items-center justify-between text-sm">
                 <span>{c.krav} {c.obligatoriskt && <span className="text-red-500">*</span>}</span>
-                <span>{c.uppfyllt ? '✓' : data.beslut === 'PRELIMINÄRT' ? '❓ Oklart' : '✗'}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                  {c.uppfyllt ? <Check size={12} weight="bold" />
+                    : data.beslut === 'PRELIMINÄRT' ? <><Question size={12} weight="bold" /> Oklart</>
+                    : <X size={12} weight="bold" />}
+                </span>
               </div>
             ))}
           </div>
@@ -184,8 +189,8 @@ export default function RekommendationsVy({ data, onGenerera, onExportera, ladda
       {/* Granskning */}
       {data.kräver_granskning && (
         <div className="p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
-          <p className="font-medium text-orange-700 dark:text-orange-300">
-            ⚠️ Kräver granskning
+          <p className="font-medium text-orange-700 dark:text-orange-300 inline-flex items-center gap-2">
+            <Warning size={14} weight="bold" /> Kräver granskning
           </p>
           <ul className="mt-2 text-sm list-disc list-inside">
             {data.granskningsorsaker.map((o, i) => <li key={i}>{o}</li>)}

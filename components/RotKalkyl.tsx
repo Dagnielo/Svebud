@@ -5,6 +5,7 @@ import { beräknaROT, ROT_TYPER, ROT_REGLER } from '@/lib/rot-regler'
 import { ROT_TYP_ICON } from '@/lib/rot-icons'
 import type { RotTyp, FastighetsTyp, RotKalkylInput } from '@/lib/rot-regler'
 import { createClient } from '@/lib/supabase/client'
+import { Circle, Warning } from '@phosphor-icons/react'
 
 interface Props {
   arbeteExMoms: number
@@ -148,7 +149,11 @@ export default function RotKalkyl({
               background: aktiverat ? 'var(--light-green)' : 'var(--light-t4)',
             }}
           />
-          {aktiverat ? '● Aktiverat' : 'Aktivera'}
+          {aktiverat ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Circle size={8} weight="fill" /> Aktiverat
+            </span>
+          ) : 'Aktivera'}
         </button>
       </div>
 
@@ -227,6 +232,7 @@ export default function RotKalkyl({
                     rel="noopener noreferrer"
                     style={{ color: 'var(--light-blue)', marginLeft: 4, textDecoration: 'none' }}
                   >
+                    {/* ↗ typografiskt extern-länk-tecken (UX-konvention, ej ikon) */}
                     Skatteverket ↗
                   </a>
                 )}
@@ -319,7 +325,7 @@ export default function RotKalkyl({
                 fontSize: 12,
               }}
             >
-              <span style={{ color: 'var(--light-orange)', flexShrink: 0, marginTop: 1 }}>⚠</span>
+              <Warning size={12} weight="bold" style={{ color: 'var(--light-orange)', flexShrink: 0, marginTop: 1 }} />
               <div>
                 <p style={{ fontWeight: 700, color: 'var(--light-orange)', marginBottom: 2 }}>Avdragstak nått</p>
                 <p style={{ color: 'var(--light-t3)' }}>
@@ -439,6 +445,7 @@ export default function RotKalkyl({
           rel="noopener noreferrer"
           style={{ color: 'var(--light-blue)', textDecoration: 'none' }}
         >
+          {/* ↗ typografiskt extern-länk-tecken (UX-konvention, ej ikon) */}
           Skatteverket ↗
         </a>
       </p>

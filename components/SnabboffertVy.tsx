@@ -13,6 +13,7 @@ import {
   Buildings,
   MagnifyingGlass,
   Wrench,
+  X,
 } from '@phosphor-icons/react'
 
 const kategoriInfo: Record<string, { label: string; färg: string }> = {
@@ -433,7 +434,9 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
                     {m.belopp.toLocaleString('sv-SE')} kr
                   </td>
                   <td style={{ padding: '4px', borderBottom: '1px solid var(--light-border)', textAlign: 'center' }}>
-                    <button onClick={() => taBortMoment(i)} style={{ fontSize: 11, color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                    <button onClick={() => taBortMoment(i)} style={{ color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
+                      <X size={11} weight="bold" />
+                    </button>
                   </td>
                 </tr>
               ))}

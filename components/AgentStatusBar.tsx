@@ -1,5 +1,8 @@
 'use client'
 
+import type { Icon } from '@phosphor-icons/react'
+import { FileText, MagnifyingGlass, Scales, Target, EnvelopeOpen, Check } from '@phosphor-icons/react'
+
 type Props = {
   antalExtraherade: number
   jämförelseStatus: string
@@ -9,37 +12,37 @@ type Props = {
 
 type StegStatus = 'klar' | 'aktivt' | 'väntar' | 'åtgärd'
 
-function getStegStatus(props: Props): Array<{ label: string; icon: string; status: StegStatus }> {
+function getStegStatus(props: Props): Array<{ label: string; Ikon: Icon; status: StegStatus }> {
   const { antalExtraherade, jämförelseStatus, rekommendationStatus, antalAktivaBrev } = props
 
   return [
     {
       label: 'Dokument',
-      icon: '📄',
+      Ikon: FileText,
       status: antalExtraherade >= 1 ? 'klar' : 'väntar',
     },
     {
       label: 'Extraktion',
-      icon: '🔍',
+      Ikon: MagnifyingGlass,
       status: antalExtraherade >= 2 ? 'klar' : antalExtraherade === 1 ? 'aktivt' : 'väntar',
     },
     {
       label: 'Jämförelse',
-      icon: '⚖️',
+      Ikon: Scales,
       status:
         jämförelseStatus === 'klar' ? 'klar' :
         jämförelseStatus === 'pågår' ? 'aktivt' : 'väntar',
     },
     {
       label: 'Rekommendation',
-      icon: '🎯',
+      Ikon: Target,
       status:
         rekommendationStatus === 'klar' ? 'klar' :
         rekommendationStatus === 'pågår' ? 'aktivt' : 'väntar',
     },
     {
       label: 'Uppföljning',
-      icon: '📬',
+      Ikon: EnvelopeOpen,
       status: antalAktivaBrev > 0 ? 'åtgärd' : rekommendationStatus === 'klar' ? 'klar' : 'väntar',
     },
   ]
@@ -90,13 +93,13 @@ export default function AgentStatusBar(props: Props) {
               }}
             >
               {s.status === 'klar' ? (
-                <span style={{ fontSize: 12, color: 'var(--navy)' }}>✓</span>
+                <Check size={12} weight="bold" style={{ color: 'var(--navy)' }} />
               ) : s.status === 'aktivt' ? (
                 <Spinner />
               ) : s.status === 'åtgärd' ? (
                 <span style={{ fontSize: 10, color: 'var(--red)' }}>!</span>
               ) : (
-                <span style={{ fontSize: 11 }}>{s.icon}</span>
+                <s.Ikon size={12} weight="bold" style={{ color: 'var(--steel)' }} />
               )}
             </div>
             <div>
