@@ -23,7 +23,8 @@ import { DOKUMENT_CSS, EXPORT_HTML_HEAD, EXPORT_HTML_FOOT } from '@/lib/dokument
 import { hämtaAnbudsläge, bedömningsVisning } from '@/lib/verdict'
 import { posthog } from '@/lib/posthog'
 import UtfallsKnappar from '@/components/UtfallsKnappar'
-import { ArrowLeft, Check, Lightning, FileText, CaretUp, CaretDown, Question, Plus, Download, ClipboardText, PaperPlaneTilt } from '@phosphor-icons/react'
+import { ArrowLeft, Check, Lightning, FileText, CaretUp, CaretDown, Question, Plus, Download, ClipboardText, PaperPlaneTilt, Paperclip, ChartBar, Spinner, MagnifyingGlass, X, Lightbulb, PencilSimple, Eye, ArrowsClockwise, CurrencyCircleDollar, FilePdf, EnvelopeSimple, ChatCircle, Buildings, Calculator, BookOpen, CheckCircle, Circle } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 
 type AnbudRad = { id: string; filnamn: string; extraktion_status: string; skapad: string; rå_text: string | null; storage_path: string | null }
 
@@ -566,7 +567,12 @@ hr{border:none;border-top:1pt solid #e0e0e0}
         {/* Instruktionsruta — baseras på vilken flik man tittar på */}
         <div style={{ marginTop: 16, padding: '14px 18px', borderRadius: 10, background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)' }}>
           <div className="flex items-center gap-3">
-            <span style={{ fontSize: 18 }}>{aktivTab === 'dokument' ? '📎' : aktivTab === 'analys' ? '📊' : aktivTab === 'foranmalan' ? '⚡' : '📋'}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--light-amber)' }}>
+              {aktivTab === 'dokument' ? <Paperclip size={18} weight="bold" />
+                : aktivTab === 'analys' ? <ChartBar size={18} weight="bold" />
+                : aktivTab === 'foranmalan' ? <Lightning size={18} weight="bold" />
+                : <ClipboardText size={18} weight="bold" />}
+            </span>
             <div className="flex-1">
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-amber)' }}>
                 {aktivTab === 'dokument' && 'Steg 1: Ladda upp förfrågningsunderlaget'}
@@ -577,12 +583,22 @@ hr{border:none;border-top:1pt solid #e0e0e0}
             </div>
             {aktivTab === 'dokument' && anbud.length > 0 && (
               <Button onClick={körAnalys} disabled={analysLaddar} style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
-                {analysLaddar ? '⏳ Analyserar...' : '🔍 Analysera förfrågan →'}
+                {/* "→" är typografisk pil (UX-konvention), ej ikon */}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {analysLaddar
+                    ? <><Spinner size={14} weight="bold" className="animate-spin" /> Analyserar...</>
+                    : <><MagnifyingGlass size={14} weight="bold" /> Analysera förfrågan →</>}
+                </span>
               </Button>
             )}
             {aktivTab === 'analys' && projekt.jämförelse_status === 'klar' && (
               <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontSize: 12, fontWeight: 700, padding: '6px 14px', flexShrink: 0 }}>
-                {anbudLaddar ? '⏳ Genererar...' : 'Generera anbud →'}
+                {/* "→" är typografisk pil (UX-konvention), ej ikon */}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {anbudLaddar
+                    ? <><Spinner size={14} weight="bold" className="animate-spin" /> Genererar...</>
+                    : <>Generera anbud →</>}
+                </span>
               </Button>
             )}
           </div>
@@ -723,9 +739,10 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             const text = (kundFrågor ?? []).map((f, i) => `${i + 1}. ${f}`).join('\n')
                             navigator.clipboard.writeText(text)
                           }}
-                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer' }}
+                          style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'var(--light-amber-glow)', border: '1px solid var(--light-amber-border)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         >
-                          📋 Kopiera alla
+                          <ClipboardText size={12} weight="bold" />
+                          Kopiera alla
                         </button>
                       </div>
 
@@ -748,9 +765,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                           />
                           <button
                             onClick={() => setKundFrågor(prev => (prev ?? []).filter((_, j) => j !== i))}
-                            style={{ fontSize: 11, color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, flexShrink: 0 }}
+                            style={{ color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}
                           >
-                            ✕
+                            <X size={12} weight="bold" />
                           </button>
                         </div>
                       ))}
@@ -821,7 +838,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                     <GenererarVy steg={genSteg} />
                   ) : (
                     <>
-                      <div style={{ fontSize: 28, marginBottom: 8 }}>📋</div>
+                      <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center', color: 'var(--light-amber)' }}>
+                        <ClipboardText size={28} weight="bold" />
+                      </div>
                       <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: 'var(--light-t1)' }}>
                         {projekt.jämförelse_status === 'klar' ? 'Redo att generera anbud' : 'Analysera förfrågan först'}
                       </div>
@@ -875,7 +894,7 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         color: 'var(--light-t2)',
                       }}
                     >
-                      <span>💡</span>
+                      <Lightbulb size={14} weight="bold" style={{ color: 'var(--light-amber)', flexShrink: 0 }} />
                       <span>
                         Vill du justera priser eller moment? Gå tillbaka till{' '}
                         <button onClick={() => setAktivTab('analys')} style={{ color: 'var(--light-amber)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 600, fontSize: 12 }}>
@@ -893,8 +912,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       className="flex items-center justify-between w-full"
                       style={{ padding: '14px 18px', background: 'none', border: 'none', borderBottom: utkastÖppet ? '1px solid var(--light-border)' : 'none', cursor: 'pointer' }}
                     >
-                      <div>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>📋 Anbudsutkast</span>
+                      <div className="flex items-center gap-2">
+                        <ClipboardText size={14} weight="bold" style={{ color: 'var(--light-t1)' }} />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>Anbudsutkast</span>
                         <span style={{ fontSize: 11, color: 'var(--light-t3)', marginLeft: 8 }}>Genererat från din analys i steg 2 — öppna för att granska eller redigera</span>
                       </div>
                       <div className="flex items-center gap-3">
@@ -906,8 +926,8 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                             Genererat {new Date(projekt.uppdaterad).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })} kl {new Date(projekt.uppdaterad).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
-                        <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
-                          {utkastÖppet ? '▲ Dölj' : '▼ Visa'}
+                        <span style={{ fontSize: 11, color: 'var(--light-t3)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          {utkastÖppet ? <><CaretUp size={11} weight="bold" /> Dölj</> : <><CaretDown size={11} weight="bold" /> Visa</>}
                         </span>
                       </div>
                     </button>
@@ -947,11 +967,19 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                               background: !förhandsgranskning ? 'var(--light-amber-glow)' : 'var(--light-bg)',
                             }}
                           >
-                            {förhandsgranskning ? '✏️ Redigera' : '👁 Förhandsgranska'}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              {förhandsgranskning ? <><PencilSimple size={12} weight="bold" /> Redigera</> : <><Eye size={12} weight="bold" /> Förhandsgranska</>}
+                            </span>
                           </Button>
-                          <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}>📋 Kopiera text</Button>
+                          <Button onClick={kopieraText} variant="outline" style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t2)', background: 'var(--light-bg)' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <ClipboardText size={12} weight="bold" /> Kopiera text
+                            </span>
+                          </Button>
                           <Button onClick={körAnbudsGenerering} disabled={anbudLaddar} variant="outline" style={{ fontSize: 12, borderColor: 'var(--light-amber)', color: 'var(--light-amber)', background: 'var(--light-bg)' }}>
-                            🔄 Generera nytt
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <ArrowsClockwise size={12} weight="bold" /> Generera nytt
+                            </span>
                           </Button>
                         </div>
                         {förhandsgranskning ? (
@@ -971,7 +999,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         )}
                         <div className="flex justify-center" style={{ padding: '10px 0', borderTop: '1px solid var(--light-border)' }}>
                           <Button onClick={() => setUtkastÖppet(false)} variant="outline" style={{ fontSize: 12, borderColor: 'var(--light-border)', color: 'var(--light-t3)', background: 'var(--light-bg)' }}>
-                            ▲ Minimera
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <CaretUp size={12} weight="bold" /> Minimera
+                            </span>
                           </Button>
                         </div>
                       </>
@@ -1002,8 +1032,9 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                         }}
                       >
                         <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
-                          <div>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>💰 Prisöversikt</span>
+                          <div className="flex items-center gap-2">
+                            <CurrencyCircleDollar size={14} weight="bold" style={{ color: 'var(--light-amber)' }} />
+                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>Prisöversikt</span>
                             <span style={{ fontSize: 11, color: 'var(--light-t3)', marginLeft: 8 }}>Ingår i anbudsutkastet ovan</span>
                           </div>
                           <button
@@ -1061,7 +1092,10 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       }}
                     >
                       <div className="flex items-center justify-between" style={{ marginBottom: 10 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-t1)' }}>✍ Kontaktperson i anbudet</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <PencilSimple size={13} weight="bold" />
+                          Kontaktperson i anbudet
+                        </span>
                         <button
                           onClick={() => {
                             if (kontaktInfogad) {
@@ -1151,7 +1185,10 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                       boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                     }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: 'var(--light-t1)' }}>📄 Ladda ner anbudsutkast</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: 'var(--light-t1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <FilePdf size={13} weight="bold" />
+                      Ladda ner anbudsutkast
+                    </div>
                     <p style={{ fontSize: 12, color: 'var(--light-t3)', marginTop: 0, marginBottom: 12 }}>
                       Färdigt anbud med aktuella priser, kalkyl och eventuella avdrag. Redo att skickas till kund.
                     </p>
@@ -1186,7 +1223,10 @@ hr{border:none;border-top:1pt solid #e0e0e0}
                   >
                     <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>📧 Förbered mail till kund</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <EnvelopeSimple size={14} weight="bold" />
+                          Förbered mail till kund
+                        </div>
                         <p style={{ fontSize: 12, color: 'var(--light-t3)', marginTop: 2 }}>
                           Kopiera ämnesrad och följebrev — klistra in i ditt eget mailprogram och bifoga PDF:en.
                         </p>
@@ -1326,7 +1366,7 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       >
                         <div className="flex items-center gap-2">
-                          <span style={{ fontSize: 14 }}>📋</span>
+                          <ClipboardText size={14} weight="bold" style={{ color: 'var(--light-t1)' }} />
                           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>
                             Inskickningshistorik
                           </span>
@@ -1334,8 +1374,8 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                             {projekt.inskickningar?.length ?? 0}
                           </span>
                         </div>
-                        <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
-                          {visaHistorik ? '▲ Dölj' : '▼ Visa'}
+                        <span style={{ fontSize: 11, color: 'var(--light-t3)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          {visaHistorik ? <><CaretUp size={11} weight="bold" /> Dölj</> : <><CaretDown size={11} weight="bold" /> Visa</>}
                         </span>
                       </button>
 
@@ -1383,14 +1423,15 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
                                   )}
                                 </div>
                                 {insk.utkast && (
-                                  <span style={{ fontSize: 11, color: 'var(--light-t3)' }}>
-                                    {expanderadVersion === insk.version ? '▲ Dölj anbud' : '▼ Visa anbud'}
+                                  <span style={{ fontSize: 11, color: 'var(--light-t3)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                    {expanderadVersion === insk.version ? <><CaretUp size={11} weight="bold" /> Dölj anbud</> : <><CaretDown size={11} weight="bold" /> Visa anbud</>}
                                   </span>
                                 )}
                               </button>
                               {insk.kommentar && (
-                                <div style={{ fontSize: 12, color: 'var(--light-t2)', padding: '0 14px 8px', marginLeft: 36 }}>
-                                  💬 {insk.kommentar}
+                                <div style={{ fontSize: 12, color: 'var(--light-t2)', padding: '0 14px 8px', marginLeft: 36, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                                  <ChatCircle size={12} weight="bold" style={{ flexShrink: 0, marginTop: 2 }} />
+                                  <span>{insk.kommentar}</span>
                                 </div>
                               )}
                               {expanderadVersion === insk.version && insk.utkast && (
@@ -1444,7 +1485,7 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
               <div style={{ fontSize: 12, color: 'var(--light-t4)' }}>Inga filer uppladdade</div>
             ) : anbud.map(a => (
               <div key={a.id} className="flex items-center gap-2" style={{ fontSize: 12, marginBottom: 8 }}>
-                <span style={{ color: 'var(--light-blue)' }}>📄</span>
+                <FileText size={12} weight="bold" style={{ color: 'var(--light-blue)', flexShrink: 0 }} />
                 <span className="truncate" style={{ color: 'var(--light-t2)' }}>{a.filnamn}</span>
                 <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: a.extraktion_status === 'extraherad' ? 'var(--light-green)' : 'var(--light-amber)' }} />
               </div>
@@ -1470,14 +1511,14 @@ ${företagsNamn ?? ''}${kp?.telefon ? `\nTel: ${kp.telefon}` : ''}${kp?.epost ? 
   )
 }
 
-const GEN_STEG = [
-  { label: 'Förbereder data...', ikon: '📋' },
-  { label: 'Analyserar förfrågan...', ikon: '🔍' },
-  { label: 'Matchar mot er profil...', ikon: '🏢' },
-  { label: 'Bygger kalkyl...', ikon: '🧮' },
-  { label: 'Skriver anbudstext...', ikon: '✍️' },
-  { label: 'Lägger till villkor och förbehåll...', ikon: '📑' },
-  { label: 'Klart!', ikon: '✅' },
+const GEN_STEG: Array<{ label: string; Ikon: Icon }> = [
+  { label: 'Förbereder data...', Ikon: ClipboardText },
+  { label: 'Analyserar förfrågan...', Ikon: MagnifyingGlass },
+  { label: 'Matchar mot er profil...', Ikon: Buildings },
+  { label: 'Bygger kalkyl...', Ikon: Calculator },
+  { label: 'Skriver anbudstext...', Ikon: PencilSimple },
+  { label: 'Lägger till villkor och förbehåll...', Ikon: BookOpen },
+  { label: 'Klart!', Ikon: CheckCircle },
 ]
 
 function GenererarVy({ steg }: { steg: number }) {
@@ -1525,8 +1566,10 @@ function GenererarVy({ steg }: { steg: number }) {
                 transition: 'opacity 0.5s',
               }}
             >
-              <span style={{ fontSize: 14, width: 24, textAlign: 'center' }}>
-                {klar ? '✅' : aktiv ? s.ikon : '○'}
+              <span style={{ width: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: klar ? 'var(--green)' : aktiv ? 'var(--yellow)' : 'var(--slate)' }}>
+                {klar ? <CheckCircle size={14} weight="bold" />
+                  : aktiv ? <s.Ikon size={14} weight="bold" />
+                  : <Circle size={14} weight="regular" />}
               </span>
               <span style={{
                 fontSize: 13,
