@@ -183,6 +183,41 @@ CRON_SECRET
 - "Byt till formell kravanalys"-länken borttagen (auto-detektion sköter det)
 - Instruktionsrutan baseras på `aktivTab`, inte `aktivtSteg`
 
+### Emoji-policy för AI-output (Steg 3F.5)
+
+AI-genererade strängar får innehålla emojier. Dessa är **data**, inte
+UI-rendering, och bevaras analog med KALKYL_MARKÖR 📊 (Avvikelse A i 3F.3).
+
+4-kategori-system för emoji-bevarande:
+
+- **A — AI-prompt-text** (instruktion TILL modellen): BEVARA
+  Exempel: lib/fu-agent.ts (dokumenttyp-beskrivningar)
+
+- **B — AI-output-pattern** (regex/startsWith mot modell-response): BEVARA
+  Exempel: lib/bolagsverket-agent.ts (?:Ja|Aktiv|Registrerad|✓)
+
+- **C — Hardcoded fallback i koden** (statisk UI-text utan AI-källa):
+  MIGRERA till Phosphor
+  Exempel: page.tsx tab-system, RotKalkyl ●-toggle
+
+- **D — Database-cachad AI-output** (modell-genererat, cachat i Supabase):
+  BEVARA
+  Exempel: ai_insikter_cache.insikter[].ikon
+
+Endast Kategori C kräver migration. A, B, D bevaras permanent.
+
+Permanent bevarade UI-emojis efter Steg 3F:
+- ⚡ SveBud-logo/varumärke
+- 🎉 UtfallsKnappar Grattis-DialogTitle (celebration)
+- ✨ profil 'Komplett profil!' (celebration)
+- ↗ extern-länk-tecken (typografisk konvention)
+- → CTA-pilar (typografisk konvention)
+- ✗/✓ TEXT-PATTERN i toast-state-detection (data-marker)
+- 📊 KALKYL_MARKÖR + regex (data-marker för AI-utkast-render)
+
+3F.5-inventering verifierade: inga hardcoded fallback-strängar
+(Kategori C) i AI-insikter-flödet.
+
 ---
 
 ## Designprinciper
