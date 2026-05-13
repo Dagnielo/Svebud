@@ -1,4 +1,5 @@
 import { FORANMALAN_JOBBTYPER } from '@/lib/foranmalan-regler'
+import { ForanmalanIkon } from './ForanmalanIkon'
 
 export const metadata = {
   title: 'Vilka elarbeten kräver föranmälan? | SveBud',
@@ -46,7 +47,9 @@ export default function ForanmalanRegler() {
                 borderBottom: i < FORANMALAN_JOBBTYPER.length - 1 ? '1px solid var(--navy-border)' : 'none',
               }}
             >
-              <span style={{ fontSize: 24, flexShrink: 0, marginTop: 2 }}>{jobb.emoji}</span>
+              <span style={{ flexShrink: 0, marginTop: 2, color: 'var(--white)' }}>
+                <ForanmalanIkon id={jobb.id} size={24} />
+              </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span style={{ fontSize: 14, fontWeight: 700 }}>{jobb.label}</span>

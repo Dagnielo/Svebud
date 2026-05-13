@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { FORANMALAN_STEG, STEG_ORDNING, FORANMALAN_JOBBTYPER, nästaSteg, stegIndex, REGEL_VERSION, regelÄrGammal } from '@/lib/foranmalan-regler'
 import type { StegId } from '@/lib/foranmalan-regler'
+import { FORANMALAN_JOBBTYP_ICON, FORANMALAN_STEG_ICON } from '@/lib/foranmalan-icons'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ArrowSquareOut } from '@phosphor-icons/react'
@@ -190,27 +191,33 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                   Jobbtyp *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {FORANMALAN_JOBBTYPER.map(j => (
-                    <button
-                      key={j.id}
-                      onClick={() => setNyJobbtyp(j.id)}
-                      style={{
-                        padding: '8px 10px',
-                        borderRadius: 8,
-                        border: '1px solid',
-                        borderColor: nyJobbtyp === j.id ? 'var(--light-amber)' : 'var(--light-border)',
-                        background: nyJobbtyp === j.id ? 'var(--light-amber-glow)' : 'var(--light-off)',
-                        color: nyJobbtyp === j.id ? 'var(--light-amber)' : 'var(--light-t2)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontSize: 12,
-                      }}
-                    >
-                      <span style={{ marginRight: 6 }}>{j.emoji}</span>
-                      {j.label}
-                      {!j.kravs && <span style={{ fontSize: 10, color: 'var(--light-green)', marginLeft: 4 }}>Ej krav</span>}
-                    </button>
-                  ))}
+                  {FORANMALAN_JOBBTYPER.map(j => {
+                    const JobbIcon = FORANMALAN_JOBBTYP_ICON[j.id]
+                    return (
+                      <button
+                        key={j.id}
+                        onClick={() => setNyJobbtyp(j.id)}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: 8,
+                          border: '1px solid',
+                          borderColor: nyJobbtyp === j.id ? 'var(--light-amber)' : 'var(--light-border)',
+                          background: nyJobbtyp === j.id ? 'var(--light-amber-glow)' : 'var(--light-off)',
+                          color: nyJobbtyp === j.id ? 'var(--light-amber)' : 'var(--light-t2)',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontSize: 12,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <JobbIcon size={16} weight="bold" />
+                        <span>{j.label}</span>
+                        {!j.kravs && <span style={{ fontSize: 10, color: 'var(--light-green)', marginLeft: 4 }}>Ej krav</span>}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -287,10 +294,13 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 20,
+              color: 'var(--light-amber)',
             }}
           >
-            {jobbInfo?.emoji}
+            {jobbInfo && (() => {
+              const JobbIcon = FORANMALAN_JOBBTYP_ICON[jobbInfo.id]
+              return <JobbIcon size={20} weight="bold" />
+            })()}
           </div>
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--light-t1)' }}>Föranmälan — {jobbInfo?.label}</div>
@@ -427,7 +437,10 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
             >
               <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
                 <div className="flex items-center gap-2" style={{ padding: '4px 10px', borderRadius: 6, background: stegBg, border: `1px solid ${stegBorder}` }}>
-                  <span style={{ fontSize: 16 }}>{stegInfo?.emoji}</span>
+                  {stegInfo && (() => {
+                    const StegIcon = FORANMALAN_STEG_ICON[stegInfo.id]
+                    return <StegIcon size={16} weight="bold" style={{ color: 'var(--light-t1)' }} />
+                  })()}
                   <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t1)' }}>{stegInfo?.label}</span>
                 </div>
                 <button
@@ -665,13 +678,19 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
             {[...fp.foranmalan_steg_logg]
               .sort((a, b) => new Date(b.skapad).getTime() - new Date(a.skapad).getTime())
               .slice(0, 5)
-              .map(logg => (
+              .map(logg => {
+                const loggStegInfo = FORANMALAN_STEG.find(s => s.id === logg.steg)
+                const LoggIcon = loggStegInfo ? FORANMALAN_STEG_ICON[loggStegInfo.id] : null
+                return (
                 <div key={logg.id} className="flex items-center gap-3" style={{ fontSize: 12, color: 'var(--light-t3)', marginBottom: 6 }}>
                   <span className="font-mono" style={{ fontSize: 11, flexShrink: 0, width: 50, color: 'var(--light-t4)' }}>
                     {new Date(logg.skapad).toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' })}
                   </span>
                   <span style={{ color: 'var(--light-t4)' }}>·</span>
-                  <span style={{ fontWeight: 600, color: 'var(--light-t2)' }}>{FORANMALAN_STEG.find(s => s.id === logg.steg)?.emoji} {FORANMALAN_STEG.find(s => s.id === logg.steg)?.label}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--light-t2)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    {LoggIcon && <LoggIcon size={14} weight="bold" />}
+                    {loggStegInfo?.label}
+                  </span>
                   {logg.kommentar && (
                     <span style={{ color: 'var(--light-t2)' }}>— {logg.kommentar}</span>
                   )}
@@ -679,21 +698,26 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
                     <span style={{ color: 'var(--light-green)', marginLeft: 'auto', flexShrink: 0, fontSize: 11 }}>✉ notis skickad</span>
                   )}
                 </div>
-              ))
+                )
+              })
             }
           </div>
         )}
 
         {/* Nästa steg-knapp */}
-        {nästaStegInfo && (
-          <Button
-            onClick={() => setDialogOpen(true)}
-            className="w-full"
-            style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700, fontSize: 14, padding: '12px 24px' }}
-          >
-            {nästaStegInfo.emoji} Uppdatera till: {nästaStegInfo.label} →
-          </Button>
-        )}
+        {nästaStegInfo && (() => {
+          const NästaIcon = FORANMALAN_STEG_ICON[nästaStegInfo.id]
+          return (
+            <Button
+              onClick={() => setDialogOpen(true)}
+              className="w-full"
+              style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700, fontSize: 14, padding: '12px 24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+            >
+              <NästaIcon size={16} weight="bold" />
+              <span>Uppdatera till: {nästaStegInfo.label} →</span>
+            </Button>
+          )
+        })()}
 
         {fp.nuvarande_steg === 'klar' && (
           <div style={{ padding: '14px 18px', borderRadius: 10, background: 'var(--light-green-bg)', border: '1px solid var(--light-green)', textAlign: 'center' }}>
@@ -706,7 +730,13 @@ export default function ForanmalanTracker({ projektId, projektNamn }: Props) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ background: 'var(--light-bg)', border: '1px solid var(--light-border)' }}>
           <DialogHeader>
-            <DialogTitle style={{ color: 'var(--light-t1)' }}>{nästaStegInfo?.emoji} {nästaStegInfo?.label}</DialogTitle>
+            <DialogTitle style={{ color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              {nästaStegInfo && (() => {
+                const TitleIcon = FORANMALAN_STEG_ICON[nästaStegInfo.id]
+                return <TitleIcon size={18} weight="bold" />
+              })()}
+              <span>{nästaStegInfo?.label}</span>
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4" style={{ marginTop: 12 }}>
             {/* Kommentar */}

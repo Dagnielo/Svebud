@@ -19,7 +19,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "laddinfrastruktur",
     label: "Laddinfrastruktur (laddbox/laddstolpar)",
-    emoji: "⚡",
     kravs: true,
     typiskHandlaggningstid: "5–15 arbetsdagar",
     notering: "Fast monterad laddbox kräver alltid föranmälan per ELNÄT 2025 K §5.9",
@@ -37,7 +36,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "solceller",
     label: "Solcellsanläggning",
-    emoji: "☀️",
     kravs: true,
     typiskHandlaggningstid: "10–30 arbetsdagar",
     notering: "Kräver även ALP-blankett hos vissa nätbolag. Mätarbyte krävs av nätbolaget.",
@@ -55,7 +53,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "batterilager",
     label: "Batterilager / Energilager",
-    emoji: "🔋",
     kravs: true,
     typiskHandlaggningstid: "5–15 arbetsdagar",
     notering: "Kräver att koppling till befintlig solcellsanläggning dokumenteras för att berättiga Grön Teknik-avdrag.",
@@ -73,7 +70,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "varmepump",
     label: "Värmepump (eldriven)",
-    emoji: "🌡️",
     kravs: true,
     typiskHandlaggningstid: "3–10 arbetsdagar",
     notering: "Ny per ELNÄT 2025 K — tidigare krävdes föranmälan bara vid säkringshöjning. Nu alltid.",
@@ -91,7 +87,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "spabad_bastu",
     label: "Spabad / Bastu med elaggregat",
-    emoji: "🛁",
     kravs: true,
     typiskHandlaggningstid: "3–10 arbetsdagar",
     notering: "Namnges explicit i ELNÄT 2025 K §5.9. Bastuaggregat >3,6 kW räknas som väsentlig förändring.",
@@ -109,7 +104,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "ny_anslutning",
     label: "Ny elanslutning / Nybyggnation",
-    emoji: "🏗️",
     kravs: true,
     typiskHandlaggningstid: "20–90 arbetsdagar",
     notering: "Kontakta nätbolaget MINST 6 månader i förväg om kabelgrävning eller nätförstärkning kan krävas.",
@@ -127,7 +121,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "sakringshojning",
     label: "Höjning av huvudsäkring",
-    emoji: "🔌",
     kravs: true,
     typiskHandlaggningstid: "3–10 arbetsdagar",
     notering: "Vanligt vid BRF-renoveringar och laddinfrastrukturprojekt. Påverkar nätavgiften.",
@@ -145,7 +138,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "stamrenovering",
     label: "Stamrenovering / Ny elcentral",
-    emoji: "🏢",
     kravs: true,
     typiskHandlaggningstid: "10–20 arbetsdagar",
     notering: "BRF-anbud — omfattas av föranmälan om säkring ändras eller matarledning berörs.",
@@ -163,7 +155,6 @@ export const FORANMALAN_JOBBTYPER = [
   {
     id: "service_underhall",
     label: "Service / Underhåll / Byte av uttag",
-    emoji: "🔧",
     kravs: false,
     typiskHandlaggningstid: null,
     notering: "Kräver INTE föranmälan. Färdiganmälan kan krävas om arbetet påverkar mätarsystemet.",
@@ -175,12 +166,12 @@ export const FORANMALAN_JOBBTYPER = [
 export type JobbTypId = typeof FORANMALAN_JOBBTYPER[number]["id"]
 
 export const FORANMALAN_STEG = [
-  { id: "vunnet",    label: "Anbud vunnet",              emoji: "🏆", färg: "#F5C400" },
-  { id: "fore",      label: "Föranmälan inskickad",      emoji: "📋", färg: "#4A9EFF" },
-  { id: "medgivande",label: "Installationsmedgivande",   emoji: "✅", färg: "#4A9EFF" },
-  { id: "installation", label: "Installation pågår",     emoji: "🔧", färg: "#4A9EFF" },
-  { id: "fardig",    label: "Färdiganmälan inskickad",   emoji: "📨", färg: "#4A9EFF" },
-  { id: "klar",      label: "Nätbolag godkänt — Klar",   emoji: "⚡", färg: "#00C67A" },
+  { id: "vunnet",    label: "Anbud vunnet",              färg: "#F5C400" },
+  { id: "fore",      label: "Föranmälan inskickad",      färg: "#4A9EFF" },
+  { id: "medgivande",label: "Installationsmedgivande",   färg: "#4A9EFF" },
+  { id: "installation", label: "Installation pågår",     färg: "#4A9EFF" },
+  { id: "fardig",    label: "Färdiganmälan inskickad",   färg: "#4A9EFF" },
+  { id: "klar",      label: "Nätbolag godkänt — Klar",   färg: "#00C67A" },
 ] as const
 
 export type StegId = typeof FORANMALAN_STEG[number]["id"]

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { beräknaROT, ROT_TYPER, ROT_REGLER } from '@/lib/rot-regler'
+import { ROT_TYP_ICON } from '@/lib/rot-icons'
 import type { RotTyp, FastighetsTyp, RotKalkylInput } from '@/lib/rot-regler'
 import { createClient } from '@/lib/supabase/client'
 
@@ -153,7 +154,9 @@ export default function RotKalkyl({
 
       {/* Typ-väljare */}
       <div className="grid grid-cols-5 gap-2" style={{ marginBottom: 16 }}>
-        {ROT_TYPER.map(t => (
+        {ROT_TYPER.map(t => {
+          const TypIcon = ROT_TYP_ICON[t.id]
+          return (
           <button
             key={t.id}
             onClick={() => { setTyp(t.id); setAktiverat(t.id !== 'ej_rot') }}
@@ -172,7 +175,9 @@ export default function RotKalkyl({
             }}
             disabled={!aktiverat && t.id !== 'ej_rot'}
           >
-            <div style={{ fontSize: 16, marginBottom: 4 }}>{t.emoji}</div>
+            <div style={{ marginBottom: 4 }}>
+              <TypIcon size={18} weight="bold" />
+            </div>
             <div style={{ fontWeight: 700, lineHeight: 1.2, marginBottom: 2 }}>{t.label}</div>
             <div style={{ fontSize: 10, color: 'var(--light-t4)' }}>{t.procent}</div>
             {typ === t.id && (
@@ -189,7 +194,8 @@ export default function RotKalkyl({
               />
             )}
           </button>
-        ))}
+          )
+        })}
       </div>
 
       {aktiverat && typ !== 'ej_rot' && (
@@ -383,7 +389,13 @@ export default function RotKalkyl({
               fontWeight: 600,
             }}
           >
-            <span>{valdTypInfo?.emoji} {valdTypInfo?.label} ({valdTypInfo?.procent})</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {valdTypInfo && (() => {
+                const SumIcon = ROT_TYP_ICON[valdTypInfo.id]
+                return <SumIcon size={14} weight="bold" />
+              })()}
+              {valdTypInfo?.label} ({valdTypInfo?.procent})
+            </span>
             <span>–{res.rotBelopp.toLocaleString('sv')} kr</span>
           </div>
         )}

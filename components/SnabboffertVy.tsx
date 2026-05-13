@@ -2,17 +2,41 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import type { Icon } from '@phosphor-icons/react'
+import {
+  Lightning,
+  PlugCharging,
+  Lightbulb,
+  Hammer,
+  Sun,
+  Siren,
+  Buildings,
+  MagnifyingGlass,
+  Wrench,
+} from '@phosphor-icons/react'
 
-const kategoriInfo: Record<string, { emoji: string; label: string; färg: string }> = {
-  elcentral: { emoji: '⚡', label: 'Elcentralsbyte', färg: 'var(--light-amber)' },
-  laddbox: { emoji: '🔌', label: 'Laddbox', färg: 'var(--light-green)' },
-  belysning: { emoji: '💡', label: 'Belysning', färg: 'var(--light-blue)' },
-  renovation: { emoji: '🔨', label: 'Renovering', färg: 'var(--light-orange)' },
-  solceller: { emoji: '☀️', label: 'Solceller', färg: 'var(--light-amber)' },
-  brandlarm: { emoji: '🚨', label: 'Brandlarm', färg: 'var(--light-red)' },
-  stamrenovering: { emoji: '🏢', label: 'Stamrenovering', färg: 'var(--light-blue)' },
-  felsökning: { emoji: '🔍', label: 'Felsökning', färg: 'var(--light-orange)' },
-  övrigt: { emoji: '🔧', label: 'Övrigt', färg: 'var(--light-t3)' },
+const kategoriInfo: Record<string, { label: string; färg: string }> = {
+  elcentral: { label: 'Elcentralsbyte', färg: 'var(--light-amber)' },
+  laddbox: { label: 'Laddbox', färg: 'var(--light-green)' },
+  belysning: { label: 'Belysning', färg: 'var(--light-blue)' },
+  renovation: { label: 'Renovering', färg: 'var(--light-orange)' },
+  solceller: { label: 'Solceller', färg: 'var(--light-amber)' },
+  brandlarm: { label: 'Brandlarm', färg: 'var(--light-red)' },
+  stamrenovering: { label: 'Stamrenovering', färg: 'var(--light-blue)' },
+  felsökning: { label: 'Felsökning', färg: 'var(--light-orange)' },
+  övrigt: { label: 'Övrigt', färg: 'var(--light-t3)' },
+}
+
+const KATEGORI_ICON: Record<string, Icon> = {
+  elcentral: Lightning,
+  laddbox: PlugCharging,
+  belysning: Lightbulb,
+  renovation: Hammer,
+  solceller: Sun,
+  brandlarm: Siren,
+  stamrenovering: Buildings,
+  felsökning: MagnifyingGlass,
+  övrigt: Wrench,
 }
 
 const kundtypLabel: Record<string, string> = {
@@ -122,6 +146,7 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
   if (!data) return null
 
   const kat = kategoriInfo[data.kategori] ?? kategoriInfo.övrigt
+  const KatIcon = KATEGORI_ICON[data.kategori] ?? KATEGORI_ICON.övrigt
 
   function uppdateraMoment(index: number, fält: string, värde: string) {
     setMoment(prev => {
@@ -181,10 +206,10 @@ export default function SnabboffertVy({ projektId, onMomentChange }: Props) {
               height: 44,
               borderRadius: 10,
               background: `${kat.färg}20`,
-              fontSize: 22,
+              color: kat.färg,
             }}
           >
-            {kat.emoji}
+            <KatIcon size={22} weight="bold" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">

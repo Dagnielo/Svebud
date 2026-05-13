@@ -114,7 +114,6 @@ export const ROT_TYPER = [
   {
     id: 'rot' as RotTyp,
     label: 'ROT-avdrag',
-    emoji: '🔧',
     procent: '30%',
     underlag: 'Arbetskostnad inkl moms',
     beskrivning: 'Gäller reparation, ombyggnad och tillbyggnad av bostad.',
@@ -124,7 +123,6 @@ export const ROT_TYPER = [
   {
     id: 'gronteknik_laddbox' as RotTyp,
     label: 'Grön teknik — Laddbox',
-    emoji: '⚡',
     procent: '15%',
     underlag: 'Arbete + material inkl moms',
     beskrivning: 'Fast ansluten laddbox i eller i anslutning till bostad.',
@@ -134,7 +132,6 @@ export const ROT_TYPER = [
   {
     id: 'gronteknik_solceller' as RotTyp,
     label: 'Grön teknik — Solceller',
-    emoji: '☀️',
     procent: '20%',
     underlag: 'Arbete + material inkl moms',
     beskrivning: 'Nätanslutet solcellssystem på bostad.',
@@ -144,7 +141,6 @@ export const ROT_TYPER = [
   {
     id: 'gronteknik_batteri' as RotTyp,
     label: 'Grön teknik — Batteri',
-    emoji: '🔋',
     procent: '20%',
     underlag: 'Arbete + material inkl moms',
     beskrivning: 'Lagringsbatteri kopplat till befintliga solceller.',
@@ -154,7 +150,6 @@ export const ROT_TYPER = [
   {
     id: 'ej_rot' as RotTyp,
     label: 'Inget avdrag',
-    emoji: '🏢',
     procent: '–',
     underlag: '–',
     beskrivning: 'B2B-kund, hyresrätt eller arbete som ej berättigar till avdrag.',
