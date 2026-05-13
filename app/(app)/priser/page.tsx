@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Suspense } from 'react'
+import { Check } from '@phosphor-icons/react'
 
 const planer = [
   {
@@ -289,7 +290,7 @@ function PriserInner() {
                     className="flex items-center gap-2"
                     style={{ fontSize: 13, marginBottom: 8, color: 'var(--soft)' }}
                   >
-                    <span style={{ color: 'var(--green)', fontSize: 12 }}>✓</span>
+                    <Check size={12} weight="bold" style={{ color: 'var(--green)', flexShrink: 0 }} />
                     {f}
                   </li>
                 ))}

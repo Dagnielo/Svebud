@@ -7,6 +7,7 @@ import {
   type UppföljningState,
   type UppföljningUtfall,
 } from '@/lib/hooks/useUppföljningar'
+import { EnvelopeOpen, Warning, Tray } from '@phosphor-icons/react'
 
 const STATE_META: Record<UppföljningState, { label: string; färg: string; bg: string }> = {
   anbud_skickat:            { label: 'Skickat',                 färg: 'var(--blue-accent)',   bg: 'rgba(74,158,255,0.12)' },
@@ -95,7 +96,10 @@ export default function UppföljningarPage() {
             gap: 16,
           }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700 }}>📬 Uppföljningar</span>
+          <span style={{ fontSize: 16, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <EnvelopeOpen size={16} weight="bold" />
+            Uppföljningar
+          </span>
           {!loading && uppföljningar.length > 0 && (
             <span style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
               {aktiva.length} aktiva · {avslutade.length} avslutade
@@ -121,8 +125,9 @@ export default function UppföljningarPage() {
               padding: '20px 24px',
               color: 'var(--red)',
               fontSize: 14,
-            }}>
-              ⚠️ Kunde inte ladda uppföljningar: {fel}
+            }} className="flex items-center gap-2">
+              <Warning size={14} weight="bold" />
+              <span>Kunde inte ladda uppföljningar: {fel}</span>
             </div>
           )}
 
@@ -134,7 +139,9 @@ export default function UppföljningarPage() {
               padding: '56px 24px',
               textAlign: 'center',
             }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
+              <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--yellow)' }}>
+                <Tray size={48} weight="bold" />
+              </div>
               <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Inga uppföljningar än</h3>
               <p style={{ fontSize: 14, color: 'var(--muted-custom)', maxWidth: 460, margin: '0 auto' }}>
                 När du markerar ett anbud som &quot;Skickat&quot; i ett projekt börjar uppföljningen här.

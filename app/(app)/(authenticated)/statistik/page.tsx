@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { posthog } from '@/lib/posthog'
 import KpiKort from '@/components/KpiKort'
 import type { Projekt as ProjektFull } from '@/lib/types/projekt'
+import { ChartBar, Spinner, Lightning, Check, X } from '@phosphor-icons/react'
 
 type Projekt = Pick<
   ProjektFull,
@@ -215,7 +216,10 @@ export default function StatistikSida() {
             gap: 16,
           }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700 }}>📊 Statistik</span>
+          <span style={{ fontSize: 16, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <ChartBar size={16} weight="bold" />
+            Statistik
+          </span>
         </div>
 
         <div style={{ padding: '28px 32px', flex: 1 }}>
@@ -233,7 +237,9 @@ export default function StatistikSida() {
               padding: '36px 32px',
               textAlign: 'center',
             }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📊</div>
+              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center', color: 'var(--yellow)' }}>
+                <ChartBar size={32} weight="bold" />
+              </div>
               <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Inga avslutade anbud än</h2>
               <p style={{ fontSize: 14, color: 'var(--muted-custom)', maxWidth: 440, margin: '0 auto' }}>
                 Markera dina första utfall (vunnet/förlorat) på inskickade projekt för att se statistik.
@@ -346,7 +352,9 @@ export default function StatistikSida() {
                             opacity: genererarLaddar ? 0.6 : 1,
                           }}
                         >
-                          {genererarLaddar ? '⏳ Genererar...' : '⚡ Generera insikter'}
+                          {genererarLaddar
+                            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Spinner size={14} weight="bold" className="animate-spin" /> Genererar...</span>
+                            : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lightning size={14} weight="bold" /> Generera insikter</span>}
                         </button>
                       ) : (
                         <>
@@ -368,7 +376,9 @@ export default function StatistikSida() {
                               opacity: genererarLaddar ? 0.6 : 1,
                             }}
                           >
-                            {genererarLaddar ? '⏳ Genererar...' : 'Tvinga ny generering'}
+                            {genererarLaddar
+                              ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Spinner size={12} weight="bold" className="animate-spin" /> Genererar...</span>
+                              : 'Tvinga ny generering'}
                           </button>
                         </>
                       )}
@@ -445,8 +455,11 @@ export default function StatistikSida() {
                                 borderRadius: 4,
                                 background: p.tilldelning_status === 'vunnet' ? 'rgba(0,198,122,0.15)' : 'rgba(255,77,77,0.15)',
                                 color: p.tilldelning_status === 'vunnet' ? 'var(--green)' : 'var(--red)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
                               }}>
-                                {p.tilldelning_status === 'vunnet' ? '✓ Vunnet' : '✗ Förlorat'}
+                                {p.tilldelning_status === 'vunnet' ? <><Check size={11} weight="bold" /> Vunnet</> : <><X size={11} weight="bold" /> Förlorat</>}
                               </span>
                             </Td>
                             <Td>{p.tilldelning_notering ? p.tilldelning_notering.slice(0, 60) : '—'}</Td>

@@ -6,6 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { beräknaProfilstyrka } from '@/lib/profilstyrka'
 import { posthog } from '@/lib/posthog'
+import { Lightning } from '@phosphor-icons/react'
+
+// Q2 BEVARAT: ✨ celebration-semantik (samma kategori som 🎉 i UtfallsKnappar)
+// Q3 BEVARAT: ❌/✓ TEXT-PATTERN för state-detection (intern data-marker, ej UI)
 
 type Kontaktperson = {
   namn: string
@@ -487,7 +491,9 @@ export default function ProfilPage() {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {hämtarBolagsverket ? 'Hämtar...' : '⚡ Hämta från Bolagsverket'}
+                    {hämtarBolagsverket
+                      ? 'Hämtar...'
+                      : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lightning size={14} weight="bold" /> Hämta från Bolagsverket</span>}
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
