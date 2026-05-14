@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 14 maj 2026 (natt, kl ~01:45) — App-redesign Steg 4A (/installningar) LIVE på svebud.se
+**Senast uppdaterad:** 14 maj 2026 (natt, kl ~02:00) — Småjobb (outline-light-variant + PRO-badge-fix) LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -272,6 +272,28 @@ Hanteras dedikerat i **Steg 3F** (rensnings-commit efter 3E).
 - 4D /uppfoljning (1 dag)
 - 4E /profil (1 dag, 777 rader)
 - 4F /statistik (1,5 dag)
+
+### 14 maj 2026 (natt-avslutning kl ~02:00) — Småjobb LIVE ✅
+
+#### Småjobb LIVE ✅
+- Commit: `515a867` (fix(ui): outline-light Button-variant + PRO-badge alpha-bg)
+- Ny återanvändbar `variant="outline-light"` i Button-komponenten
+- /installningar Hantera plan-knapp använder nu outline-light istället
+  för !important-hack
+- PRO-badge alpha-bg-regression fixad via `tierInfo.bg`-fält per tier
+- Netto -4 rader kod (10 till, 14 bort)
+
+#### Konsekvens för Steg 4B-4F
+- outline-light-varianten är nu tillgänglig för alla light-mode-sidor
+- Eliminerar förväntat !important-spam i kommande sidor
+- Etablerar mönster: light-mode-shadcn-knappar använder outline-light, inte outline
+
+#### Återstående småjobb
+- Hover-states saknas på amber-länkar (pre-existing, ej introducerad)
+- /priser fortfarande mörk (utanför Steg 4-scope, beslut behövs)
+
+#### Återstående Steg 4 (oförändrat)
+- 4B /certifikat · 4C /nytt-projekt · 4D /uppfoljning · 4E /profil · 4F /statistik
 
 ---
 
