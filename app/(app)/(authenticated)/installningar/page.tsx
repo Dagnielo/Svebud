@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 
-const tierInfo: Record<string, { namn: string; färg: string; beskrivning: string }> = {
-  trial: { namn: 'Prov', färg: 'var(--light-t4)', beskrivning: 'Gratisperiod – begränsad funktionalitet' },
-  starter: { namn: 'Starter', färg: 'var(--light-blue)', beskrivning: 'Upp till 5 projekt/månad' },
-  pro: { namn: 'Pro', färg: 'var(--light-amber)', beskrivning: 'Obegränsade projekt + prioriterad AI-analys' },
-  enterprise: { namn: 'Enterprise', färg: 'var(--light-green)', beskrivning: 'Anpassad lösning med teamfunktioner' },
+const tierInfo: Record<string, { namn: string; färg: string; bg: string; beskrivning: string }> = {
+  trial: { namn: 'Prov', färg: 'var(--light-t4)', bg: 'var(--light-off)', beskrivning: 'Gratisperiod – begränsad funktionalitet' },
+  starter: { namn: 'Starter', färg: 'var(--light-blue)', bg: 'var(--light-blue-bg)', beskrivning: 'Upp till 5 projekt/månad' },
+  pro: { namn: 'Pro', färg: 'var(--light-amber)', bg: 'var(--light-amber-glow)', beskrivning: 'Obegränsade projekt + prioriterad AI-analys' },
+  enterprise: { namn: 'Enterprise', färg: 'var(--light-green)', bg: 'var(--light-green-bg)', beskrivning: 'Anpassad lösning med teamfunktioner' },
 }
 
 export default function InstallningarPage() {
@@ -141,7 +141,7 @@ export default function InstallningarPage() {
                           fontWeight: 700,
                           padding: '3px 10px',
                           borderRadius: 6,
-                          background: `${currentTier.färg}20`,
+                          background: currentTier.bg,
                           color: currentTier.färg,
                           textTransform: 'uppercase',
                         }}
@@ -155,14 +155,8 @@ export default function InstallningarPage() {
                   </div>
                   <Button
                     onClick={() => router.push('/priser')}
-                    variant="outline"
-                    className="hover:!bg-[var(--light-off)] hover:!text-[var(--light-amber)]"
-                    style={{
-                      background: 'transparent',
-                      borderColor: 'var(--light-amber)',
-                      color: 'var(--light-amber)',
-                      fontSize: 12,
-                    }}
+                    variant="outline-light"
+                    style={{ fontSize: 12 }}
                   >
                     {tier === 'trial' ? 'Uppgradera' : 'Hantera plan'}
                   </Button>
