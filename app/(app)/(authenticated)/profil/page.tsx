@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { beräknaProfilstyrka } from '@/lib/profilstyrka'
 import { posthog } from '@/lib/posthog'
-import { Lightning } from '@phosphor-icons/react'
+import { Lightning, X } from '@phosphor-icons/react'
 
 // Q2 BEVARAT: ✨ celebration-semantik (samma kategori som 🎉 i UtfallsKnappar)
 // Q3 BEVARAT: ❌/✓ TEXT-PATTERN för state-detection (intern data-marker, ej UI)
@@ -171,16 +171,16 @@ export default function ProfilPage() {
     width: '100%',
     padding: '8px 12px',
     borderRadius: 8,
-    background: 'var(--navy)',
-    border: '1px solid var(--navy-border)',
-    color: 'var(--white)',
+    background: 'var(--light-off)',
+    border: '1px solid var(--light-border)',
+    color: 'var(--light-t1)',
     fontSize: 13,
   }
 
   const labelStyle = {
     fontSize: 12,
     fontWeight: 600 as const,
-    color: 'var(--muted-custom)',
+    color: 'var(--light-t3)',
     marginBottom: 4,
     display: 'block' as const,
   }
@@ -235,20 +235,20 @@ export default function ProfilPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--light-cream)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
           style={{
             height: 60,
-            background: 'var(--navy-mid)',
-            borderBottom: '1px solid var(--navy-border)',
+            background: 'var(--light-bg)',
+            borderBottom: '1px solid var(--light-border)',
             padding: '0 32px',
           }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700 }}>Företagsprofil</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--light-t1)' }}>Företagsprofil</span>
           {sparat && (
-            <span style={{ marginLeft: 16, fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>
+            <span style={{ marginLeft: 16, fontSize: 13, color: 'var(--light-green)', fontWeight: 600 }}>
               Sparat!
             </span>
           )}
@@ -259,7 +259,7 @@ export default function ProfilPage() {
           {loading ? (
             <div className="animate-pulse space-y-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-40 rounded-xl" style={{ background: 'var(--navy-mid)' }} />
+                <div key={i} className="h-40 rounded-xl" style={{ background: 'var(--light-off)' }} />
               ))}
             </div>
           ) : (
@@ -290,7 +290,8 @@ export default function ProfilPage() {
                   },
                 })
 
-                const färg = procent >= 70 ? 'var(--green)' : procent >= 40 ? 'var(--yellow)' : 'var(--orange)'
+                const färg = procent >= 70 ? 'var(--light-green)' : procent >= 40 ? 'var(--light-amber)' : 'var(--light-orange)'
+                const cirkelBg = procent >= 70 ? 'var(--light-green-bg)' : procent >= 40 ? 'var(--light-amber-glow)' : 'var(--light-orange-bg)'
                 const tip = saknadeKategorier.length > 0
                   ? `Saknas: ${saknadeKategorier.slice(0, 2).join(' · ')}`
                   : 'Komplett profil! ✨'
@@ -298,7 +299,7 @@ export default function ProfilPage() {
                 return (
                   <div
                     style={{
-                      background: 'linear-gradient(135deg, var(--navy-mid), var(--navy-light))',
+                      background: 'var(--light-bg)',
                       border: `1px solid ${färg}`,
                       borderRadius: 12,
                       padding: '24px 28px',
@@ -306,6 +307,7 @@ export default function ProfilPage() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 24,
+                      boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                     }}
                   >
                     <div
@@ -314,7 +316,7 @@ export default function ProfilPage() {
                         width: 88,
                         height: 88,
                         borderRadius: '50%',
-                        background: 'rgba(245,196,0,0.1)',
+                        background: cirkelBg,
                         border: `3px solid ${färg}`,
                         display: 'flex',
                         alignItems: 'center',
@@ -327,13 +329,13 @@ export default function ProfilPage() {
                       {procent}%
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, color: 'var(--soft)', fontWeight: 600, marginBottom: 4 }}>
+                      <div style={{ fontSize: 14, color: 'var(--light-t2)', fontWeight: 600, marginBottom: 4 }}>
                         Profilstyrka — {poäng}/{maxPoäng} poäng
                       </div>
-                      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, color: 'var(--light-t1)' }}>
                         {procent >= 70 ? 'Stark profil' : procent >= 40 ? 'Bygg vidare' : 'Bygg upp din profil'}
                       </div>
-                      <div style={{ fontSize: 13, color: 'var(--soft)', lineHeight: 1.5 }}>
+                      <div style={{ fontSize: 13, color: 'var(--light-t2)', lineHeight: 1.5 }}>
                         {tip}
                       </div>
                     </div>
@@ -353,7 +355,7 @@ export default function ProfilPage() {
 
               {/* Kontaktpersoner / Anbudsansvariga */}
               <SectionCard title="Kontaktpersoner">
-                <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                <p style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 16 }}>
                   Lägg till personer som kan signera anbud. Vid generering av anbud väljer du vem som ska stå som kontaktperson.
                 </p>
 
@@ -365,19 +367,19 @@ export default function ProfilPage() {
                       padding: '10px 14px',
                       marginBottom: 6,
                       borderRadius: 8,
-                      background: 'var(--navy)',
-                      border: '1px solid var(--navy-border)',
+                      background: 'var(--light-bg)',
+                      border: '1px solid var(--light-border)',
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{kp.namn}</div>
-                      <div style={{ fontSize: 11, color: 'var(--muted-custom)' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--light-t1)' }}>{kp.namn}</div>
+                      <div style={{ fontSize: 11, color: 'var(--light-t3)' }}>
                         {kp.roll}{kp.epost ? ` · ${kp.epost}` : ''}{kp.telefon ? ` · ${kp.telefon}` : ''}
                       </div>
                     </div>
                     <button
                       onClick={() => setKontaktpersoner(prev => prev.filter((_, j) => j !== i))}
-                      style={{ fontSize: 11, color: 'var(--red)', background: 'var(--red-bg)', border: '1px solid rgba(255,77,77,0.3)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}
+                      style={{ fontSize: 11, color: 'var(--light-red)', background: 'var(--light-red-bg)', border: '1px solid var(--light-red)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}
                     >
                       Ta bort
                     </button>
@@ -387,8 +389,8 @@ export default function ProfilPage() {
                 {visaKontaktForm ? (
                   <div
                     style={{
-                      background: 'var(--navy)',
-                      border: '1px dashed var(--yellow)',
+                      background: 'var(--light-off)',
+                      border: '1px dashed var(--light-amber)',
                       borderRadius: 8,
                       padding: '14px 16px',
                       marginTop: 8,
@@ -421,11 +423,11 @@ export default function ProfilPage() {
                           setVisaKontaktForm(false)
                         }}
                         disabled={!nyKontakt.namn.trim()}
-                        style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700, fontSize: 12 }}
+                        style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700, fontSize: 12 }}
                       >
                         Lägg till
                       </Button>
-                      <Button onClick={() => setVisaKontaktForm(false)} variant="outline" style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)', fontSize: 12 }}>
+                      <Button onClick={() => setVisaKontaktForm(false)} variant="outline-light-neutral" style={{ fontSize: 12 }}>
                         Avbryt
                       </Button>
                     </div>
@@ -438,9 +440,9 @@ export default function ProfilPage() {
                       marginTop: 8,
                       padding: '10px',
                       borderRadius: 8,
-                      border: '1px dashed var(--navy-border)',
+                      border: '1px dashed var(--light-border)',
                       background: 'transparent',
-                      color: 'var(--yellow)',
+                      color: 'var(--light-amber)',
                       fontSize: 13,
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -467,10 +469,10 @@ export default function ProfilPage() {
                       fontSize: 13,
                       fontWeight: 500,
                       color: bolagsverketMeddelande?.startsWith('❌')
-                        ? 'var(--red)'
+                        ? 'var(--light-red)'
                         : bolagsverketMeddelande?.startsWith('✓')
-                        ? 'var(--green)'
-                        : 'var(--soft)',
+                        ? 'var(--light-green)'
+                        : 'var(--light-t2)',
                     }}
                   >
                     {bolagsverketMeddelande || 'Auto-fyll från allabolag.se via organisationsnummer'}
@@ -479,8 +481,8 @@ export default function ProfilPage() {
                     onClick={hämtaFrånBolagsverket}
                     disabled={hämtarBolagsverket || !orgNr}
                     style={{
-                      background: hämtarBolagsverket ? 'rgba(245,196,0,0.3)' : 'var(--yellow)',
-                      color: 'var(--navy)',
+                      background: hämtarBolagsverket ? 'var(--light-amber-glow)' : 'var(--light-amber)',
+                      color: 'var(--light-navy)',
                       border: 'none',
                       borderRadius: 8,
                       padding: '8px 14px',
@@ -566,19 +568,19 @@ export default function ProfilPage() {
                     <input style={inputStyle} type="number" value={timprisOb} onChange={e => setTimprisOb(e.target.value)} placeholder="200" />
                   </div>
                 </div>
-                <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 8 }}>
+                <p style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 8 }}>
                   Dessa priser används som förslag i kalkylen. Du kan alltid justera per projekt.
                 </p>
               </SectionCard>
 
               {/* Referensprojekt */}
               <SectionCard title="Referensprojekt">
-                <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                <p style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 16 }}>
                   Referensprojekt matchas automatiskt mot krav som "minst X referensuppdrag av liknande art".
                 </p>
 
                 {referensprojekt.length === 0 && !visaRefForm && (
-                  <p style={{ fontSize: 13, color: 'var(--slate)', fontStyle: 'italic', marginBottom: 12 }}>
+                  <p style={{ fontSize: 13, color: 'var(--light-t4)', fontStyle: 'italic', marginBottom: 12 }}>
                     Inga referensprojekt tillagda ännu.
                   </p>
                 )}
@@ -588,8 +590,8 @@ export default function ProfilPage() {
                   <div
                     key={i}
                     style={{
-                      background: 'var(--navy)',
-                      border: '1px solid var(--navy-border)',
+                      background: 'var(--light-bg)',
+                      border: '1px solid var(--light-border)',
                       borderRadius: 10,
                       padding: '14px 18px',
                       marginBottom: 8,
@@ -597,25 +599,25 @@ export default function ProfilPage() {
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{ref.projektnamn}</div>
-                        <div style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2, color: 'var(--light-t1)' }}>{ref.projektnamn}</div>
+                        <div style={{ fontSize: 12, color: 'var(--light-t3)' }}>
                           {ref.beställare}{ref.datum ? ` · ${ref.datum}` : ''}{ref.typ ? ` · ${ref.typ}` : ''}{ref.värde ? ` · ${ref.värde} kr` : ''}
                         </div>
                       </div>
                       <button
                         onClick={() => setReferensprojekt(prev => prev.filter((_, j) => j !== i))}
-                        style={{ fontSize: 11, color: 'var(--red)', background: 'var(--red-bg)', border: '1px solid rgba(255,77,77,0.3)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}
+                        style={{ fontSize: 11, color: 'var(--light-red)', background: 'var(--light-red-bg)', border: '1px solid var(--light-red)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}
                       >
                         Ta bort
                       </button>
                     </div>
                     {ref.beskrivning && (
-                      <p style={{ fontSize: 12, color: 'var(--soft)', marginTop: 6, lineHeight: 1.5 }}>
+                      <p style={{ fontSize: 12, color: 'var(--light-t2)', marginTop: 6, lineHeight: 1.5 }}>
                         {ref.beskrivning}
                       </p>
                     )}
                     {ref.kontaktperson && (
-                      <div style={{ fontSize: 11, color: 'var(--slate)', marginTop: 6 }}>
+                      <div style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 6 }}>
                         Kontakt: {ref.kontaktperson}
                         {ref.kontakt_telefon ? ` · ${ref.kontakt_telefon}` : ''}
                         {ref.kontakt_epost ? ` · ${ref.kontakt_epost}` : ''}
@@ -628,14 +630,14 @@ export default function ProfilPage() {
                 {visaRefForm ? (
                   <div
                     style={{
-                      background: 'var(--navy)',
-                      border: '1px dashed var(--yellow)',
+                      background: 'var(--light-off)',
+                      border: '1px dashed var(--light-amber)',
                       borderRadius: 10,
                       padding: '16px 18px',
                       marginTop: 8,
                     }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--yellow)', marginBottom: 12 }}>Nytt referensprojekt</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--light-amber)', marginBottom: 12 }}>Nytt referensprojekt</div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="col-span-2">
                         <label style={labelStyle}>Projektnamn *</label>
@@ -704,14 +706,13 @@ export default function ProfilPage() {
                           setVisaRefForm(false)
                         }}
                         disabled={!nyttRef.projektnamn.trim()}
-                        style={{ background: 'var(--yellow)', color: 'var(--navy)', fontWeight: 700 }}
+                        style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', fontWeight: 700 }}
                       >
                         Lägg till
                       </Button>
                       <Button
                         onClick={() => setVisaRefForm(false)}
-                        variant="outline"
-                        style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
+                        variant="outline-light-neutral"
                       >
                         Avbryt
                       </Button>
@@ -725,9 +726,9 @@ export default function ProfilPage() {
                       marginTop: 8,
                       padding: '10px',
                       borderRadius: 8,
-                      border: '1px dashed var(--navy-border)',
+                      border: '1px dashed var(--light-border)',
                       background: 'transparent',
-                      color: 'var(--yellow)',
+                      color: 'var(--light-amber)',
                       fontSize: 13,
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -740,8 +741,8 @@ export default function ProfilPage() {
 
               {/* Anbudsinställningar */}
               <SectionCard title="Anbudsinställningar">
-                <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16, lineHeight: 1.5 }}>
-                  Ställ in dina standardvillkor <strong style={{ color: 'var(--yellow)' }}>en gång</strong> — sedan används de automatiskt i alla framtida anbud. Du behöver aldrig fylla i detta igen.
+                <p style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 16, lineHeight: 1.5 }}>
+                  Ställ in dina standardvillkor <strong style={{ color: 'var(--light-amber)' }}>en gång</strong> — sedan används de automatiskt i alla framtida anbud. Du behöver aldrig fylla i detta igen.
                 </p>
 
                 {/* Betalningsvillkor */}
@@ -775,7 +776,7 @@ export default function ProfilPage() {
                     onChange={e => setAnbudsInst(prev => ({ ...prev, avtalsvillkor: e.target.value }))}
                     placeholder="T.ex. AB 04, ABT 06, EL 19 eller AFF 09"
                   />
-                  <p style={{ fontSize: 10, color: 'var(--slate)', marginTop: 4 }}>
+                  <p style={{ fontSize: 10, color: 'var(--light-t4)', marginTop: 4 }}>
                     AB 04 (B2B entreprenaD) · ABT 06 (totalentreprenad) · EL 19 (konsument) · AFF 09 (service)
                   </p>
                 </div>
@@ -842,7 +843,7 @@ export default function ProfilPage() {
                 onClick={spara}
                 disabled={sparar}
                 className="font-semibold"
-                style={{ background: 'var(--yellow)', color: 'var(--navy)', padding: '10px 32px' }}
+                style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', padding: '10px 32px' }}
               >
                 {sparar ? 'Sparar...' : 'Spara ändringar'}
               </Button>
@@ -867,12 +868,12 @@ function ListEditor({ label, items, onChange, placeholder, inputStyle, labelStyl
       <label style={labelStyle}>{label}</label>
       {items.map((item, i) => (
         <div key={i} className="flex items-center gap-2" style={{ marginBottom: 4 }}>
-          <span style={{ flex: 1, fontSize: 12, color: 'var(--soft)', padding: '4px 0' }}>• {item}</span>
+          <span style={{ flex: 1, fontSize: 12, color: 'var(--light-t2)', padding: '4px 0' }}>• {item}</span>
           <button
             onClick={() => onChange(items.filter((_, j) => j !== i))}
-            style={{ color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '2px 6px' }}
+            style={{ color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', display: 'inline-flex', alignItems: 'center' }}
           >
-            ×
+            <X size={14} weight="bold" />
           </button>
         </div>
       ))}
@@ -894,9 +895,9 @@ function ListEditor({ label, items, onChange, placeholder, inputStyle, labelStyl
           style={{
             padding: '6px 14px',
             borderRadius: 8,
-            background: 'var(--yellow-glow)',
-            border: '1px solid rgba(245,196,0,0.3)',
-            color: 'var(--yellow)',
+            background: 'var(--light-amber-glow)',
+            border: '1px solid var(--light-amber-border)',
+            color: 'var(--light-amber)',
             fontSize: 12,
             fontWeight: 700,
             cursor: 'pointer',
@@ -913,14 +914,15 @@ function SectionCard({ title, children }: { title: string; children: React.React
   return (
     <div
       style={{
-        background: 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
+        background: 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
         borderRadius: 12,
         padding: '20px 24px',
         marginBottom: 16,
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}
     >
-      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{title}</h2>
+      <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--light-t1)' }}>{title}</h2>
       {children}
     </div>
   )
