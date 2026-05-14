@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 14 maj 2026 (natt, kl ~02:30) — App-redesign Steg 4B (/certifikat) LIVE på svebud.se
+**Senast uppdaterad:** 14 maj 2026 (natt, kl ~03:00) — App-redesign Steg 4C (/nytt-projekt) LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -317,6 +317,26 @@ Hanteras dedikerat i **Steg 3F** (rensnings-commit efter 3E).
 - 4D /uppfoljning (1 dag)
 - 4E /profil (1 dag, 777 rader)
 - 4F /statistik (1,5 dag)
+
+### 14 maj 2026 (natt-fortsättning kl ~03:00) — Steg 4C LIVE ✅
+
+#### Steg 4C — KLAR & LIVE ✅
+- Commit: `4392d44` (refactor(ui): Steg 4C — light-migration /nytt-projekt)
+- 2 filer, +24/-20, 18 light-tokens, 0 mörka kvar
+- Form-baserad sida: inputs + primär CTA + Avbryt-knapp + validering
+- Form-flow verifierad: skapa projekt → navigerar till /projekt/[id]
+- Wrapper-bg-bugg fixad (saknade background helt)
+
+#### Ny Button-variant
+- `variant="outline-light-neutral"` (grå outline för Avbryt/sekundära)
+- Komplement till `outline-light` (amber)
+- Återanvändbar för 4D-4F sekundär-knappar
+- Etablerar Button-variant-system för light-mode-sidor
+
+#### Status efter natt-pass
+- 4 av 7 authenticated-sidor migrerade till light-tokens:
+  alla-projekt (Steg 2B), 4A installningar, 4B certifikat, 4C nytt-projekt
+- Återstår: 4D /uppfoljning · 4E /profil · 4F /statistik
 
 ---
 
