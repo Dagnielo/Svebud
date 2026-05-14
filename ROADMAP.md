@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 14 maj 2026 (natt, kl ~02:00) — Småjobb (outline-light-variant + PRO-badge-fix) LIVE på svebud.se
+**Senast uppdaterad:** 14 maj 2026 (natt, kl ~02:30) — App-redesign Steg 4B (/certifikat) LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -294,6 +294,29 @@ Hanteras dedikerat i **Steg 3F** (rensnings-commit efter 3E).
 
 #### Återstående Steg 4 (oförändrat)
 - 4B /certifikat · 4C /nytt-projekt · 4D /uppfoljning · 4E /profil · 4F /statistik
+
+### 14 maj 2026 (natt-fortsättning kl ~02:30) — Steg 4B LIVE ✅
+
+#### Steg 4B — KLAR & LIVE ✅
+- Commit: `c2186e5` (refactor(ui): Steg 4B — light-migration /certifikat)
+- 1 fil, +42/-39, 37 light-tokens, 0 mörka kvar
+- Kategori-kort (El-auktorisation, SSG-kurser, Arbetsmiljö, Övrigt) +
+  Erfarenhetsområden-kort migrerade
+- Checkbox-state-styling (aktiv light-t1 / inaktiv light-t3) etablerad
+- Erfarenhet-chips toggle med light-amber-glow för aktiv
+- Custom add + delete-flow (Phosphor X bonus-fix)
+
+#### Bonus-fynd
+- 2 ✕-emojis missade i 3F.4-inventeringen migrerade till Phosphor X
+- Lärdom: 3F-grep-strategi missade vissa kontexter
+- Småjobb: sweep-script för missade Unicode-emojis i hela kodbasen
+  efter Steg 4F
+
+#### Återstående Steg 4
+- 4C /nytt-projekt (0,5 dag, helt mörk)
+- 4D /uppfoljning (1 dag)
+- 4E /profil (1 dag, 777 rader)
+- 4F /statistik (1,5 dag)
 
 ---
 
