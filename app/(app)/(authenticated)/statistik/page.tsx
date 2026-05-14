@@ -204,19 +204,19 @@ export default function StatistikSida() {
   const cacheÄrFärsk = cache && (Date.now() - new Date(cache.skapad).getTime()) < 24 * 60 * 60 * 1000
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--light-cream)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
           style={{
             height: 60,
-            background: 'var(--navy-mid)',
-            borderBottom: '1px solid var(--navy-border)',
+            background: 'var(--light-bg)',
+            borderBottom: '1px solid var(--light-border)',
             padding: '0 32px',
             gap: 16,
           }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <ChartBar size={16} weight="bold" />
             Statistik
           </span>
@@ -226,22 +226,22 @@ export default function StatistikSida() {
           {loading ? (
             <div className="grid grid-cols-4 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="animate-pulse h-24 rounded-xl" style={{ background: 'var(--navy-mid)' }} />
+                <div key={i} className="animate-pulse h-24 rounded-xl" style={{ background: 'var(--light-off)' }} />
               ))}
             </div>
           ) : kpi.totaltAvslutade === 0 ? (
             <div style={{
-              background: 'var(--yellow-glow)',
-              border: '1px solid rgba(245,196,0,0.3)',
+              background: 'var(--light-amber-glow)',
+              border: '1px solid var(--light-amber-border)',
               borderRadius: 12,
               padding: '36px 32px',
               textAlign: 'center',
             }}>
-              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center', color: 'var(--yellow)' }}>
+              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center', color: 'var(--light-amber)' }}>
                 <ChartBar size={32} weight="bold" />
               </div>
-              <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Inga avslutade anbud än</h2>
-              <p style={{ fontSize: 14, color: 'var(--muted-custom)', maxWidth: 440, margin: '0 auto' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6, color: 'var(--light-t1)' }}>Inga avslutade anbud än</h2>
+              <p style={{ fontSize: 14, color: 'var(--light-t2)', maxWidth: 440, margin: '0 auto' }}>
                 Markera dina första utfall (vunnet/förlorat) på inskickade projekt för att se statistik.
               </p>
             </div>
@@ -282,16 +282,16 @@ export default function StatistikSida() {
                     {winRatePerTyp.map(t => (
                       <div key={t.typ}>
                         <div className="flex items-center justify-between" style={{ fontSize: 12, marginBottom: 4 }}>
-                          <span style={{ color: 'var(--soft)' }}>{t.typ}</span>
-                          <span style={{ color: 'var(--muted-custom)', fontFamily: 'var(--font-mono)' }}>
+                          <span style={{ color: 'var(--light-t2)' }}>{t.typ}</span>
+                          <span style={{ color: 'var(--light-t3)', fontFamily: 'var(--font-mono)' }}>
                             {t.vunna}/{t.totalt} · {t.winRate}%
                           </span>
                         </div>
-                        <div style={{ height: 8, borderRadius: 4, background: 'var(--navy)', overflow: 'hidden' }}>
+                        <div style={{ height: 8, borderRadius: 4, background: 'var(--light-off)', overflow: 'hidden' }}>
                           <div style={{
                             height: '100%',
                             width: `${t.winRate}%`,
-                            background: t.winRate >= 50 ? 'var(--green)' : 'var(--orange)',
+                            background: t.winRate >= 50 ? 'var(--light-green)' : 'var(--light-orange)',
                             transition: 'width 0.3s',
                           }} />
                         </div>
@@ -308,16 +308,16 @@ export default function StatistikSida() {
                     {fördelningPerPrisnivå.map(p => (
                       <div key={p.band}>
                         <div className="flex items-center justify-between" style={{ fontSize: 12, marginBottom: 4 }}>
-                          <span style={{ color: 'var(--soft)' }}>{p.band}</span>
-                          <span style={{ color: 'var(--muted-custom)', fontFamily: 'var(--font-mono)' }}>
+                          <span style={{ color: 'var(--light-t2)' }}>{p.band}</span>
+                          <span style={{ color: 'var(--light-t3)', fontFamily: 'var(--font-mono)' }}>
                             {p.antal} st
                           </span>
                         </div>
-                        <div style={{ height: 8, borderRadius: 4, background: 'var(--navy)', overflow: 'hidden' }}>
+                        <div style={{ height: 8, borderRadius: 4, background: 'var(--light-off)', overflow: 'hidden' }}>
                           <div style={{
                             height: '100%',
                             width: `${p.andel * 100}%`,
-                            background: 'var(--yellow)',
+                            background: 'var(--light-amber)',
                             transition: 'width 0.3s',
                           }} />
                         </div>
@@ -330,7 +330,7 @@ export default function StatistikSida() {
               {/* AI-insikter */}
               <Sektion rubrik="AI-insikter">
                 {kpi.totaltAvslutade < 5 ? (
-                  <div style={{ fontSize: 13, color: 'var(--muted-custom)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--light-t2)' }}>
                     Fyll i utfall på minst 5 anbud för att se insikter (just nu: {kpi.totaltAvslutade} av 5).
                   </div>
                 ) : (
@@ -341,8 +341,8 @@ export default function StatistikSida() {
                           onClick={() => generera(false)}
                           disabled={genererarLaddar}
                           style={{
-                            background: 'var(--yellow)',
-                            color: 'var(--navy)',
+                            background: 'var(--light-amber)',
+                            color: 'var(--light-navy)',
                             padding: '8px 16px',
                             borderRadius: 8,
                             fontSize: 13,
@@ -358,7 +358,7 @@ export default function StatistikSida() {
                         </button>
                       ) : (
                         <>
-                          <span style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
+                          <span style={{ fontSize: 12, color: 'var(--light-t3)' }}>
                             Genererade {new Date(cache.skapad).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })} — uppdateras igen om {timmarKvar(cache.skapad)} h
                           </span>
                           <button
@@ -366,12 +366,12 @@ export default function StatistikSida() {
                             disabled={genererarLaddar}
                             style={{
                               background: 'transparent',
-                              color: 'var(--yellow)',
+                              color: 'var(--light-amber)',
                               padding: '4px 10px',
                               borderRadius: 6,
                               fontSize: 12,
                               fontWeight: 600,
-                              border: '1px solid var(--yellow)',
+                              border: '1px solid var(--light-amber)',
                               cursor: genererarLaddar ? 'wait' : 'pointer',
                               opacity: genererarLaddar ? 0.6 : 1,
                             }}
@@ -384,7 +384,7 @@ export default function StatistikSida() {
                       )}
                     </div>
                     {genererarFel && (
-                      <div style={{ fontSize: 12, color: 'var(--red)', marginBottom: 12 }}>{genererarFel}</div>
+                      <div style={{ fontSize: 12, color: 'var(--light-red)', marginBottom: 12 }}>{genererarFel}</div>
                     )}
                     {cache && cache.insikter.length > 0 && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -392,16 +392,16 @@ export default function StatistikSida() {
                           <div
                             key={i}
                             style={{
-                              background: 'var(--navy)',
-                              borderLeft: '3px solid var(--yellow)',
+                              background: 'var(--light-off)',
+                              borderLeft: '3px solid var(--light-amber)',
                               borderRadius: 6,
                               padding: '12px 14px',
                             }}
                           >
-                            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: 'var(--light-t1)' }}>
                               {insikt.ikon} {insikt.rubrik}
                             </div>
-                            <div style={{ fontSize: 12, color: 'var(--muted-custom)', lineHeight: 1.5 }}>
+                            <div style={{ fontSize: 12, color: 'var(--light-t3)', lineHeight: 1.5 }}>
                               {insikt.text}
                             </div>
                           </div>
@@ -417,7 +417,7 @@ export default function StatistikSida() {
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ borderBottom: '1px solid var(--navy-border)' }}>
+                      <tr style={{ borderBottom: '1px solid var(--light-border)' }}>
                         <Th>Kund</Th>
                         <Th>Typ</Th>
                         <Th
@@ -442,7 +442,7 @@ export default function StatistikSida() {
                       {avslutadeAnbud.map(p => {
                         const datum = p.skickat_datum ?? p.tilldelning_datum
                         return (
-                          <tr key={p.id} style={{ borderBottom: '1px solid var(--navy-border)' }}>
+                          <tr key={p.id} style={{ borderBottom: '1px solid var(--light-border)' }}>
                             <Td>{p.namn}</Td>
                             <Td>{projekttyp(p)}</Td>
                             <Td>{p.vinnande_pris ? formateraKr(p.vinnande_pris) + ' kr' : '—'}</Td>
@@ -453,8 +453,8 @@ export default function StatistikSida() {
                                 fontWeight: 700,
                                 padding: '2px 8px',
                                 borderRadius: 4,
-                                background: p.tilldelning_status === 'vunnet' ? 'rgba(0,198,122,0.15)' : 'rgba(255,77,77,0.15)',
-                                color: p.tilldelning_status === 'vunnet' ? 'var(--green)' : 'var(--red)',
+                                background: p.tilldelning_status === 'vunnet' ? 'var(--light-green-bg)' : 'var(--light-red-bg)',
+                                color: p.tilldelning_status === 'vunnet' ? 'var(--light-green)' : 'var(--light-red)',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: 4,
@@ -480,14 +480,15 @@ export default function StatistikSida() {
 function Sektion({ rubrik, beskrivning, children }: { rubrik: string; beskrivning?: string; children: React.ReactNode }) {
   return (
     <div style={{
-      background: 'var(--navy-mid)',
-      border: '1px solid var(--navy-border)',
+      background: 'var(--light-bg)',
+      border: '1px solid var(--light-border)',
       borderRadius: 12,
       padding: '20px 24px',
       marginBottom: 24,
+      boxShadow: '0 1px 2px rgba(14,27,46,.04)',
     }}>
-      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: beskrivning ? 4 : 14 }}>{rubrik}</div>
-      {beskrivning && <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 14 }}>{beskrivning}</p>}
+      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: beskrivning ? 4 : 14, color: 'var(--light-t1)' }}>{rubrik}</div>
+      {beskrivning && <p style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 14 }}>{beskrivning}</p>}
       {children}
     </div>
   )
@@ -504,7 +505,7 @@ function Th({ children, klickbar, aktiv, onClick }: { children: React.ReactNode;
         fontWeight: 700,
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
-        color: aktiv ? 'var(--yellow)' : 'var(--muted-custom)',
+        color: aktiv ? 'var(--light-amber)' : 'var(--light-t3)',
         cursor: klickbar ? 'pointer' : 'default',
         userSelect: 'none',
       }}
@@ -516,6 +517,6 @@ function Th({ children, klickbar, aktiv, onClick }: { children: React.ReactNode;
 
 function Td({ children }: { children: React.ReactNode }) {
   return (
-    <td style={{ padding: '10px', color: 'var(--soft)', verticalAlign: 'top' }}>{children}</td>
+    <td style={{ padding: '10px', color: 'var(--light-t2)', verticalAlign: 'top' }}>{children}</td>
   )
 }
