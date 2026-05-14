@@ -218,6 +218,20 @@ Permanent bevarade UI-emojis efter Steg 3F:
 3F.5-inventering verifierade: inga hardcoded fallback-strängar
 (Kategori C) i AI-insikter-flödet.
 
+### Visuell verifiering — krav på testinstruktioner
+
+När jag skickar 9-punkts-test eller liknande visuella kontrollistor SKA varje
+punkt innehålla:
+
+1. **URL/sida** — exakt path (t.ex. /installningar)
+2. **Sektion/rubrik** — vart på sidan användaren ska titta
+3. **Steg-för-steg-handling** — vad användaren klickar/skriver/scrollar
+4. **Förväntad observation** — exakt vad ögat ska se
+5. **Bugg-indikator** — vad det skulle se ut som om det är trasigt
+
+Lat formulering ("testa sticky", "testa validering") är otydligt och
+flyttar kognitiv börda till Dagnielo som är trött efter timmar av kodning.
+
 ---
 
 ## Designprinciper
