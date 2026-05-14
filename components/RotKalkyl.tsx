@@ -5,7 +5,7 @@ import { beräknaROT, ROT_TYPER, ROT_REGLER } from '@/lib/rot-regler'
 import { ROT_TYP_ICON } from '@/lib/rot-icons'
 import type { RotTyp, FastighetsTyp, RotKalkylInput } from '@/lib/rot-regler'
 import { createClient } from '@/lib/supabase/client'
-import { Circle, Warning } from '@phosphor-icons/react'
+import { Circle, Warning, ArrowDown } from '@phosphor-icons/react'
 
 interface Props {
   arbeteExMoms: number
@@ -427,8 +427,8 @@ export default function RotKalkyl({
               {Math.round(res.kundBetalar).toLocaleString('sv')} kr
             </div>
             {aktiverat && res.rotBelopp > 0 && (
-              <div style={{ fontSize: 11, color: 'var(--light-green)', marginTop: 2 }}>
-                ↓ Kunden sparar {res.rotBelopp.toLocaleString('sv')} kr
+              <div style={{ fontSize: 11, color: 'var(--light-green)', marginTop: 2, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                <ArrowDown size={11} weight="bold" /> Kunden sparar {res.rotBelopp.toLocaleString('sv')} kr
               </div>
             )}
           </div>

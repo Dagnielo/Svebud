@@ -1,5 +1,5 @@
 import { FORANMALAN_JOBBTYPER } from '@/lib/foranmalan-regler'
-import { ForanmalanIkon } from './ForanmalanIkon'
+import { ForanmalanIkon, KravBadgeIkon } from './ForanmalanIkon'
 
 export const metadata = {
   title: 'Vilka elarbeten kräver föranmälan? | SveBud',
@@ -61,9 +61,13 @@ export default function ForanmalanRegler() {
                       borderRadius: 20,
                       background: jobb.kravs ? 'var(--red-bg)' : 'var(--green-bg)',
                       color: jobb.kravs ? 'var(--red)' : 'var(--green)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
                     }}
                   >
-                    {jobb.kravs ? '⚠ Föranmälan krävs' : '✓ Ej föranmälan'}
+                    <KravBadgeIkon kravs={jobb.kravs} />
+                    {jobb.kravs ? 'Föranmälan krävs' : 'Ej föranmälan'}
                   </span>
                   {jobb.typiskHandlaggningstid && (
                     <span style={{ fontSize: 11, color: 'var(--slate)' }}>

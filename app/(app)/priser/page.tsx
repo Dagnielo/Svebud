@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Suspense } from 'react'
-import { Check } from '@phosphor-icons/react'
+import { Check, Star } from '@phosphor-icons/react'
 
 const planer = [
   {
@@ -249,11 +249,13 @@ function PriserInner() {
                       padding: '3px 10px',
                       borderRadius: 20,
                       border: '1px solid rgba(245,196,0,0.3)',
-                      display: 'inline-block',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
                       marginBottom: 12,
                     }}
                   >
-                    ⭐ Mest populär
+                    <Star size={10} weight="bold" /> Mest populär
                   </span>
                 </>
               )}
