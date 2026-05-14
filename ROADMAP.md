@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 14 maj 2026 (natt, kl ~03:00) — App-redesign Steg 4C (/nytt-projekt) LIVE på svebud.se
+**Senast uppdaterad:** 14 maj 2026 (natt, kl ~03:50) — App-redesign Steg 4D (/uppfoljning) LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -337,6 +337,36 @@ Hanteras dedikerat i **Steg 3F** (rensnings-commit efter 3E).
 - 4 av 7 authenticated-sidor migrerade till light-tokens:
   alla-projekt (Steg 2B), 4A installningar, 4B certifikat, 4C nytt-projekt
 - Återstår: 4D /uppfoljning · 4E /profil · 4F /statistik
+
+### 14 maj 2026 (natt-fortsättning kl ~03:50) — Steg 4D LIVE ✅
+
+#### Steg 4D — KLAR & LIVE ✅
+- Commit: `0d2421e` (refactor(ui): Steg 4D — light-migration /uppfoljning)
+- 1 fil, +51/-49, 49 light-tokens, 0 mörka kvar
+- STATE_META (9 status) + UTFALL_META (3 utfall) migrerade
+- 2 tabellvyer (Aktiva + Avslutade) med thead/tr/td-styling
+- Vunnet (grön) + Förlorat (röd) + Avbryt (grå outline) knappar
+- Empty-hero med Tray-ikon
+- 1 commit, ~60 min (inom 1-dag-estimat)
+
+#### 404-observation — /dashboard/uppfoljning
+- Användaren observerade 404 på URL `/dashboard/uppfoljning`.
+- **Verifierat: detta är KORREKT 404-beteende, ingen kod-bug.**
+  - Routen `/dashboard/uppfoljning` finns inte och ska inte finnas.
+  - Bred grep (`dashboard/[a-zåäö]`) → 0 träffar. Ingen kod-referens existerar.
+  - Alla uppfoljning-länkar i koden pekar korrekt på `/uppfoljning`
+    (NotifikationsBell.tsx, UppföljningsBanner.tsx).
+- Slutsats: 404:n uppstod av manuellt inskriven URL, inte en outdated länk.
+  **Inget småjobb behövs** — inga `/dashboard/*` nästlade länkar att fixa.
+
+#### Återstående Steg 4
+- 4E /profil (1 dag, 777 rader)
+- 4F /statistik (1,5 dag)
+
+#### Status efter natt-pass
+- 5 av 7 authenticated-sidor migrerade:
+  alla-projekt (2B), 4A installningar, 4B certifikat, 4C nytt-projekt, 4D uppfoljning
+- Återstår: profil, statistik
 
 ---
 
