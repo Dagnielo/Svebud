@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 14 maj 2026 (natt, kl ~03:50) — App-redesign Steg 4D (/uppfoljning) LIVE på svebud.se
+**Senast uppdaterad:** 14 maj 2026 (natt-slutpunkt kl ~06:00) — STEG 4 KOMPLETT, alla 7 authenticated-sidor light-migrerade och LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -367,6 +367,69 @@ Hanteras dedikerat i **Steg 3F** (rensnings-commit efter 3E).
 - 5 av 7 authenticated-sidor migrerade:
   alla-projekt (2B), 4A installningar, 4B certifikat, 4C nytt-projekt, 4D uppfoljning
 - Återstår: profil, statistik
+
+### 14 maj 2026 (natt-fortsättning kl ~05:00) — Steg 4E LIVE ✅
+
+#### Steg 4E — KLAR & LIVE ✅
+- Commit: `3250210` (refactor(ui): Steg 4E — light-migration /profil)
+- 1 fil, +67/-65, 60 light-tokens, 0 mörka kvar
+- 928 rader sida — största i Steg 4
+- Profilstyrka-hero: solid light-bg + boxShadow, cirkel-bg tintad efter procent-färg
+- 5 SectionCards + Anbudsinställningar + ListEditor×4
+- Q2/Q3-bevaranden verifierade orörda (✨ celebration + ❌/✓ text-pattern + startsWith-detektion)
+- Phosphor-sweep bonus: × (U+00D7) → Phosphor X
+- 2× `outline-light-neutral` (Avbryt-knappar)
+
+### 14 maj 2026 (natt-slutpunkt kl ~06:00) — Steg 4F LIVE ✅ — STEG 4 KOMPLETT 🎯
+
+#### Steg 4F — KLAR & LIVE ✅
+- Commit: `ff3d17a` (refactor(ui): Steg 4F — light-migration /statistik)
+- 1 fil, +40/-39, 39 light-tokens, 0 mörka kvar
+- 522 rader sida: KPI-strip + 2 bar chart-sektioner + AI-insikter + Avslutade anbud-tabell
+- KpiKort.tsx redan light-migrerad (tidigare omgång)
+- Bar charts: custom CSS (inget lib), Win rate green/orange-villkor, prisnivå amber
+- AI-insikter Kategori D verifierat: `{insikt.ikon}` från ai_insikter_cache (Database), orört
+- Tabell-sortering med ↓/↑ typografiska pilar (bevarade per 3F.3 Avvikelse B)
+- Endast 1 designval (Q1: bar-track + AI-insikt-kort-bg → light-off)
+
+#### 🎯 STEG 4 KOMPLETT — alla 7 authenticated-sidor light-migrerade
+
+| Sida | Steg | Commit |
+|---|---|---|
+| alla-projekt | 2B | (tidigare) |
+| installningar | 4A | `f770675` |
+| certifikat | 4B | `c2186e5` |
+| nytt-projekt | 4C | `4392d44` |
+| uppfoljning | 4D | `0d2421e` |
+| profil | 4E | `3250210` |
+| statistik | 4F | `ff3d17a` |
+
+Plus Sidebar (redan ljus från tidigare omgång).
+
+#### Natt-passets bedrift (13-14 maj 2026)
+- 6 sidor migrerade på en natt
+- 0 rollbacks, 0 produktionsbuggar
+- 2 nya Button-varianter etablerade (`outline-light` + `outline-light-neutral`)
+- 1 PRO-badge alpha-bg-bug fångad och fixad
+- Op 4-disciplin-lärdom dokumenterad (inventering före designfrågor)
+- Phosphor-sweep-disciplin utökad (U+00D7 Latin-1 Supplement)
+- ~110 emoji-migrationer totalt (3F-blocket över hela appen)
+
+#### Småjobb kvarstår
+- PRO-badge alpha-bg cosmetic-fix
+- Hover-states på amber-länkar
+- `/priser` fortfarande mörk — beslut behövs: migrera eller behåll som design-val?
+- Sweep-script utökat för Latin-1 Supplement-block
+- CLAUDE.md-uppdatering: Op 4-disciplin + textfärg-pattern
+
+#### Vad härnäst
+Efter Steg 4 är hela authenticated-app-ytan ljus-migrerad. Produkt-arbete
+övergår från visuell omdesign till customer acquisition + feature-utveckling
+från användarfeedback. Strategiska prioriteringar:
+- LinkedIn-outreach mot Stockholm elfirmor (10-50 anställda)
+- Customer demos + första betalande kunder
+- Win/loss data flywheel som långsiktig moat
+- Eventuell `/priser`-migration efter kundfeedback
 
 ---
 
