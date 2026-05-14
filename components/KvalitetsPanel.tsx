@@ -285,7 +285,7 @@ export default function KvalitetsPanel({ projektId, resultat, onGranska, laddar,
                       <div style={{ marginTop: 4, fontSize: 10, color: 'var(--light-t4)' }}>
                         {['pris', 'rot'].includes(punkt.kategori) ? (
                           onGåTillSteg2 ? (
-                            <button onClick={onGåTillSteg2} style={{ background: 'none', border: 'none', color: 'var(--light-amber)', cursor: 'pointer', fontSize: 10, fontWeight: 600, padding: 0 }}>
+                            <button onClick={onGåTillSteg2} className="hover:underline" style={{ background: 'none', border: 'none', color: 'var(--light-amber)', cursor: 'pointer', fontSize: 10, fontWeight: 600, padding: 0 }}>
                               Ändra priser i steg 2 →
                             </button>
                           ) : 'Justeras i steg 2 (Analys & Bedömning)'

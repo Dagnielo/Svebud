@@ -254,6 +254,7 @@ export default function InstallningarPage() {
                 </p>
                 <a
                   href="mailto:support@svebud.se"
+                  className="hover:underline"
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
