@@ -10,21 +10,21 @@ import {
 import { EnvelopeOpen, Warning, Tray } from '@phosphor-icons/react'
 
 const STATE_META: Record<UppföljningState, { label: string; färg: string; bg: string }> = {
-  anbud_skickat:            { label: 'Skickat',                 färg: 'var(--blue-accent)',   bg: 'rgba(74,158,255,0.12)' },
-  påminnelse_1_schemalagd:  { label: 'Påminnelse 1 schemalagd', färg: 'var(--muted-custom)',  bg: 'rgba(128,153,181,0.12)' },
-  påminnelse_1_skickad:     { label: 'Påminnelse 1 skickad',    färg: 'var(--yellow)',        bg: 'var(--yellow-glow)' },
-  påminnelse_2_schemalagd:  { label: 'Påminnelse 2 schemalagd', färg: 'var(--muted-custom)',  bg: 'rgba(128,153,181,0.12)' },
-  påminnelse_2_skickad:     { label: 'Påminnelse 2 skickad',    färg: 'var(--orange)',        bg: 'var(--orange-bg)' },
-  svar_mottaget:            { label: 'Svar mottaget',           färg: 'var(--green)',         bg: 'var(--green-bg)' },
-  vunnet:                   { label: 'Vunnet',                  färg: 'var(--green)',         bg: 'var(--green-bg)' },
-  förlorat:                 { label: 'Förlorat',                färg: 'var(--red)',           bg: 'var(--red-bg)' },
-  avbrutet:                 { label: 'Avbrutet',                färg: 'var(--muted-custom)',  bg: 'rgba(128,153,181,0.12)' },
+  anbud_skickat:            { label: 'Skickat',                 färg: 'var(--light-blue)',    bg: 'var(--light-blue-bg)' },
+  påminnelse_1_schemalagd:  { label: 'Påminnelse 1 schemalagd', färg: 'var(--light-t3)',      bg: 'var(--light-off)' },
+  påminnelse_1_skickad:     { label: 'Påminnelse 1 skickad',    färg: 'var(--light-amber)',   bg: 'var(--light-amber-glow)' },
+  påminnelse_2_schemalagd:  { label: 'Påminnelse 2 schemalagd', färg: 'var(--light-t3)',      bg: 'var(--light-off)' },
+  påminnelse_2_skickad:     { label: 'Påminnelse 2 skickad',    färg: 'var(--light-orange)',  bg: 'var(--light-orange-bg)' },
+  svar_mottaget:            { label: 'Svar mottaget',           färg: 'var(--light-green)',   bg: 'var(--light-green-bg)' },
+  vunnet:                   { label: 'Vunnet',                  färg: 'var(--light-green)',   bg: 'var(--light-green-bg)' },
+  förlorat:                 { label: 'Förlorat',                färg: 'var(--light-red)',     bg: 'var(--light-red-bg)' },
+  avbrutet:                 { label: 'Avbrutet',                färg: 'var(--light-t3)',      bg: 'var(--light-off)' },
 }
 
 const UTFALL_META: Record<Exclude<UppföljningUtfall, null>, { label: string; färg: string; bg: string }> = {
-  vunnet:     { label: 'Vunnet',     färg: 'var(--green)',        bg: 'var(--green-bg)' },
-  förlorat:   { label: 'Förlorat',   färg: 'var(--red)',          bg: 'var(--red-bg)' },
-  inget_svar: { label: 'Inget svar', färg: 'var(--muted-custom)', bg: 'rgba(128,153,181,0.12)' },
+  vunnet:     { label: 'Vunnet',     färg: 'var(--light-green)', bg: 'var(--light-green-bg)' },
+  förlorat:   { label: 'Förlorat',   färg: 'var(--light-red)',   bg: 'var(--light-red-bg)' },
+  inget_svar: { label: 'Inget svar', färg: 'var(--light-t3)',    bg: 'var(--light-off)' },
 }
 
 function Badge({ label, färg, bg }: { label: string; färg: string; bg: string }) {
@@ -48,14 +48,14 @@ function formateraDatum(iso: string | null): string {
 }
 
 function relativÅtgärd(iso: string | null, nu: number): { text: string; färg: string } {
-  if (!iso) return { text: '—', färg: 'var(--muted-custom)' }
+  if (!iso) return { text: '—', färg: 'var(--light-t3)' }
   const dagar = Math.round((Date.parse(iso) - nu) / (1000 * 60 * 60 * 24))
   if (dagar < 0) {
     const abs = Math.abs(dagar)
-    return { text: `Förfallen sedan ${abs} ${abs === 1 ? 'dag' : 'dagar'}`, färg: 'var(--red)' }
+    return { text: `Förfallen sedan ${abs} ${abs === 1 ? 'dag' : 'dagar'}`, färg: 'var(--light-red)' }
   }
-  if (dagar === 0) return { text: 'Idag', färg: 'var(--yellow)' }
-  return { text: `Om ${dagar} ${dagar === 1 ? 'dag' : 'dagar'}`, färg: 'var(--soft)' }
+  if (dagar === 0) return { text: 'Idag', färg: 'var(--light-amber)' }
+  return { text: `Om ${dagar} ${dagar === 1 ? 'dag' : 'dagar'}`, färg: 'var(--light-t2)' }
 }
 
 const TH_STIL: React.CSSProperties = {
@@ -63,14 +63,14 @@ const TH_STIL: React.CSSProperties = {
   textAlign: 'left',
   fontSize: 11,
   fontWeight: 700,
-  color: 'var(--muted-custom)',
+  color: 'var(--light-t3)',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
 }
 const TD_STIL: React.CSSProperties = {
   padding: '12px',
   fontSize: 13,
-  color: 'var(--soft)',
+  color: 'var(--light-t2)',
   verticalAlign: 'middle',
 }
 
@@ -85,23 +85,23 @@ export default function UppföljningarPage() {
   )
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--light-cream)' }}>
         <div
           className="flex items-center sticky top-0 z-40"
           style={{
             height: 60,
-            background: 'var(--navy-mid)',
-            borderBottom: '1px solid var(--navy-border)',
+            background: 'var(--light-bg)',
+            borderBottom: '1px solid var(--light-border)',
             padding: '0 32px',
             gap: 16,
           }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--light-t1)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <EnvelopeOpen size={16} weight="bold" />
             Uppföljningar
           </span>
           {!loading && uppföljningar.length > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--muted-custom)' }}>
+            <span style={{ fontSize: 12, color: 'var(--light-t3)' }}>
               {aktiva.length} aktiva · {avslutade.length} avslutade
             </span>
           )}
@@ -110,20 +110,20 @@ export default function UppföljningarPage() {
         <div style={{ padding: '28px 32px', flex: 1 }}>
           {loading && (
             <div className="space-y-3">
-              <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--navy-mid)' }} />
+              <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--light-off)' }} />
               {[1, 2, 3].map(i => (
-                <div key={i} className="animate-pulse h-16 rounded-lg" style={{ background: 'var(--navy-mid)' }} />
+                <div key={i} className="animate-pulse h-16 rounded-lg" style={{ background: 'var(--light-off)' }} />
               ))}
             </div>
           )}
 
           {!loading && fel && (
             <div style={{
-              background: 'var(--red-bg)',
-              border: '1px solid rgba(255,77,77,0.3)',
+              background: 'var(--light-red-bg)',
+              border: '1px solid var(--light-red)',
               borderRadius: 12,
               padding: '20px 24px',
-              color: 'var(--red)',
+              color: 'var(--light-red)',
               fontSize: 14,
             }} className="flex items-center gap-2">
               <Warning size={14} weight="bold" />
@@ -133,17 +133,17 @@ export default function UppföljningarPage() {
 
           {!loading && !fel && uppföljningar.length === 0 && (
             <div style={{
-              background: 'var(--yellow-glow)',
-              border: '1px solid rgba(245,196,0,0.3)',
+              background: 'var(--light-amber-glow)',
+              border: '1px solid var(--light-amber-border)',
               borderRadius: 12,
               padding: '56px 24px',
               textAlign: 'center',
             }}>
-              <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--yellow)' }}>
+              <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--light-amber)' }}>
                 <Tray size={48} weight="bold" />
               </div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Inga uppföljningar än</h3>
-              <p style={{ fontSize: 14, color: 'var(--muted-custom)', maxWidth: 460, margin: '0 auto' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--light-t1)' }}>Inga uppföljningar än</h3>
+              <p style={{ fontSize: 14, color: 'var(--light-t2)', maxWidth: 460, margin: '0 auto' }}>
                 När du markerar ett anbud som &quot;Skickat&quot; i ett projekt börjar uppföljningen här.
               </p>
             </div>
@@ -171,18 +171,19 @@ function SektionAktiva({
   const nu = Date.now()
   return (
     <section style={{ marginBottom: 32 }}>
-      <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--muted-custom)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+      <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
         Aktiva ({rader.length})
       </h2>
       <div style={{
-        background: 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
+        background: 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
         borderRadius: 10,
         overflow: 'hidden',
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--navy-border)', background: 'var(--navy-light)' }}>
+            <tr style={{ borderBottom: '1px solid var(--light-border)', background: 'var(--light-off)' }}>
               <th style={TH_STIL}>Projekt</th>
               <th style={TH_STIL}>Status</th>
               <th style={TH_STIL}>Deadline</th>
@@ -195,11 +196,11 @@ function SektionAktiva({
               const meta = STATE_META[u.state]
               const åtgärd = relativÅtgärd(u.nästa_åtgärd, nu)
               return (
-                <tr key={u.id} style={{ borderBottom: '1px solid var(--navy-border)' }}>
+                <tr key={u.id} style={{ borderBottom: '1px solid var(--light-border)' }}>
                   <td style={TD_STIL}>
                     <Link
                       href={`/projekt/${u.projekt_id}`}
-                      style={{ color: 'white', fontWeight: 600, textDecoration: 'none' }}
+                      style={{ color: 'var(--light-t1)', fontWeight: 600, textDecoration: 'none' }}
                     >
                       {u.projekt_namn}
                     </Link>
@@ -229,18 +230,19 @@ function SektionAktiva({
 function SektionAvslutade({ rader }: { rader: Uppföljning[] }) {
   return (
     <section>
-      <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--muted-custom)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+      <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--light-t3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
         Avslutade ({rader.length})
       </h2>
       <div style={{
-        background: 'var(--navy-mid)',
-        border: '1px solid var(--navy-border)',
+        background: 'var(--light-bg)',
+        border: '1px solid var(--light-border)',
         borderRadius: 10,
         overflow: 'hidden',
+        boxShadow: '0 1px 2px rgba(14,27,46,.04)',
       }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--navy-border)', background: 'var(--navy-light)' }}>
+            <tr style={{ borderBottom: '1px solid var(--light-border)', background: 'var(--light-off)' }}>
               <th style={TH_STIL}>Projekt</th>
               <th style={TH_STIL}>Utfall</th>
               <th style={TH_STIL}>Avslutad</th>
@@ -251,11 +253,11 @@ function SektionAvslutade({ rader }: { rader: Uppföljning[] }) {
               const utfall = u.utfall
               const meta = utfall ? UTFALL_META[utfall] : null
               return (
-                <tr key={u.id} style={{ borderBottom: '1px solid var(--navy-border)' }}>
+                <tr key={u.id} style={{ borderBottom: '1px solid var(--light-border)' }}>
                   <td style={TD_STIL}>
                     <Link
                       href={`/projekt/${u.projekt_id}`}
-                      style={{ color: 'white', fontWeight: 600, textDecoration: 'none' }}
+                      style={{ color: 'var(--light-t1)', fontWeight: 600, textDecoration: 'none' }}
                     >
                       {u.projekt_namn}
                     </Link>
@@ -292,17 +294,17 @@ function Knapp({
     marginLeft: 6,
   }
   if (variant === 'grön') {
-    stil.background = 'var(--green)'
+    stil.background = 'var(--light-green)'
     stil.color = 'white'
     stil.border = 'none'
   } else if (variant === 'röd') {
-    stil.background = 'var(--red)'
+    stil.background = 'var(--light-red)'
     stil.color = 'white'
     stil.border = 'none'
   } else {
     stil.background = 'transparent'
-    stil.color = 'var(--muted-custom)'
-    stil.border = '1px solid var(--navy-border)'
+    stil.color = 'var(--light-t3)'
+    stil.border = '1px solid var(--light-border)'
   }
   return (
     <button onClick={onClick} style={stil}>
