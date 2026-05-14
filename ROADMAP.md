@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 2 maj 2026 (kväll) — App-redesign Steg 3B → 3D LIVE på svebud.se
+**Senast uppdaterad:** 14 maj 2026 (natt, kl ~01:45) — App-redesign Steg 4A (/installningar) LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -244,6 +244,34 @@ Sammanslagen design-migrering + audit-applicering på live svebud.se.
 - ROT_TYPER (i lib/rot-regler.ts): emojis per ROT-typ
 
 Hanteras dedikerat i **Steg 3F** (rensnings-commit efter 3E).
+
+### 14 maj 2026 (natt-avslutning kl ~01:45) — Steg 4A LIVE ✅
+
+#### Steg 4A — KLAR & LIVE ✅
+- Commit: `f770675` (refactor(ui): Steg 4A — light-migration /installningar)
+- Docs: `59f7c29` (docs: krav på detaljerade visuella testinstruktioner)
+- /installningar fullt migrerad till light-tokens
+- Hantera plan-knapp-bug fångad i verifiering och fixad innan push
+- Live på svebud.se
+
+#### Lärdomar tillagda i CLAUDE.md
+- Visuell verifiering kräver var/handling/förväntat/bugg-indikator per punkt
+- shadcn outline-variant ärver bg-background — kräver explicit
+  `background: transparent` + `!important` hover-override på light-mode-sidor
+
+#### Småjobb / framtida
+- PRO-badge alpha-bg-fix i tierInfo (cosmetic, ej blocker)
+- Skapa `variant="outline-light"` i Button-komponenten för 4B-4F
+  (eliminerar !important-spam)
+- Hover-states saknas på amber-knappar (pre-existing)
+- /priser fortfarande mörk (utanför Steg 4-scope, beslut behövs)
+
+#### Återstående Steg 4
+- 4B /certifikat (0,5 dag)
+- 4C /nytt-projekt (0,5 dag)
+- 4D /uppfoljning (1 dag)
+- 4E /profil (1 dag, 777 rader)
+- 4F /statistik (1,5 dag)
 
 ---
 
