@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { X } from '@phosphor-icons/react'
 
 const CERTIFIKAT_LISTA = [
   { kategori: 'El-auktorisation', items: [
@@ -139,20 +140,20 @@ export default function CertifikatPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--light-cream)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
           style={{
             height: 60,
-            background: 'var(--navy-mid)',
-            borderBottom: '1px solid var(--navy-border)',
+            background: 'var(--light-bg)',
+            borderBottom: '1px solid var(--light-border)',
             padding: '0 32px',
           }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700 }}>Certifikat & behörigheter</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--light-t1)' }}>Certifikat & behörigheter</span>
           {sparat && (
-            <span style={{ marginLeft: 16, fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>
+            <span style={{ marginLeft: 16, fontSize: 13, color: 'var(--light-green)', fontWeight: 600 }}>
               Sparat!
             </span>
           )}
@@ -163,12 +164,12 @@ export default function CertifikatPage() {
           {loading ? (
             <div className="animate-pulse space-y-4">
               {[1, 2].map(i => (
-                <div key={i} className="h-40 rounded-xl" style={{ background: 'var(--navy-mid)' }} />
+                <div key={i} className="h-40 rounded-xl" style={{ background: 'var(--light-off)' }} />
               ))}
             </div>
           ) : (
             <div style={{ maxWidth: 700 }}>
-              <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 16, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: 'var(--light-t2)', marginBottom: 16, lineHeight: 1.6 }}>
                 Markera de certifikat och behörigheter ert företag har. Dessa matchas automatiskt mot krav i förfrågningsunderlag vid analys.
               </p>
 
@@ -177,14 +178,15 @@ export default function CertifikatPage() {
                 <div
                   key={kat.kategori}
                   style={{
-                    background: 'var(--navy-mid)',
-                    border: '1px solid var(--navy-border)',
+                    background: 'var(--light-bg)',
+                    border: '1px solid var(--light-border)',
                     borderRadius: 12,
                     padding: '20px 24px',
                     marginBottom: 12,
+                    boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                   }}
                 >
-                  <h3 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--muted-custom)', marginBottom: 14 }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--light-t3)', marginBottom: 14 }}>
                     {kat.kategori}
                   </h3>
                   {kat.items.map(item => (
@@ -194,15 +196,15 @@ export default function CertifikatPage() {
                       style={{
                         fontSize: 13,
                         padding: '8px 0',
-                        color: certifikat[item.key] ? 'var(--white)' : 'var(--muted-custom)',
-                        borderBottom: '1px solid var(--navy-border)',
+                        color: certifikat[item.key] ? 'var(--light-t1)' : 'var(--light-t3)',
+                        borderBottom: '1px solid var(--light-border)',
                       }}
                     >
                       <input
                         type="checkbox"
                         checked={certifikat[item.key] ?? false}
                         onChange={e => setCertifikat(prev => ({ ...prev, [item.key]: e.target.checked }))}
-                        style={{ accentColor: 'var(--yellow)', width: 16, height: 16 }}
+                        style={{ accentColor: 'var(--light-amber)', width: 16, height: 16 }}
                       />
                       <span className="flex-1">{item.namn}</span>
                     </label>
@@ -216,17 +218,17 @@ export default function CertifikatPage() {
                       style={{
                         fontSize: 13,
                         padding: '8px 0',
-                        color: 'var(--white)',
-                        borderBottom: '1px solid var(--navy-border)',
+                        color: 'var(--light-t1)',
+                        borderBottom: '1px solid var(--light-border)',
                       }}
                     >
-                      <input type="checkbox" checked disabled style={{ accentColor: 'var(--yellow)', width: 16, height: 16 }} />
+                      <input type="checkbox" checked disabled style={{ accentColor: 'var(--light-amber)', width: 16, height: 16 }} />
                       <span className="flex-1">{namn}</span>
                       <button
                         onClick={() => setEgnaCert(prev => ({ ...prev, [kat.kategori]: (prev[kat.kategori] ?? []).filter((_, j) => j !== i) }))}
-                        style={{ fontSize: 11, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}
+                        style={{ color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
                       >
-                        ✕
+                        <X size={11} weight="bold" />
                       </button>
                     </div>
                   ))}
@@ -247,9 +249,9 @@ export default function CertifikatPage() {
                         flex: 1,
                         padding: '6px 10px',
                         borderRadius: 6,
-                        background: 'var(--navy)',
-                        border: '1px dashed var(--navy-border)',
-                        color: 'var(--white)',
+                        background: 'var(--light-off)',
+                        border: '1px dashed var(--light-border)',
+                        color: 'var(--light-t1)',
                         fontSize: 12,
                       }}
                     />
@@ -260,7 +262,7 @@ export default function CertifikatPage() {
                           setNyttCertInput(prev => ({ ...prev, [kat.kategori]: '' }))
                         }
                       }}
-                      style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
+                      style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'none', border: '1px solid var(--light-amber)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
                     >
                       + Lägg till
                     </button>
@@ -271,15 +273,16 @@ export default function CertifikatPage() {
               {/* Erfarenhet */}
               <div
                 style={{
-                  background: 'var(--navy-mid)',
-                  border: '1px solid var(--navy-border)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
                   borderRadius: 12,
                   padding: '20px 24px',
                   marginBottom: 16,
+                  boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                 }}
               >
-                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Erfarenhetsområden</h2>
-                <p style={{ fontSize: 12, color: 'var(--muted-custom)', marginBottom: 16 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: 'var(--light-t1)' }}>Erfarenhetsområden</h2>
+                <p style={{ fontSize: 12, color: 'var(--light-t2)', marginBottom: 16 }}>
                   Välj de områden ert företag har erfarenhet inom.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -291,9 +294,9 @@ export default function CertifikatPage() {
                         fontSize: 13,
                         padding: '8px 12px',
                         borderRadius: 8,
-                        border: `1px solid ${erfarenhet.includes(erf) ? 'var(--yellow)' : 'var(--navy-border)'}`,
-                        background: erfarenhet.includes(erf) ? 'var(--yellow-glow)' : 'transparent',
-                        color: erfarenhet.includes(erf) ? 'var(--yellow)' : 'var(--muted-custom)',
+                        border: `1px solid ${erfarenhet.includes(erf) ? 'var(--light-amber)' : 'var(--light-border)'}`,
+                        background: erfarenhet.includes(erf) ? 'var(--light-amber-glow)' : 'transparent',
+                        color: erfarenhet.includes(erf) ? 'var(--light-amber)' : 'var(--light-t3)',
                       }}
                     >
                       <input
@@ -317,17 +320,17 @@ export default function CertifikatPage() {
                         fontSize: 13,
                         padding: '8px 12px',
                         borderRadius: 8,
-                        border: '1px solid var(--yellow)',
-                        background: 'var(--yellow-glow)',
-                        color: 'var(--yellow)',
+                        border: '1px solid var(--light-amber)',
+                        background: 'var(--light-amber-glow)',
+                        color: 'var(--light-amber)',
                       }}
                     >
                       <span className="flex-1">{erf}</span>
                       <button
                         onClick={() => setEgnaErfarenheter(prev => prev.filter((_, j) => j !== i))}
-                        style={{ fontSize: 11, color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer' }}
+                        style={{ color: 'var(--light-red)', background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
                       >
-                        ✕
+                        <X size={11} weight="bold" />
                       </button>
                     </div>
                   ))}
@@ -348,9 +351,9 @@ export default function CertifikatPage() {
                       flex: 1,
                       padding: '6px 10px',
                       borderRadius: 6,
-                      background: 'var(--navy)',
-                      border: '1px dashed var(--navy-border)',
-                      color: 'var(--white)',
+                      background: 'var(--light-off)',
+                      border: '1px dashed var(--light-border)',
+                      color: 'var(--light-t1)',
                       fontSize: 12,
                     }}
                   />
@@ -361,7 +364,7 @@ export default function CertifikatPage() {
                         setNyErfarenhetInput('')
                       }
                     }}
-                    style={{ fontSize: 11, fontWeight: 700, color: 'var(--yellow)', background: 'none', border: '1px solid var(--yellow)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
+                    style={{ fontSize: 11, fontWeight: 700, color: 'var(--light-amber)', background: 'none', border: '1px solid var(--light-amber)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
                   >
                     + Lägg till
                   </button>
@@ -373,7 +376,7 @@ export default function CertifikatPage() {
                 onClick={spara}
                 disabled={sparar}
                 className="font-semibold"
-                style={{ background: 'var(--yellow)', color: 'var(--navy)', padding: '10px 32px' }}
+                style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', padding: '10px 32px' }}
               >
                 {sparar ? 'Sparar...' : 'Spara ändringar'}
               </Button>
