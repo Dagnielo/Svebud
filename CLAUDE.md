@@ -212,11 +212,17 @@ Permanent bevarade UI-emojis efter Steg 3F:
 - ✨ profil 'Komplett profil!' (celebration)
 - ↗ extern-länk-tecken (typografisk konvention)
 - → CTA-pilar (typografisk konvention)
+- ↑/↓ sorterings-pilar (typografisk konvention)
 - ✗/✓ TEXT-PATTERN i toast-state-detection (data-marker)
 - 📊 KALKYL_MARKÖR + regex (data-marker för AI-utkast-render)
 
 3F.5-inventering verifierade: inga hardcoded fallback-strängar
 (Kategori C) i AI-insikter-flödet.
+
+Emoji-sweep: använd grep -P (Perl-regex), inte -E. Range som fångar
+UI-emojis + Latin-1-symboler:
+grep -rnP "[\x{00D7}\x{2700}-\x{27BF}\x{1F300}-\x{1FAFF}]" app/ components/
+(U+00D7 × multiplikationssymbol fångades först i 4E — utanför 3F-range.)
 
 ### Visuell verifiering — krav på testinstruktioner
 
@@ -231,6 +237,43 @@ punkt innehålla:
 
 Lat formulering ("testa sticky", "testa validering") är otydligt och
 flyttar kognitiv börda till Dagnielo som är trött efter timmar av kodning.
+
+### Button-styling för light-mode-sidor (etablerat Steg 4)
+
+Två cva-varianter i components/ui/button.tsx för authenticated-sidor:
+- variant="outline-light" — amber outline (transparent bg, light-amber
+  border+text, light-off hover-bg). För sekundära amber-actions (Hantera plan).
+- variant="outline-light-neutral" — grå outline (transparent bg, light-border,
+  light-t3 text → light-t2 hover, light-off hover-bg). För Avbryt/neutrala.
+
+Primära knappar (Spara, Skapa, primära CTA) stylas med INLINE
+style={{ background: 'var(--light-amber)', color: 'var(--light-navy)' }}
+— INTE via en variant. shadcn-default-varianten är oförändrad (bg-primary).
+
+ALDRIG variant="outline"/"ghost"/"secondary" på light-mode-sidor — de ärver
+bg-background (#0F1C2E mörk navy) och bryter visuell konsekvens.
+
+### Op 4-designfrågor: inventera FÖRE designfrågor formuleras
+
+Anti-pattern observerat i Steg 4B (/certifikat) och 4E (/profil):
+spec-prompter formulerade designfrågor baserat på FÖRMODADE strukturer
+(status-pills, upload-areas, timpriser-tabeller, toggles) som inte fanns.
+Frågorna fick avfärdas manuellt vid inventeringen.
+
+Korrekt ordning i plan mode: Op 1 grep-inventering → Op 2 komponent-
+inventering → Op 3 scope-bedömning → Op 4 mappnings-tabell + designfrågor
+BASERAT PÅ FAKTISK STRUKTUR → Op 5 vänta på godkännande.
+
+Princip: "Live ÄR sanningen, spec är förslag." Plan mode rapporterar fakta
+först, designfrågor formuleras sedan.
+
+### Textfärg på fyllda knappar (etablerat Steg 4)
+
+- amber-bg → light-navy text (mörk-på-ljus). Primär CTA: Skapa, Spara, Hantera plan.
+- mättad röd/grön-bg → vit text (ljus-på-mättat). Vunnet/Förlorat-knappar (4D).
+
+Light-navy på mättad röd/grön ger för svag läsbarhet — använd vit där.
+Verifiera kontrast vid nya bg-färger; gissa inte.
 
 ---
 
