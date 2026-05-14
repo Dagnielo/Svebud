@@ -1,6 +1,6 @@
 # SveBud — ROADMAP
 
-**Senast uppdaterad:** 14 maj 2026 (natt-slutpunkt kl ~06:00) — STEG 4 KOMPLETT, alla 7 authenticated-sidor light-migrerade och LIVE på svebud.se
+**Senast uppdaterad:** 14 maj 2026 (städpass) — STEG 4 KOMPLETT + 4 småjobb avklarade. Alla 7 authenticated-sidor light-migrerade och LIVE på svebud.se
 **Syfte:** Indexfilen för SveBuds fortsatta utveckling. Binder ihop landningssida (`docs/PROMPT_landing_v7.md`), produktfeatures (`svebud-nya-funktioner-prompts.md`) och profil-systemet (`docs/PROMPT_profil_v1.md`).
 
 **Öppna denna fil först** när du ska bestämma vad som byggs härnäst.
@@ -416,11 +416,7 @@ Plus Sidebar (redan ljus från tidigare omgång).
 - ~110 emoji-migrationer totalt (3F-blocket över hela appen)
 
 #### Småjobb kvarstår
-- PRO-badge alpha-bg cosmetic-fix
-- Hover-states på amber-länkar
 - `/priser` fortfarande mörk — beslut behövs: migrera eller behåll som design-val?
-- Sweep-script utökat för Latin-1 Supplement-block
-- CLAUDE.md-uppdatering: Op 4-disciplin + textfärg-pattern
 
 #### Vad härnäst
 Efter Steg 4 är hela authenticated-app-ytan ljus-migrerad. Produkt-arbete
@@ -430,6 +426,19 @@ från användarfeedback. Strategiska prioriteringar:
 - Customer demos + första betalande kunder
 - Win/loss data flywheel som långsiktig moat
 - Eventuell `/priser`-migration efter kundfeedback
+
+### 14 maj 2026 (städpass) — 4 småjobb avklarade ✅
+
+Efter Steg 4-blocket städades de flaggade småjobben:
+- **CLAUDE.md Steg 4-lärdomar** (`478fb43`) — Button-varianter, Op 4-disciplin,
+  textfärg-pattern, emoji-sweep grep-range
+- **Emoji-sweep** (`cb1d161`) — utökad grep-range fångade 3 missade emojis
+  från 3F-blocket (⚠/✓ regler-foranmalan, ⭐ priser, ↓ RotKalkyl) → Phosphor.
+  4A-4F-migrationerna verifierade rena.
+- **PRO-badge alpha-bg** — verifierat redan löst i `515a867` (tierInfo.bg-fält)
+- **Hover-states** (`dad216d`) — hover:underline på 2 amber-textlänkar
+
+Kvarstår: `/priser` mörk (designbeslut, ej kod-jobb).
 
 ---
 
