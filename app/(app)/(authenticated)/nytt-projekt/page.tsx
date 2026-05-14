@@ -36,33 +36,34 @@ export default function NyttProjektPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--light-cream)' }}>
       {/* Topbar */}
       <div
         className="flex items-center sticky top-0 z-40"
         style={{
           height: 60,
-          background: 'var(--navy-mid)',
-          borderBottom: '1px solid var(--navy-border)',
+          background: 'var(--light-bg)',
+          borderBottom: '1px solid var(--light-border)',
           padding: '0 32px',
         }}
       >
-        <span style={{ fontSize: 16, fontWeight: 700 }}>Nytt projekt</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--light-t1)' }}>Nytt projekt</span>
       </div>
 
       {/* Content */}
-      <div style={{ padding: '28px 32px', flex: 1, background: 'var(--navy)' }}>
+      <div style={{ padding: '28px 32px', flex: 1, background: 'var(--light-cream)' }}>
         <div style={{ maxWidth: 560 }}>
           <div
             style={{
-              background: 'var(--navy-mid)',
-              border: '1px solid var(--navy-border)',
+              background: 'var(--light-bg)',
+              border: '1px solid var(--light-border)',
               borderRadius: 12,
               padding: '24px 28px',
+              boxShadow: '0 1px 2px rgba(14,27,46,.04)',
             }}
           >
-            <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Skapa nytt projekt</h2>
-            <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 24 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 4, color: 'var(--light-t1)' }}>Skapa nytt projekt</h2>
+            <p style={{ fontSize: 13, color: 'var(--light-t2)', marginBottom: 24 }}>
               Ge projektet ett namn och en kort beskrivning. Du kan ladda upp förfrågningsunderlaget i nästa steg.
             </p>
 
@@ -71,7 +72,7 @@ export default function NyttProjektPage() {
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
-                  color: 'var(--muted-custom)',
+                  color: 'var(--light-t3)',
                   marginBottom: 4,
                   display: 'block',
                 }}
@@ -86,9 +87,9 @@ export default function NyttProjektPage() {
                   width: '100%',
                   padding: '10px 14px',
                   borderRadius: 8,
-                  background: 'var(--navy)',
-                  border: '1px solid var(--navy-border)',
-                  color: 'var(--white)',
+                  background: 'var(--light-off)',
+                  border: '1px solid var(--light-border)',
+                  color: 'var(--light-t1)',
                   fontSize: 14,
                 }}
               />
@@ -99,7 +100,7 @@ export default function NyttProjektPage() {
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
-                  color: 'var(--muted-custom)',
+                  color: 'var(--light-t3)',
                   marginBottom: 4,
                   display: 'block',
                 }}
@@ -115,9 +116,9 @@ export default function NyttProjektPage() {
                   width: '100%',
                   padding: '10px 14px',
                   borderRadius: 8,
-                  background: 'var(--navy)',
-                  border: '1px solid var(--navy-border)',
-                  color: 'var(--white)',
+                  background: 'var(--light-off)',
+                  border: '1px solid var(--light-border)',
+                  color: 'var(--light-t1)',
                   fontSize: 14,
                   resize: 'none',
                 }}
@@ -129,14 +130,15 @@ export default function NyttProjektPage() {
                 onClick={skapaProjekt}
                 disabled={skapar || !namn.trim()}
                 className="flex-1 font-semibold"
-                style={{ background: 'var(--yellow)', color: 'var(--navy)', padding: '10px 20px' }}
+                style={{ background: 'var(--light-amber)', color: 'var(--light-navy)', padding: '10px 20px' }}
               >
+                {/* "→" typografisk pil (UX-konvention, ej ikon) */}
                 {skapar ? 'Skapar...' : 'Skapa projekt →'}
               </Button>
               <Button
                 onClick={() => router.push('/dashboard')}
-                variant="outline"
-                style={{ borderColor: 'var(--navy-border)', color: 'var(--muted-custom)' }}
+                variant="outline-light-neutral"
+                style={{ fontSize: 12 }}
               >
                 Avbryt
               </Button>
