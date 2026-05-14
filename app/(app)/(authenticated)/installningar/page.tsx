@@ -6,10 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 
 const tierInfo: Record<string, { namn: string; färg: string; beskrivning: string }> = {
-  trial: { namn: 'Prov', färg: 'var(--muted-custom)', beskrivning: 'Gratisperiod – begränsad funktionalitet' },
-  starter: { namn: 'Starter', färg: 'var(--blue-accent)', beskrivning: 'Upp till 5 projekt/månad' },
-  pro: { namn: 'Pro', färg: 'var(--yellow)', beskrivning: 'Obegränsade projekt + prioriterad AI-analys' },
-  enterprise: { namn: 'Enterprise', färg: 'var(--green)', beskrivning: 'Anpassad lösning med teamfunktioner' },
+  trial: { namn: 'Prov', färg: 'var(--light-t4)', beskrivning: 'Gratisperiod – begränsad funktionalitet' },
+  starter: { namn: 'Starter', färg: 'var(--light-blue)', beskrivning: 'Upp till 5 projekt/månad' },
+  pro: { namn: 'Pro', färg: 'var(--light-amber)', beskrivning: 'Obegränsade projekt + prioriterad AI-analys' },
+  enterprise: { namn: 'Enterprise', färg: 'var(--light-green)', beskrivning: 'Anpassad lösning med teamfunktioner' },
 }
 
 export default function InstallningarPage() {
@@ -80,33 +80,33 @@ export default function InstallningarPage() {
     width: '100%',
     padding: '8px 12px',
     borderRadius: 8,
-    background: 'var(--navy)',
-    border: '1px solid var(--navy-border)',
-    color: 'var(--white)',
+    background: 'var(--light-off)',
+    border: '1px solid var(--light-border)',
+    color: 'var(--light-t1)',
     fontSize: 13,
   }
 
   const labelStyle = {
     fontSize: 12,
     fontWeight: 600 as const,
-    color: 'var(--muted-custom)',
+    color: 'var(--light-t3)',
     marginBottom: 4,
     display: 'block' as const,
   }
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div className="flex flex-col min-h-screen" style={{ background: 'var(--light-cream)' }}>
         {/* Topbar */}
         <div
           className="flex items-center sticky top-0 z-40"
           style={{
             height: 60,
-            background: 'var(--navy-mid)',
-            borderBottom: '1px solid var(--navy-border)',
+            background: 'var(--light-bg)',
+            borderBottom: '1px solid var(--light-border)',
             padding: '0 32px',
           }}
         >
-          <span style={{ fontSize: 16, fontWeight: 700 }}>Inställningar</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--light-t1)' }}>Inställningar</span>
         </div>
 
         {/* Content */}
@@ -114,7 +114,7 @@ export default function InstallningarPage() {
           {loading ? (
             <div className="animate-pulse space-y-4">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-32 rounded-xl" style={{ background: 'var(--navy-mid)' }} />
+                <div key={i} className="h-32 rounded-xl" style={{ background: 'var(--light-off)' }} />
               ))}
             </div>
           ) : (
@@ -122,14 +122,15 @@ export default function InstallningarPage() {
               {/* Prenumeration */}
               <div
                 style={{
-                  background: 'var(--navy-mid)',
-                  border: '1px solid var(--navy-border)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
                   borderRadius: 12,
                   padding: '20px 24px',
+                  boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                   marginBottom: 16,
                 }}
               >
-                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Prenumeration</h2>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--light-t1)' }}>Prenumeration</h2>
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
@@ -148,16 +149,18 @@ export default function InstallningarPage() {
                         {currentTier.namn}
                       </span>
                     </div>
-                    <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginTop: 4 }}>
+                    <p style={{ fontSize: 13, color: 'var(--light-t3)', marginTop: 4 }}>
                       {currentTier.beskrivning}
                     </p>
                   </div>
                   <Button
                     onClick={() => router.push('/priser')}
                     variant="outline"
+                    className="hover:!bg-[var(--light-off)] hover:!text-[var(--light-amber)]"
                     style={{
-                      borderColor: 'var(--yellow)',
-                      color: 'var(--yellow)',
+                      background: 'transparent',
+                      borderColor: 'var(--light-amber)',
+                      color: 'var(--light-amber)',
                       fontSize: 12,
                     }}
                   >
@@ -169,14 +172,15 @@ export default function InstallningarPage() {
               {/* Konto */}
               <div
                 style={{
-                  background: 'var(--navy-mid)',
-                  border: '1px solid var(--navy-border)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
                   borderRadius: 12,
                   padding: '20px 24px',
+                  boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                   marginBottom: 16,
                 }}
               >
-                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Konto</h2>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--light-t1)' }}>Konto</h2>
                 <div style={{ marginBottom: 16 }}>
                   <label style={labelStyle}>E-postadress</label>
                   <input
@@ -184,7 +188,7 @@ export default function InstallningarPage() {
                     value={epost}
                     readOnly
                   />
-                  <p style={{ fontSize: 11, color: 'var(--slate)', marginTop: 4 }}>
+                  <p style={{ fontSize: 11, color: 'var(--light-t4)', marginTop: 4 }}>
                     Kontakta support för att ändra e-postadress
                   </p>
                 </div>
@@ -193,14 +197,15 @@ export default function InstallningarPage() {
               {/* Lösenord */}
               <div
                 style={{
-                  background: 'var(--navy-mid)',
-                  border: '1px solid var(--navy-border)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
                   borderRadius: 12,
                   padding: '20px 24px',
+                  boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                   marginBottom: 16,
                 }}
               >
-                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Byt lösenord</h2>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--light-t1)' }}>Byt lösenord</h2>
                 <div className="space-y-4">
                   <div>
                     <label style={labelStyle}>Nytt lösenord</label>
@@ -223,16 +228,16 @@ export default function InstallningarPage() {
                     />
                   </div>
                   {lösenordFel && (
-                    <p style={{ fontSize: 12, color: 'var(--red)' }}>{lösenordFel}</p>
+                    <p style={{ fontSize: 12, color: 'var(--light-red)' }}>{lösenordFel}</p>
                   )}
                   {lösenordSparat && (
-                    <p style={{ fontSize: 12, color: 'var(--green)' }}>Lösenordet har ändrats!</p>
+                    <p style={{ fontSize: 12, color: 'var(--light-green)' }}>Lösenordet har ändrats!</p>
                   )}
                   <Button
                     onClick={bytLösenord}
                     disabled={sparar || !nyttLösenord}
                     className="font-semibold"
-                    style={{ background: 'var(--yellow)', color: 'var(--navy)' }}
+                    style={{ background: 'var(--light-amber)', color: 'var(--light-navy)' }}
                   >
                     {sparar ? 'Sparar...' : 'Byt lösenord'}
                   </Button>
@@ -242,14 +247,15 @@ export default function InstallningarPage() {
               {/* Support */}
               <div
                 style={{
-                  background: 'var(--navy-mid)',
-                  border: '1px solid var(--navy-border)',
+                  background: 'var(--light-bg)',
+                  border: '1px solid var(--light-border)',
                   borderRadius: 12,
                   padding: '20px 24px',
+                  boxShadow: '0 1px 2px rgba(14,27,46,.04)',
                 }}
               >
-                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>Support</h2>
-                <p style={{ fontSize: 13, color: 'var(--muted-custom)', marginBottom: 12 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--light-t1)' }}>Support</h2>
+                <p style={{ fontSize: 13, color: 'var(--light-t2)', marginBottom: 12 }}>
                   Har du frågor eller behöver hjälp? Kontakta oss.
                 </p>
                 <a
@@ -257,10 +263,11 @@ export default function InstallningarPage() {
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: 'var(--yellow)',
+                    color: 'var(--light-amber)',
                     textDecoration: 'none',
                   }}
                 >
+                  {/* → typografisk pil (UX-konvention, ej ikon) */}
                   support@svebud.se →
                 </a>
               </div>
